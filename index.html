@@ -8,7 +8,7 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQfQhd8lG/9dOfH7WwkxqUH7m3BzLfk=" crossorigin=""/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<link rel="stylesheet" href="src/styles.css">
+<link rel="stylesheet" href="/src/styles.css">
 </head>
 <body>
 <div class="app">
@@ -18,7 +18,7 @@
 </aside>
 <main class="main">
   <div class="top">
-    <div class="title"><div class="kicker">CommandCenter Enterprise V2.12A</div><h2 id="pageTitle">Mission Control</h2><p id="pageSub">Visibility, accountability, and control across every location, asset, vendor, and dollar.</p></div>
+    <div class="title"><div class="kicker">CommandCenter Enterprise V2.13</div><h2 id="pageTitle">Mission Control</h2><p id="pageSub">Visibility, accountability, and control across every location, asset, vendor, and dollar.</p></div>
     <div class="controls">
       <select id="clientSelect" onchange="setClient(this.value)"></select><select id="loginUserSelect" onchange="setLoginUser(this.value)"></select>
       <input id="search" placeholder="Global search..." oninput="render()"/>
@@ -55,7 +55,7 @@
 </div>
 <div class="toast" id="toast"></div><div class="modal" id="modal"><div class="box"><button class="close" onclick="closeModal()">Close</button><div id="modalBody"></div></div></div><div class="drawerOverlay" id="siteDrawer"><div class="drawerPanel"><div id="siteDrawerBody"></div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="src/env.js"></script>
-<script src="src/app.js"></script>
+<script src="/src/env.js"></script>
+<script src="/src/app.js"></script>
 </body>
 </html>

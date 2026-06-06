@@ -1,21 +1,14 @@
 {
-  "name": "commandcenter-v2-13-vercel-url-fix",
-  "version": "2.13.2",
+  "name": "commandcenter-v2-13-vercel-no-script-build",
+  "version": "2.13.4",
   "private": true,
   "scripts": {
-    "build": "vite build",
+    "build": "echo Using prebuilt static dist",
     "start": "npx serve dist",
     "preview": "npx serve dist"
   },
   "engines": {
     "node": ">=18"
-  },
-  "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "vite": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "lucide-react": "latest"
   },
   "devDependencies": {
     "serve": "latest"
