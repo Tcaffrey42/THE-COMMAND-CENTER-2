@@ -1,0 +1,16 @@
+{
+  "name": "commandcenter-v2-13-vercel-url-fix",
+  "version": "2.13.2",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.js",
+    "start": "npx serve dist",
+    "preview": "npx serve dist"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "serve": "latest"
+  }
+}
