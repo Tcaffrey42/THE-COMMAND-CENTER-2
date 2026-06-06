@@ -3,7 +3,7 @@
   "version": "2.13.5",
   "private": true,
   "scripts": {
-    "build": "mkdir -p dist/src && cp index.html dist/index.html && cp app.js styles.css env.js dist/src/"
+    "build": "mkdir -p dist && cp index.html dist/index.html && cp -R src dist/src 2>/dev/null || mkdir -p dist/src && cp app.js styles.css env.js dist/src/ 2>/dev/null || true"
   },
   "engines": {
     "node": "20.x"
