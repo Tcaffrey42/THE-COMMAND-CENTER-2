@@ -1,16 +1,11 @@
 {
-  "name": "commandcenter-v2-13-5-vercel-no-scripts-folder",
+  "name": "commandcenter-v2-13-5",
   "version": "2.13.5",
   "private": true,
   "scripts": {
-    "build": "mkdir -p dist && cp -R index.html src dist/",
-    "start": "npx serve dist",
-    "preview": "npx serve dist"
+    "build": "mkdir -p dist && cp index.html dist/index.html && cp -R src dist/src"
   },
   "engines": {
     "node": "20.x"
-  },
-  "devDependencies": {
-    "serve": "latest"
   }
 }
