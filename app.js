@@ -63,6 +63,16 @@ tenants:[
 {name:"Security Finance",plan:"Enterprise",users:14,roles:"Admin / Operator / Trade Lead / Vendor",storage:"2.4 GB",status:"Active"},
 {name:"Fogo de Chão Refresh Program",plan:"Projects",users:7,roles:"Admin / Project Manager / GC",storage:"1.1 GB",status:"Pilot"},
 {name:"Prime Communications",plan:"Enterprise",users:22,roles:"Admin / FM / Vendor / Finance",storage:"3.8 GB",status:"Demo"}
+],
+pmPlans:[
+{id:"PM-100",client:0,location:"L522",asset:"A-RTU-1",trade:"HVAC",frequency:"Quarterly",nextDue:"2026-07-15",vendor:"Metro Mechanical",status:"Due Soon",estSavings:9600,scope:"Filter change, coil inspection, belt check, economizer check, amperage readings, photo report."},
+{id:"PM-101",client:0,location:"L319",asset:"A-PL-2",trade:"Plumbing",frequency:"Semi-Annual",nextDue:"2026-08-01",vendor:"Desert Pipe",status:"Scheduled",estSavings:4200,scope:"Drain camera, jetting, cleanout verification, repeat blockage prevention."},
+{id:"PM-200",client:1,location:"FG-PDX",asset:"A-BAR-1",trade:"Refresh",frequency:"Milestone",nextDue:"2026-06-30",vendor:"Portland GC",status:"Planning",estSavings:18000,scope:"Punch walk, warranty items, finish protection, closeout docs."}
+],
+buildRoadmap:[
+{version:"V2.14",title:"PM Planner + GitHub/Vercel Safe Baseline",status:"Current Build",owner:"Butch + Tim"},
+{version:"V2.15",title:"WO Edit/Close Workflow + Photo Intake",status:"Next",owner:"Operations"},
+{version:"V2.16",title:"Vendor Portal Lite + COI Expiration Alerts",status:"Queued",owner:"Vendor Management"}
 ]
 };
 let db=JSON.parse(localStorage.getItem("commandCenterEnterpriseData")||JSON.stringify(seed));
@@ -327,6 +337,7 @@ const pages=[
 ["amdashboard","👤 AM Dashboard","My work queue, daily touch list, owner performance, account snapshot, and one-click update flow."],
 ["dashboard","📊 Dashboard","Executive KPIs and portfolio visibility."],
 ["workorders","📋 Work Orders","Dispatch board, SLA pressure, and status control."],
+["pm","🗓️ PM Planner","Preventive maintenance calendar, savings logic, and PM-to-work-order conversion."],
 ["dispatch","🚨 Dispatch Center","Auto-routing, vendor assignment, and live dispatch command."],
 ["escalations","🔥 Escalation Center","Auto-detected operational fires by SLA, vendor response, proposal aging, repeat repair, and high spend."],
 ["sla","📈 SLA Monitor","SLA performance, breach pressure, and escalation visibility."],
@@ -834,7 +845,7 @@ async function submitAMQuickUpdate(){
  save(); if(updated) await cloudUpsert('workOrders',updated); await cloudInsertAudit('AM quick update saved for '+id); closeModal(); render(); toast('Quick update saved');
 }
 
-function render(){let x=ai(), q=(search.value||"").toLowerCase();metrics.innerHTML=metric("Portfolio Health",x.health+"/100","AI operating score")+metric("Open Work Orders",x.wo.length,x.at.length+" at risk/breached")+metric("Pending Proposal $",money(x.pending),"Awaiting approval")+metric("Replace Reviews",x.repl.length,"Capex candidates");renderWarroom(x);renderAMDashboard(x);renderDashboard(x);renderWO(x,q);renderDispatch(x);renderEscalations(x);renderSLA(x);renderLocations(x,q);renderHeatMap(x);renderProposals(x);renderApprovals();renderAssetHistory(x);renderVendorCards();renderCopilot(x);renderExecutive(x);renderCFO(x);renderProjects(x);renderBoardReports(x);renderTenant();renderDocuments();renderUsers();renderSettings()}
+function render(){let x=ai(), q=(search.value||"").toLowerCase();metrics.innerHTML=metric("Portfolio Health",x.health+"/100","AI operating score")+metric("Open Work Orders",x.wo.length,x.at.length+" at risk/breached")+metric("Pending Proposal $",money(x.pending),"Awaiting approval")+metric("Replace Reviews",x.repl.length,"Capex candidates");renderWarroom(x);renderAMDashboard(x);renderDashboard(x);renderWO(x,q);renderPMPlanner(x);renderDispatch(x);renderEscalations(x);renderSLA(x);renderLocations(x,q);renderHeatMap(x);renderProposals(x);renderApprovals();renderAssetHistory(x);renderVendorCards();renderCopilot(x);renderExecutive(x);renderCFO(x);renderProjects(x);renderBoardReports(x);renderTenant();renderDocuments();renderUsers();renderSettings()}
 function renderWarroom(x){
 let user=loggedUser();
 let mq=missionQueues(x);

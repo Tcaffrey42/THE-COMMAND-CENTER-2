@@ -36,3 +36,9 @@ Open the Vercel deployment log and look for one of these:
 - Output directory dist not found
 
 The most common issue is that GitHub has the files inside an extra folder layer instead of at the repo root.
+
+
+## V2.14 Update
+- Added Preventive Maintenance Planner page.
+- Added PM-to-Work-Order conversion workflow.
+- Repaired repo structure so `src/app.js`, `src/styles.css`, and `src/env.js` are the deployed source of truth.
