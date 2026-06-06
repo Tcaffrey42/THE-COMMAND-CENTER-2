@@ -76,6 +76,25 @@ buildRoadmap:[
 ]
 };
 let db=JSON.parse(localStorage.getItem("commandCenterEnterpriseData")||JSON.stringify(seed));
+// V2.14.1 DATA GUARD: keep the deployment-safe root build, but never let an older/broken
+// localStorage or empty cloud table wipe the demo modules that power SLA, Locations, and Heat Map.
+function ensureSeedDataGuard(){
+ const required=["clients","locations","workOrders","proposals","assets","vendors","users","documents","approvals","audit","tenants","pmPlans","buildRoadmap"];
+ let changed=false;
+ if(!db || typeof db!=="object"){db=JSON.parse(JSON.stringify(seed)); changed=true;}
+ required.forEach(k=>{
+  if(!Array.isArray(db[k]) || db[k].length===0){db[k]=JSON.parse(JSON.stringify(seed[k]||[])); changed=true;}
+ });
+ if(!Number.isInteger(Number(db.activeClient)) || Number(db.activeClient)<0 || Number(db.activeClient)>=db.clients.length){db.activeClient=0; changed=true;}
+ // Preserve user's current data, but backfill missing demo records needed for the command modules.
+ ["locations","workOrders","proposals","assets"].forEach(k=>{
+  const idKey=k==="workOrders"?"id":"id";
+  const existing=new Set((db[k]||[]).map(x=>x&&x[idKey]));
+  (seed[k]||[]).forEach(x=>{ if(!existing.has(x[idKey])){ db[k].push(JSON.parse(JSON.stringify(x))); changed=true; } });
+ });
+ if(changed){localStorage.setItem("commandCenterEnterpriseData",JSON.stringify(db));}
+}
+ensureSeedDataGuard();
 
 // ============================
 // SPRINT 1 CLOUD FOUNDATION
@@ -695,6 +714,8 @@ async function init(){
  nav.innerHTML=pages.map((p,i)=>`<button data-id="${p[0]}" onclick="setPage('${p[0]}')" class="${i==0?'active':''}">${p[1]}</button>`).join("");
  hydrateSelectors();
  if(cloudReady){try{await loadFromSupabase();hydrateSelectors();}catch(e){console.warn("Startup cloud load failed; local demo continues",e);cloudReady=false;}}
+ ensureSeedDataGuard();
+ hydrateSelectors();
  render();
 }
 function metric(label,value,sub){return `<div class="card metric"><div class="label">${label}</div><div class="value">${value}</div><div class="sub">${sub}</div></div>`}

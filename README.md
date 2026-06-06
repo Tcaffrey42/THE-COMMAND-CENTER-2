@@ -42,3 +42,6 @@ The most common issue is that GitHub has the files inside an extra folder layer 
 - Added Preventive Maintenance Planner page.
 - Added PM-to-Work-Order conversion workflow.
 - Repaired repo structure so `src/app.js`, `src/styles.css`, and `src/env.js` are the deployed source of truth.
+
+
+V2.14.1 hotfix: preserves root-only Vercel-safe deployment and restores/backfills SLA, Locations, Heat Map seed data if a previous broken build emptied localStorage or cloud-loaded blank tables.
