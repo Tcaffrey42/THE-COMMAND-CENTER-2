@@ -70,8 +70,9 @@ pmPlans:[
 {id:"PM-200",client:1,location:"FG-PDX",asset:"A-BAR-1",trade:"Refresh",frequency:"Milestone",nextDue:"2026-06-30",vendor:"Portland GC",status:"Planning",estSavings:18000,scope:"Punch walk, warranty items, finish protection, closeout docs."}
 ],
 buildRoadmap:[
-{version:"V2.14",title:"PM Planner + GitHub/Vercel Safe Baseline",status:"Current Build",owner:"Butch + Tim"},
-{version:"V2.15",title:"WO Edit/Close Workflow + Photo Intake",status:"Next",owner:"Operations"},
+{version:"V2.14.1",title:"Stable Data Restore Root-Only Baseline",status:"Protected Baseline",owner:"Butch + Tim"},
+{version:"V2.15",title:"CC CommandCenter Brand Upgrade — Run Your Portfolio with AI",status:"Current Build",owner:"Butch + Tim"},
+{version:"V2.16",title:"WO Edit/Close Workflow + Photo Intake",status:"Next",owner:"Operations"},
 {version:"V2.16",title:"Vendor Portal Lite + COI Expiration Alerts",status:"Queued",owner:"Vendor Management"}
 ]
 };
@@ -872,7 +873,7 @@ let user=loggedUser();
 let mq=missionQueues(x);
 let top=x.risk[0]||{};
 let proposalDollars=mq.prop.reduce((s,p)=>s+Number(p.amount||0),0);
-warroom.innerHTML=`<div class="card"><div class="missionHero"><div class="kicker">Internal Operations Backbone</div><h1>COMMANDCENTER MISSION CONTROL</h1><p>${greeting()}, ${user.name}. This is the fire board: emergencies, SLA pressure, proposal aging, vendor response, invoice closeout, and missing next actions across ${c().locations.toLocaleString()} locations.</p></div>
+warroom.innerHTML=`<div class="card"><div class="missionHero"><div class="kicker">Internal Operations Backbone</div><h1>CC COMMANDCENTER MISSION CONTROL</h1><p>${greeting()}, ${user.name}. Run your portfolio with AI. This is the fire board: emergencies, SLA pressure, proposal aging, vendor response, invoice closeout, and missing next actions across ${c().locations.toLocaleString()} locations.</p></div>
 <div class="queueGrid">
 ${queueCard("Emergency Queue",mq.emergency.length,"Priority = Emergency","🔴","redline","showMissionQueue('Emergency')")}
 ${queueCard("SLA Risk Queue",mq.sla.length,"At risk or breached","🟠","amberline","showMissionQueue('SLA Risk')")}

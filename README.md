@@ -45,3 +45,11 @@ The most common issue is that GitHub has the files inside an extra folder layer 
 
 
 V2.14.1 hotfix: preserves root-only Vercel-safe deployment and restores/backfills SLA, Locations, Heat Map seed data if a previous broken build emptied localStorage or cloud-loaded blank tables.
+
+
+## V2.15 Brand Upgrade
+- Updated primary brand to **CC CommandCenter**.
+- Added market promise: **Run your portfolio with AI.**
+- Removed the small deploy badge from the visible interface.
+- Preserved the V2.14.1 data guard so SLA, Locations, Heat Map, and demo modules remain populated.
+- Kept the deploy-safe root-only zip structure for GitHub/Vercel upload.
