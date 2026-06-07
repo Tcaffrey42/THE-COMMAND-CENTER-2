@@ -1,13 +1,4 @@
 window.COMMANDCENTER_ENV = {
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: ""
+  SUPABASE_URL: "YOUR_SUPABASE_URL_HERE",
+  SUPABASE_ANON_KEY: "YOUR_SUPABASE_ANON_KEY_HERE"
 };
-window.appSignIn = appSignIn;
-window.appSignOut = appSignOut;
-window.setClient = setClient;
-window.setLoginUser = setLoginUser;
-window.render = render;
-window.openWOForm = openWOForm;
-window.openProposalForm = openProposalForm;
-window.exportData = exportData;
-window.closeModal = closeModal;
