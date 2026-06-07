@@ -4,16 +4,24 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>CC CommandCenter — Run Your Portfolio with AI</title>
-<link rel="icon" href="./cc-commandcenter-logo.svg">
+<link rel="icon" type="image/png" href="./cc-commandcenter-app-icon.png">
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQfQhd8lG/9dOfH7WwkxqUH7m3BzLfk=" crossorigin=""/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
+<div id="ccLoader" class="ccLoader" aria-label="CommandCenter loading screen">
+  <div class="ccLoaderCard">
+    <img class="ccLoaderLogo" src="./cc-commandcenter-loading.png" alt="CC CommandCenter loading logo">
+    <div class="ccLoaderText">Initializing Portfolio Intelligence...</div>
+    <div class="ccLoaderBar"><span></span></div>
+    <div class="ccLoaderPct">72%</div>
+  </div>
+</div>
 <div class="app">
 <aside class="side">
-  <div class="brand"><div class="brandMark"><div class="brandLogo" aria-label="CC CommandCenter colored logo"><img src="./cc-commandcenter-logo.svg" alt="CC CommandCenter logo"></div><div><div class="brandWord">CC COMMANDCENTER</div><h1>CommandCenter</h1></div></div><p class="brandPromise">Run your portfolio with AI.</p><p>The Facilities Operating System for work orders, assets, vendors, projects, approvals, spend, and executive control.</p><div class="brandTag">Visibility. Accountability. Control.</div></div>
+  <div class="brand"><div class="brandMark approvedBrand"><img class="brandHeroLogo" src="./cc-commandcenter-stacked.png" alt="CC CommandCenter — Run your portfolio with AI"></div><p>The Facilities Operating System for work orders, assets, vendors, projects, approvals, spend, and executive control.</p><div class="brandTag">Visibility. Accountability. Control.</div></div>
   <div class="nav" id="nav"></div>
 </aside>
 <main class="main">
@@ -58,5 +66,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./env.js"></script>
 <script src="./app.js"></script>
+<script>window.addEventListener("load",()=>setTimeout(()=>document.body.classList.add("ccLoaded"),650)); setTimeout(()=>document.body.classList.add("ccLoaded"),2200);</script>
 </body>
 </html>
