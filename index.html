@@ -25,10 +25,10 @@
     <img class="authLogo" src="./cc-commandcenter-stacked.png" alt="CC CommandCenter">
     <div class="kicker">Secure Login</div>
     <h1>CommandCenter</h1>
-    <p>Demo login is ready. Use admin@commandcenter.local / demo. Supabase can be added later.</p>
+    <p>Preview mode opens automatically. Demo login: admin@commandcenter.local / demo. Supabase can be connected later.</p>
     <input id="authEmail" type="email" placeholder="Email" autocomplete="email" value="admin@commandcenter.local">
     <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password" value="demo">
-    <button class="btn dark authBtn" onclick="appSignIn()">Login</button>
+    <button class="btn dark authBtn" type="button" onclick="window.appSignIn(event)">Enter CommandCenter</button>
     <div id="authMessage" class="authMessage"></div>
     <div class="authHint">Roles supported: Admin, Executive, Facility Manager, Vendor, Technician, Client.</div>
   </div>

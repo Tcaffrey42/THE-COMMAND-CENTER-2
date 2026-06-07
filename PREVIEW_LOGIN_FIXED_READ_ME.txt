@@ -1,0 +1,1 @@
+V2.16.10 fixes the login wall by auto-opening static preview/demo mode when Supabase env.js is placeholder or missing. Use admin@commandcenter.local / demo if needed. No API folder. No OpenAI backend yet.

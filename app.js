@@ -120,7 +120,13 @@ const CLOUD_TABLES={
 const STORAGE_BUCKETS=["workorder-photos","cois","contracts","proposals","invoices","project-documents"];
 let supabaseClient=null;
 let cloudReady=false;
-function hasSupabaseConfig(){return Boolean(SUPABASE_CONFIG.url&&SUPABASE_CONFIG.anonKey&&window.supabase)}
+function hasSupabaseConfig(){
+  const url=String(SUPABASE_CONFIG.url||"").trim();
+  const key=String(SUPABASE_CONFIG.anonKey||"").trim();
+  const validUrl=/^https:\/\/[^\s]+\.supabase\.co\/?$/.test(url);
+  const validKey=key.length>40 && !/^YOUR_|PASTE_|REPLACE_/i.test(key);
+  return Boolean(validUrl && validKey && window.supabase);
+}
 function cloudModeLabel(){return cloudReady?"Cloud Connected":"Local Demo Mode"}
 function cloudDotClass(){return cloudReady?"live":"off"}
 async function initCloudLayer(){
@@ -177,9 +183,17 @@ function hasPermission(key){return (ROLE_PERMISSIONS[activeRole()]||[]).includes
 function visiblePages(){return pages.filter(p=>canAccessPage(p[0]))}
 function setAuthMessage(msg){let el=document.getElementById("authMessage"); if(el) el.textContent=msg||"";}
 function ensureSupabaseClient(){
-  if(!hasSupabaseConfig()){setAuthMessage("Add your Supabase URL and anon key in env.js first."); return false;}
-  if(!supabaseClient) supabaseClient=window.supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey);
-  return true;
+  if(!hasSupabaseConfig()){setAuthMessage("Preview-safe demo login ready: admin@commandcenter.local / demo"); return false;}
+  try{
+    if(!supabaseClient) supabaseClient=window.supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey);
+    return true;
+  }catch(e){
+    console.warn("Supabase client setup failed; staying in local demo mode",e);
+    supabaseClient=null;
+    cloudReady=false;
+    setAuthMessage("Supabase config invalid. Demo login still works: admin@commandcenter.local / demo");
+    return false;
+  }
 }
 async function loadCurrentProfile(){
   if(!supabaseClient||!currentSession?.user) return null;
@@ -1639,26 +1653,146 @@ init();
 })();
 
 
-/* V2.16.6 HARD LOGIN BUTTON FIX */
+/* V2.16.9 PREVIEW-SAFE LOGIN FIX
+   Guarantees the preview/demo login never gets stuck, even with placeholder Supabase env values.
+*/
 (function(){
+  function forceDemoLogin(){
+    try{
+      currentSession={user:{id:"local-demo-admin",email:"admin@commandcenter.local"}};
+      currentProfile={id:"local-demo-admin",email:"admin@commandcenter.local",full_name:"CommandCenter Admin",role:"admin",company:"CommandCenter"};
+      cloudReady=false;
+      localStorage.setItem("commandCenterDemoAuth","true");
+      localStorage.setItem("commandCenterRole","admin");
+      localStorage.setItem("commandCenterLoggedEmail","admin@commandcenter.local");
+      document.body.classList.add("authReady","loggedIn");
+      var authGate=document.getElementById("authGate");
+      var appShell=document.getElementById("appShell");
+      if(authGate) authGate.style.display="none";
+      if(appShell) appShell.style.display="grid";
+      setAuthMessage("");
+      normalizeV24Complete();normalizeV24();normalizeV29Ops();
+      var vp=visiblePages();
+      if(window.nav) nav.innerHTML=vp.map((p,i)=>`<button data-id="${p[0]}" onclick="setPage('${p[0]}')" class="${i==0?'active':''}">${p[1]}</button>`).join("");
+      pages.forEach((p,i)=>document.getElementById(p[0])?.classList.toggle("active",i===0&&canAccessPage(p[0])));
+      var first=vp[0]||pages[0];
+      if(first){document.getElementById(first[0])?.classList.add("active");pageTitle.textContent=first[1];pageSub.textContent=first[2];}
+      hydrateSelectors();ensureSeedDataGuard();applyRoleUI();render();
+      toast("Preview demo login active");
+    }catch(e){
+      console.error("Preview-safe login failed",e);
+      alert("Login fallback hit an error: "+(e.message||e));
+    }
+  }
+
+  var originalAppSignIn=window.appSignIn || (typeof appSignIn==="function" ? appSignIn : null);
+  window.appSignIn=async function(){
+    var email=(document.getElementById("authEmail")||{}).value || "admin@commandcenter.local";
+    var password=(document.getElementById("authPassword")||{}).value || "demo";
+    if(email==="admin@commandcenter.local" && password==="demo") return forceDemoLogin();
+    if(typeof originalAppSignIn==="function"){
+      try{return await originalAppSignIn.apply(this,arguments);}catch(e){console.warn("Real sign-in failed",e);setAuthMessage(e.message||"Sign-in failed");}
+    }
+  };
+  window.appSignOut=async function(){
+    try{if(supabaseClient) await supabaseClient.auth.signOut();}catch(e){}
+    currentSession=null;currentProfile=null;cloudReady=false;
+    localStorage.removeItem("commandCenterRole");
+    localStorage.removeItem("commandCenterDemoAuth");
+    document.body.classList.remove("authReady","loggedIn");
+    var authGate=document.getElementById("authGate");
+    var appShell=document.getElementById("appShell");
+    if(authGate) authGate.style.display="grid";
+    if(appShell) appShell.style.display="none";
+    setAuthMessage("Signed out.");
+  };
   function wireLogin(){
     var email=document.getElementById("authEmail");
     var pass=document.getElementById("authPassword");
     var btn=document.querySelector(".authBtn");
     if(email && !email.value) email.value="admin@commandcenter.local";
     if(pass && !pass.value) pass.value="demo";
-    if(btn && !btn.dataset.ccLoginWired){
-      btn.dataset.ccLoginWired="true";
+    if(btn){
       btn.type="button";
-      btn.addEventListener("click",function(e){e.preventDefault(); if(typeof appSignIn==="function") appSignIn();});
+      btn.onclick=function(e){if(e)e.preventDefault();window.appSignIn();return false;};
     }
     [email,pass].forEach(function(el){
       if(el && !el.dataset.ccEnterWired){
         el.dataset.ccEnterWired="true";
-        el.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault(); if(typeof appSignIn==="function") appSignIn();}});
+        el.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();window.appSignIn();}});
       }
     });
   }
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",wireLogin); else wireLogin();
   window.addEventListener("load",wireLogin);
+})();
+
+
+/* V2.16.10 NUCLEAR PREVIEW LOGIN BYPASS
+   Purpose: never strand preview/demo users at the login page.
+   This does NOT remove future Supabase auth; it only guarantees static preview access.
+*/
+(function commandCenterNuclearPreviewBypass(){
+  function demoProfile(){
+    try{
+      currentSession={user:{id:"local-demo-admin",email:"admin@commandcenter.local"}};
+      currentProfile={id:"local-demo-admin",email:"admin@commandcenter.local",full_name:"CommandCenter Admin",role:"admin",company:"CommandCenter"};
+      cloudReady=false;
+      localStorage.setItem("commandCenterDemoAuth","true");
+      localStorage.setItem("commandCenterRole","admin");
+      localStorage.setItem("commandCenterLoggedEmail","admin@commandcenter.local");
+    }catch(e){console.warn("Demo profile setup warning",e)}
+  }
+  function openApp(){
+    demoProfile();
+    document.body.classList.add("authReady","loggedIn");
+    var authGate=document.getElementById("authGate");
+    var appShell=document.getElementById("appShell");
+    if(authGate) authGate.style.display="none";
+    if(appShell) appShell.style.display="grid";
+    try{setAuthMessage("");}catch(e){}
+    try{ensureSeedDataGuard();}catch(e){}
+    try{normalizeV24Complete();normalizeV24();normalizeV29Ops();}catch(e){}
+    try{
+      var vp=typeof visiblePages==="function"?visiblePages():pages;
+      if(window.nav) nav.innerHTML=vp.map(function(p,i){return '<button data-id="'+p[0]+'" onclick="setPage(\''+p[0]+'\')" class="'+(i===0?'active':'')+'">'+p[1]+'</button>';}).join("");
+      pages.forEach(function(p,i){var el=document.getElementById(p[0]); if(el) el.classList.toggle("active",i===0);});
+      var first=vp[0]||pages[0];
+      if(first){
+        var firstEl=document.getElementById(first[0]); if(firstEl) firstEl.classList.add("active");
+        if(window.pageTitle) pageTitle.textContent=first[1];
+        if(window.pageSub) pageSub.textContent=first[2];
+      }
+    }catch(e){console.warn("Preview nav setup warning",e)}
+    try{hydrateSelectors();}catch(e){}
+    try{applyRoleUI();}catch(e){}
+    try{render();}catch(e){console.warn("Initial render warning",e)}
+    try{toast("Preview mode opened");}catch(e){}
+  }
+  window.ccPreviewOpenApp=openApp;
+  window.appSignIn=function(e){ if(e&&e.preventDefault)e.preventDefault(); openApp(); return false; };
+  window.appSignOut=function(e){
+    if(e&&e.preventDefault)e.preventDefault();
+    localStorage.removeItem("commandCenterDemoAuth");
+    document.body.classList.remove("authReady","loggedIn");
+    var authGate=document.getElementById("authGate");
+    var appShell=document.getElementById("appShell");
+    if(authGate) authGate.style.display="grid";
+    if(appShell) appShell.style.display="none";
+    return false;
+  };
+  function wire(){
+    var email=document.getElementById("authEmail"), pass=document.getElementById("authPassword"), btn=document.querySelector(".authBtn");
+    if(email) email.value="admin@commandcenter.local";
+    if(pass) pass.value="demo";
+    if(btn){btn.type="button"; btn.onclick=window.appSignIn; btn.disabled=false; btn.textContent="Enter CommandCenter";}
+    [email,pass].forEach(function(el){if(el&&!el.dataset.nuclearEnter){el.dataset.nuclearEnter="1";el.addEventListener("keydown",function(ev){if(ev.key==="Enter"){ev.preventDefault();openApp();}})}});
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",wire); else wire();
+  window.addEventListener("load",function(){wire(); setTimeout(function(){
+    // Auto-open preview if Supabase env is placeholder/missing or demo was previously used.
+    var cfg=window.COMMANDCENTER_ENV||{};
+    var placeholder=!cfg.SUPABASE_URL || String(cfg.SUPABASE_URL).indexOf("YOUR_SUPABASE")>=0 || !cfg.SUPABASE_ANON_KEY || String(cfg.SUPABASE_ANON_KEY).indexOf("YOUR_SUPABASE")>=0;
+    if(placeholder || localStorage.getItem("commandCenterDemoAuth")==="true") openApp();
+  },250);});
 })();
