@@ -1,0 +1,24 @@
+COMMANDCENTER V2.15.7 CONTROLLED MAP PATCH
+
+Upload the CONTENTS of this ZIP directly into the GitHub repo root.
+
+Expected GitHub root:
+- index.html
+- app.js
+- styles.css
+- vercel.json
+- package.json
+- logo/image files
+
+Do not upload the zip itself.
+Do not place these files inside a folder.
+After committing in GitHub, redeploy in Vercel with cache OFF.
+
+Patch includes:
+- Real USA Portfolio Map
+- Location risk pins
+- Location drawer
+- Asset click-through
+- All work orders at the asset's location
+- Clickable work order detail modal
+- Static Vercel config, no dist/outputDirectory build requirement
