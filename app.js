@@ -1601,3 +1601,89 @@ init();
     else showLoginGate();
   });
 })();
+
+/* COMMANDCENTER V2.16.2 LOGIN BYPASS FIX
+   Purpose: allow the static/Vercel demo build to enter the app without Supabase blocking the UI.
+   This does NOT change the app engine, maps, heat map, work orders, or data model.
+*/
+(function commandCenterStaticLoginBypass(){
+  const DEMO_FLAG = "commandCenterDemoLogin";
+  const DEMO_EMAIL = "admin@commandcenter.local";
+
+  async function startDemoAdminSession(){
+    currentSession = {
+      user: {
+        id: "demo-admin",
+        email: DEMO_EMAIL,
+        user_metadata: { full_name: "Tim Caffrey" }
+      }
+    };
+    currentProfile = {
+      id: "demo-admin",
+      email: DEMO_EMAIL,
+      full_name: "Tim Caffrey",
+      role: "admin",
+      company: "CommandCenter"
+    };
+    cloudReady = false;
+    localStorage.setItem("commandCenterRole", "admin");
+    localStorage.setItem("commandCenterLoggedEmail", DEMO_EMAIL);
+    document.body.classList.add("authReady", "loggedIn");
+    setAuthMessage("");
+    return true;
+  }
+
+  initAuthGate = async function(){
+    if(localStorage.getItem(DEMO_FLAG)==="true"){
+      return startDemoAdminSession();
+    }
+    document.body.classList.remove("authReady", "loggedIn");
+    return false;
+  };
+
+  appSignIn = async function(){
+    localStorage.setItem(DEMO_FLAG,"true");
+    await startDemoAdminSession();
+    await init();
+    toast("Demo admin login active");
+  };
+
+  appSignOut = async function(){
+    localStorage.removeItem(DEMO_FLAG);
+    currentSession = null;
+    currentProfile = null;
+    cloudReady = false;
+    localStorage.removeItem("commandCenterRole");
+    document.body.classList.remove("authReady", "loggedIn");
+    setAuthMessage("Signed out.");
+  };
+
+  window.appSignIn = appSignIn;
+  window.appSignOut = appSignOut;
+
+  window.addEventListener("DOMContentLoaded", function(){
+    const email=document.getElementById("authEmail");
+    const pass=document.getElementById("authPassword");
+    const button=document.querySelector(".authBtn");
+    if(email && !email.value) email.value="admin@commandcenter.local";
+    if(pass && !pass.value) pass.value="demo";
+    [email,pass].forEach(function(el){
+      if(!el) return;
+      el.addEventListener("keydown",function(e){
+        if(e.key==="Enter"){
+          e.preventDefault();
+          window.appSignIn();
+        }
+      });
+    });
+    if(button){
+      button.type="button";
+      button.disabled=false;
+      button.style.pointerEvents="auto";
+    }
+  });
+
+  setTimeout(function(){
+    if(localStorage.getItem(DEMO_FLAG)==="true") init();
+  },100);
+})();
