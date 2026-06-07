@@ -26,10 +26,11 @@
 </aside>
 <main class="main">
   <div class="top">
-    <div class="title"><div class="kicker">CC CommandCenter Enterprise V2.15</div><h2 id="pageTitle">Mission Control</h2><p id="pageSub">Run your portfolio with AI — visibility, accountability, and control across every location, asset, vendor, and dollar.</p></div>
+    <div class="title"><div class="kicker">CC CommandCenter Enterprise V2.15.5</div><h2 id="pageTitle">Mission Control</h2><p id="pageSub">Run your portfolio with AI — visibility, accountability, and control across every location, asset, vendor, and dollar.</p></div>
     <div class="controls">
       <select id="clientSelect" onchange="setClient(this.value)"></select><select id="loginUserSelect" onchange="setLoginUser(this.value)"></select>
       <input id="search" placeholder="Global search..." oninput="render()"/>
+      <button class="btn dark" onclick="setPage('copilot')">⌘ COMMAND AI</button>
       <button class="btn dark" onclick="openWOForm()">+ Work Order</button>
       <button class="btn" onclick="openProposalForm()">+ Proposal</button>
       <button class="btn" onclick="exportData()">Export JSON</button><span class="deployBadge">Vercel staging-ready</span>

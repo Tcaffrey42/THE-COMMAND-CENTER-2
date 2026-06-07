@@ -367,7 +367,7 @@ const pages=[
 ["approvals","✅ Approvals","Customer approval workflow for proposals and capital decisions."],
 ["assets","🛠️ Assets","Replace-vs-repair intelligence and asset history."],
 ["vendors","🚚 Vendors","Vendor scorecards and coverage pressure."],
-["copilot","🤖 AI Copilot","Portfolio intelligence and executive answers."],
+["copilot","⌘ COMMAND AI","Ask questions across portfolio, locations, assets, work orders, vendors, spend, and risk."],
 ["executive","🎯 Executive Action Center","Top risks, actions, and savings opportunities."],
 ["cfo","💰 CFO Dashboard","Forecasting, budgeting, and capital planning."],
 ["projects","🏗️ Projects","Refresh, rollout, remodel, and capex tracker."],
@@ -1444,3 +1444,95 @@ function renderAssetHistory(x){
 }
 
 init();
+
+
+// ============================
+// V2.15.5 COMMAND AI PHASE 1-4 BUILD
+// Natural-language portfolio questions + clickable answer paths into locations, assets, and work orders.
+// ============================
+function ccRiskTierFromScore(score){return score>=90?'Critical':score>=65?'High':score>=35?'Medium':'Low'}
+function ccLocationStats(locationId){
+ const l=db.locations.find(x=>x.id===locationId)||{};
+ const wos=db.workOrders.filter(w=>w.location===locationId);
+ const assets=db.assets.filter(a=>a.location===locationId);
+ const spend=(l.spend||0)+wos.reduce((s,w)=>s+(w.cost||0),0)+assets.reduce((s,a)=>s+(a.spend12||0),0);
+ const sla=wos.filter(w=>['Breached','At Risk'].includes(w.sla));
+ return {l,wos,assets,spend,sla,score:riskScore(l)};
+}
+function ccRankLocations(){
+ return scope(db.locations).map(l=>ccLocationStats(l.id)).sort((a,b)=>(b.score*3+b.wos.length*8+b.sla.length*12+b.spend/15000)-(a.score*3+a.wos.length*8+a.sla.length*12+a.spend/15000));
+}
+function ccRankAssets(){
+ return scope(db.assets).map(a=>({...a,fail:predictedFailure(a),wos:db.workOrders.filter(w=>w.asset===a.id || w.location===a.location)})).sort((a,b)=>b.fail-a.fail || (b.spend12||0)-(a.spend12||0));
+}
+function ccRankVendors(){
+ return [...db.vendors].map(v=>({ ...v, activeWos:db.workOrders.filter(w=>w.vendor===v.name), pressure:(100-(v.score||0))+(100-(v.sla||0))+(v.response||0)*4 })).sort((a,b)=>b.pressure-a.pressure);
+}
+function ccAnswerRows(type,rows){
+ if(type==='locations') return rows.map(r=>`<div class="commandResult" onclick="openSiteDrawer('${r.l.id}')"><div><b>${r.l.site}</b><div class="muted">${r.l.market||r.l.region} · ${r.wos.length} WOs · ${r.sla.length} SLA fires · ${money(r.spend)} exposure</div></div><div>${pill(ccRiskTierFromScore(r.score))} <span class="badge">${r.score}</span></div></div>`).join('');
+ if(type==='assets') return rows.map(a=>`<div class="commandResult" onclick="openAssetLocationWorkOrders('${a.id}')"><div><b>${a.asset}</b><div class="muted">${loc(a.location).site} · ${a.trade} · ${a.age||'N/A'} yrs · ${a.wos.length} linked WOs</div></div><div>${pill(a.fail>70?'High':a.fail>45?'Medium':'Low')} <span class="badge">${a.fail}%</span></div></div>`).join('');
+ if(type==='workorders') return rows.map(w=>`<div class="commandResult" onclick="woModal('${w.id}')"><div><b>${w.id}</b><div class="muted">${loc(w.location).site} · ${w.trade} · ${w.status} · ${w.vendor}</div></div><div>${pill(w.priority)} ${pill(w.sla)}</div></div>`).join('');
+ if(type==='vendors') return rows.map(v=>`<div class="commandResult" onclick="vendorModal('${v.name}')"><div><b>${v.name}</b><div class="muted">${v.trades} · ${v.activeWos.length} active WOs · ${v.response} hr avg response</div></div><div><span class="badge">Score ${v.score}</span> <span class="badge">SLA ${v.sla}%</span></div></div>`).join('');
+ return '';
+}
+function ccCommandAnswer(question){
+ const q=String(question||'').toLowerCase();
+ const x=ai(); const f=forecast(x);
+ const rankedLocations=ccRankLocations();
+ const rankedAssets=ccRankAssets();
+ const rankedVendors=ccRankVendors();
+ const criticalWos=x.wo.filter(w=>['Emergency','Urgent'].includes(w.priority)||['Breached','At Risk'].includes(w.sla)).sort((a,b)=>(b.sla==='Breached')-(a.sla==='Breached') || (b.priority==='Emergency')-(a.priority==='Emergency') || (b.age||0)-(a.age||0));
+ let title='Portfolio Command Brief';
+ let summary=`${c().name} is running at ${x.health}/100 portfolio health with ${x.wo.length} open work orders, ${x.at.length} SLA-sensitive tickets, ${x.repl.length} replace-review assets, and ${money(x.pending)} pending proposal dollars.`;
+ let type='locations'; let rows=rankedLocations.slice(0,5);
+ if(q.includes('worst')||q.includes('risk')||q.includes('locations')||q.includes('store')||q.includes('branch')){title='Highest-Risk Locations'; summary=`Top portfolio risks are ranked by risk score, open WOs, repeat issues, SLA fires, and spend pressure. Click any result to open the location drawer.`; type='locations'; rows=rankedLocations.slice(0,6)}
+ if(q.includes('work order')||q.includes('ticket')||q.includes('critical')||q.includes('sla')||q.includes('older')){title='Critical Work Orders'; summary=`${criticalWos.length} work orders need attention based on priority, SLA, or age. Click any ticket to open the full work order lifecycle.`; type='workorders'; rows=criticalWos.slice(0,8)}
+ if(q.includes('asset')||q.includes('replace')||q.includes('repair')||q.includes('rtu')||q.includes('equipment')){title='Asset Risk / Repair-vs-Replace'; summary=`${x.repl.length} assets are already in replace-review logic. Replacement exposure is ${money(f.capex)} with estimated savings opportunity of ${money(f.savings)}.`; type='assets'; rows=rankedAssets.slice(0,8)}
+ if(q.includes('vendor')||q.includes('contractor')){title='Vendor SLA Pressure'; summary=`Vendors are ranked by score, SLA %, response speed, and active work-order pressure.`; type='vendors'; rows=rankedVendors.slice(0,6)}
+ if(q.includes('spend')||q.includes('budget')||q.includes('cost')||q.includes('money')){title='Spend / Budget Pressure'; summary=`Visible spend is ${money(x.spend)} against ${money(c().budget)}. Annualized run-rate is ${money(f.runRate)} with forecast variance of ${money(f.variance)}.`; type='locations'; rows=rankedLocations.sort((a,b)=>b.spend-a.spend).slice(0,6)}
+ if(q.includes('prediction')||q.includes('predict')||q.includes('next year')||q.includes('forecast')){title='Predictive Command'; summary=`Projected capital exposure is ${money(f.capex)}. The system is flagging aging and repeat-repair assets before they become emergency spend.`; type='assets'; rows=rankedAssets.filter(a=>a.fail>45).slice(0,8)}
+ if(q.includes('autonomous')||q.includes('action')||q.includes('approval')||q.includes('dispatch')){title='Autonomous Command Recommendations'; summary=`Recommended next actions: escalate SLA fires, approve aging proposals, dispatch critical WOs, and move repeat-failure assets into capital review.`; type='workorders'; rows=criticalWos.slice(0,6)}
+ return `<div class="commandAnswer"><div class="kicker">COMMAND AI RESPONSE</div><h2>${title}</h2><p class="muted">${summary}</p><div class="commandResultList">${ccAnswerRows(type,rows)||'<p class="muted">No matching records found in current portfolio data.</p>'}</div><div class="commandNextSteps"><b>Next best action</b><p class="muted">Click into the result, assign an owner, set the next action, and keep the workflow moving from location → asset → work order → approval.</p></div></div>`;
+}
+function askCopilot(){
+ const input=document.getElementById('copilotQ');
+ const q=(input&&input.value)||'Give me the portfolio command brief';
+ const answer=document.getElementById('copilotAnswer');
+ if(answer){answer.innerHTML=`<div class="bubble"><b>You:</b> ${q}</div><div class="bubble ai">${ccCommandAnswer(q)}</div>`;}
+}
+function setCommandPrompt(prompt){
+ const input=document.getElementById('copilotQ');
+ if(input){input.value=prompt; askCopilot();}
+}
+function renderCopilot(x){
+ const f=forecast(x);
+ copilot.innerHTML=`<div class="commandHero"><div class="kicker">COMMAND AI</div><h1>Ask questions about the entire portfolio.</h1><p>Natural-language command layer across locations, assets, work orders, vendors, approvals, spend, SLA, risk, prediction, and autonomous next actions.</p></div>
+ <div class="grid2"><div class="card"><h3>Ask Command Intelligence</h3><div class="commandInputRow"><input id="copilotQ" style="width:100%" placeholder="Example: Which locations are becoming reactive maintenance risks?" onkeydown="if(event.key==='Enter')askCopilot()"/><button class="btn dark" onclick="askCopilot()">Ask</button></div><div id="copilotAnswer" class="chat" style="margin-top:14px"><div class="bubble ai">${ccCommandAnswer('portfolio command brief')}</div></div></div>
+ <div class="card"><h3>Phase 1–4 Command Prompts</h3>
+  <div class="promptChip" onclick="setCommandPrompt('Show me my worst locations')">Worst locations</div>
+  <div class="promptChip" onclick="setCommandPrompt('Show all critical work orders older than 7 days')">Critical WOs</div>
+  <div class="promptChip" onclick="setCommandPrompt('Which assets should be replaced next year?')">Predictive assets</div>
+  <div class="promptChip" onclick="setCommandPrompt('Which vendors are hurting SLA performance?')">Vendor pressure</div>
+  <div class="promptChip" onclick="setCommandPrompt('Where am I overspending versus budget?')">Budget risk</div>
+  <div class="promptChip" onclick="setCommandPrompt('What autonomous actions should CommandCenter take next?')">Autonomous actions</div>
+  <div class="tile"><b>Live Portfolio Context</b><p class="muted">Health: ${x.health}/100<br>Open WOs: ${x.wo.length}<br>SLA fires: ${x.at.length}<br>Pending approvals: ${money(x.pending)}<br>Forecast run-rate: ${money(f.runRate)}</p></div>
+ </div></div>`;
+}
+// Upgrade location drawer asset behavior: asset click opens all work orders attached to that asset's location.
+function openSiteDrawer(id){
+ let l=db.locations.find(x=>x.id===id); if(!l){toast('Location not found');return;}
+ let wos=siteWOList(id).sort((a,b)=>(b.priority==='Emergency')-(a.priority==='Emergency') || (b.sla==='Breached')-(a.sla==='Breached') || (b.age||0)-(a.age||0));
+ let assets=db.assets.filter(a=>a.location===id).sort((a,b)=>predictedFailure(b)-predictedFailure(a));
+ let props=db.proposals.filter(p=>p.location===id);
+ let vendors=Array.from(new Set(wos.map(w=>w.vendor).filter(Boolean))).join(', ')||'No vendor assigned';
+ let breached=wos.filter(w=>w.sla==='Breached').length, atRisk=wos.filter(w=>w.sla==='At Risk').length;
+ let body=document.getElementById('siteDrawerBody');
+ body.innerHTML=`<div class="drawerHeader"><div><div class="kicker">Location command drawer</div><h2>${l.site}</h2><p class="muted">${l.address||'Address pending'}<br>${l.market||l.region} · ${l.district||'Unassigned'} · ${l.fm} · ${l.trade}</p></div><button class="drawerClose" onclick="closeSiteDrawer()">Close</button></div>
+ <div>${pill(l.risk)} <span class="badge">Risk ${riskScore(l)}</span> <span class="badge">${hasGeo(l)?'Pin Ready':'Geo Pending'}</span> ${l.capex?pill('CapEx Review'):pill('Stable')}</div>
+ <div class="miniGrid"><div class="miniStat"><div class="muted">Open WOs</div><b>${wos.length||l.open||0}</b></div><div class="miniStat"><div class="muted">SLA fires</div><b>${breached+atRisk}</b></div><div class="miniStat"><div class="muted">Spend</div><b>${money(l.spend)}</b></div></div>
+ <div class="drawerSection"><b>COMMAND AI Location Brief</b><p class="muted">${l.site} has ${wos.length} work orders, ${assets.length} tracked assets, ${breached+atRisk} SLA-sensitive items, and ${money(l.spend)} visible location spend. Primary vendor coverage: ${vendors}.</p><div class="siteActionBar"><button class="btn dark" onclick="setPage('copilot');closeSiteDrawer();setTimeout(()=>setCommandPrompt('Why is ${l.site.replace(/'/g,"\\'")} a risk?'),80)">Ask COMMAND AI</button><button class="btn" onclick="openWOForm()">+ Work Order</button><button class="btn" onclick="locationModal('${l.id}')">Full Modal</button></div></div>
+ <div class="drawerSection"><b>Attached Work Orders</b>${wos.length?wos.map(w=>`<div class="row" onclick="woModal('${w.id}')" style="cursor:pointer"><div><b>${w.id}</b><div class="muted">Asset: ${w.asset||'Unassigned'} · ${w.trade} · ${w.status} · ${w.vendor}</div></div><div>${pill(w.priority)} ${pill(w.sla)}</div></div>`).join(''):'<p class="muted">No work orders attached.</p>'}</div>
+ <div class="drawerSection"><b>Clickable Assets → Location Work Orders</b>${assets.length?assets.map(a=>`<div class="row" onclick="openAssetLocationWorkOrders('${a.id}')" style="cursor:pointer"><div><b>${a.asset}</b><div class="muted">${a.trade} · ${a.age||'N/A'} yrs · ${money(a.spend12||0)} 12-mo spend</div></div><span class="badge">${predictedFailure(a)}%</span></div>`).join(''):'<p class="muted">No assets attached.</p>'}</div>
+ <div class="drawerSection"><b>Related Proposals</b>${props.length?props.map(p=>`<div class="row"><div><b>${p.id}</b><div class="muted">${p.scope}</div></div><b>${money(p.amount)}</b></div>`).join(''):'<p class="muted">No proposals attached.</p>'}</div>`;
+ document.getElementById('siteDrawer').style.display='flex';
+}
