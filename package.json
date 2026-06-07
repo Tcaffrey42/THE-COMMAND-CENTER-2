@@ -3,7 +3,7 @@
   "version": "2.14.0",
   "private": true,
   "scripts": {
-    "build": "mkdir -p dist && cp index.html app.js styles.css env.js env.example.js README.md vercel.json dist/"
+    "build": "mkdir -p dist && cp -R index.html styles.css app.js *.png *.jpg *.jpeg *.webp *.svg dist/ 2>/dev/null || true"
   },
   "engines": {
     "node": "20.x"

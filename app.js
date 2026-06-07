@@ -1415,4 +1415,32 @@ function openRegionMap(region){
  openModal(`<h2>${region} Region Risk Map</h2><p class="muted">Filtered view: ${sites.length} sites · ${open} open work orders · ${repeat} repeat issues · ${money(spend)} visible spend</p><div class="grid3"><div class="tile"><b>Sites</b><div class="big">${sites.length}</div></div><div class="tile"><b>Open WOs</b><div class="big">${open}</div></div><div class="tile"><b>Spend</b><div class="big">${money(spend)}</div></div></div><div class="tile"><b>Sites Ranked by Risk</b>${sites.length?sites.map(l=>`<div class="row" onclick="openSiteDrawer('${l.id}');closeModal()" style="cursor:pointer"><div><b>${l.site}</b><div class="muted">${l.trade} · ${l.open} open · ${l.repeat} repeat</div></div><div>${pill(l.risk)} <span class="badge">${riskScore(l)}</span></div></div>`).join(''):"<p class='muted'>No locations in this region match current filters.</p>"}</div>`);
 }
 
+
+// ============================
+// V2.15.4 HOT PATCH: CLICKABLE ASSETS + LOCATION WORK ORDER DRILLDOWN
+// Every asset row now opens the location work-order cockpit. From there, all work orders
+// attached to that location are clickable into the full WO modal.
+// ============================
+function openAssetLocationWorkOrders(assetId){
+ let a=db.assets.find(x=>x.id===assetId);
+ if(!a){toast("Asset not found");return;}
+ let l=db.locations.find(x=>x.id===a.location)||{id:a.location,site:a.location,region:"Unknown",fm:"Unassigned",spend:0,open:0,repeat:0,risk:"Unknown"};
+ let wos=db.workOrders.filter(w=>w.location===a.location).sort((x,y)=>(y.sla==='Breached')-(x.sla==='Breached') || (y.priority==='Emergency')-(x.priority==='Emergency') || (y.age||0)-(x.age||0));
+ let assetSpecific=wos.filter(w=>w.asset===a.id);
+ let siblingAssets=db.assets.filter(x=>x.location===a.location && x.id!==a.id);
+ let fail=predictedFailure(a);
+ openModal(`<h2>${a.asset}</h2><p class="muted">${l.site} · ${a.trade} · asset ${a.id}</p>
+ <div class="grid3"><div class="tile"><b>Asset Failure Risk</b><div class="big">${fail}%</div></div><div class="tile"><b>Location WOs</b><div class="big">${wos.length}</div></div><div class="tile"><b>Location Spend</b><div class="big">${money(l.spend||0)}</div></div></div>
+ <div class="tile"><b>Asset Snapshot</b><p class="muted">Age: ${a.age||'N/A'} years<br>Repairs: ${a.repairs||0}<br>12-month spend: ${money(a.spend12||0)}<br>Replacement estimate: ${money(a.replacement||0)}</p><button class="btn dark" onclick="openSiteDrawer('${l.id}');closeModal()">Open Location Drawer</button> <button class="btn" onclick="assetLifecycleModal('${a.id}')">Asset Lifecycle</button></div>
+ <div class="tile"><b>Work Orders Directly Attached to This Asset</b>${assetSpecific.length?assetSpecific.map(w=>`<div class="row" onclick="woModal('${w.id}')" style="cursor:pointer"><div><b>${w.id}</b><div class="muted">${w.trade} · ${w.status} · ${w.vendor}</div></div><div>${pill(w.priority)} ${pill(w.sla)}</div></div>`).join(''):"<p class='muted'>No work orders are directly tied to this asset ID yet.</p>"}</div>
+ <div class="tile"><b>All Work Orders at ${l.site}</b>${wos.length?wos.map(w=>`<div class="row" onclick="woModal('${w.id}')" style="cursor:pointer"><div><b>${w.id}</b><div class="muted">Asset: ${w.asset||'Unassigned'} · ${w.trade} · ${w.status} · ${w.vendor}</div></div><div>${pill(w.priority)} ${pill(w.sla)}</div></div>`).join(''):"<p class='muted'>No work orders attached to this location yet.</p>"}</div>
+ <div class="tile"><b>Other Assets at This Location</b>${siblingAssets.length?siblingAssets.map(x=>`<div class="row" onclick="openAssetLocationWorkOrders('${x.id}')" style="cursor:pointer"><div><b>${x.asset}</b><div class="muted">${x.trade} · ${x.age||'N/A'} yrs · ${money(x.spend12||0)} 12-mo spend</div></div><span class="badge">${predictedFailure(x)}%</span></div>`).join(''):"<p class='muted'>No other assets at this location.</p>"}</div>`);
+}
+function renderAssetHistory(x){
+ assets.innerHTML=table("Asset Lifecycle History — Click Asset for Location WOs",["Asset","Location","Trade","Age","Failure Risk","12 Mo Spend","Attached WOs","Open"],x.as.map(a=>{
+  let fail=predictedFailure(a);let wos=db.workOrders.filter(w=>w.location===a.location);let direct=wos.filter(w=>w.asset===a.id).length;
+  return `<tr onclick="openAssetLocationWorkOrders('${a.id}')" style="cursor:pointer"><td><button class="btn dark" onclick="event.stopPropagation();openAssetLocationWorkOrders('${a.id}')">${a.asset}</button></td><td>${loc(a.location).site}</td><td>${a.trade}</td><td>${a.age||'N/A'}</td><td>${pill(fail>70?"High":fail>45?"Medium":"Low")} ${fail}%</td><td><b>${money(a.spend12||0)}</b></td><td><b>${wos.length}</b> location / ${direct} direct</td><td><button class="btn" onclick="event.stopPropagation();openAssetLocationWorkOrders('${a.id}')">View WOs</button></td></tr>`
+ }).join(""));
+}
+
 init();
