@@ -25,7 +25,20 @@ proposals:[
 {id:"P-5100",client:1,location:"FG-PDX",wo:"WO-90111",trade:"Refresh",amount:885000,status:"Draft",age:1,scope:"Full restaurant refresh and reimage package."}
 ],
 assets:[
-{id:"A-RTU-1",client:0,location:"L522",asset:"RTU-1",trade:"HVAC",age:14,repairs:7,spend12:38500,replacement:56000},
+{id:"A-RTU-1",client:0,location:"L522",asset:"RTU-1",trade:"HVAC",age:14,repairs:7,spend12:38500,replacement:56000},function showAppShell() {
+  document.getElementById("authGate").style.display = "none";
+  document.getElementById("appShell").style.display = "flex";
+  document.body.classList.add("loggedIn");
+}
+
+function showLoginGate() {
+  document.getElementById("authGate").style.display = "flex";
+  document.getElementById("appShell").style.display = "none";
+  document.body.classList.remove("loggedIn");
+}
+
+window.showAppShell = showAppShell;
+window.showLoginGate = showLoginGate;
 {id:"A-PL-2",client:0,location:"L319",asset:"Main Drain Line",trade:"Plumbing",age:22,repairs:5,spend12:18800,replacement:26000},
 {id:"A-DOOR-9",client:2,location:"PC-118",asset:"Rear Security Door",trade:"Doors",age:9,repairs:4,spend12:9200,replacement:14000},
 {id:"A-LIGHT-1",client:0,location:"L101",asset:"Lobby Lighting Package",trade:"Lighting",age:8,repairs:3,spend12:4200,replacement:12000},
