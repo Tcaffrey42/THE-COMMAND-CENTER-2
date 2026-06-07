@@ -63,3 +63,35 @@ V2.14.1 hotfix: preserves root-only Vercel-safe deployment and restores/backfill
   - all work orders attached to the asset's location
   - related assets at the same location
 - Every listed work order remains clickable into the full work-order modal.
+
+
+## V2.16 Auth + User Roles
+This build adds a Supabase login gate and role-based navigation/actions.
+
+### Files added
+- `auth.js` — Supabase Auth login, logout, profile lookup, and role gate.
+- `commandcenter_auth_roles_schema.sql` — profiles table, policies, and auth trigger.
+
+### Required setup
+1. In Supabase, enable Email/Password Auth.
+2. Run `commandcenter_auth_roles_schema.sql` in Supabase SQL Editor.
+3. Create your user in Supabase Auth.
+4. Promote your user to Admin:
+   ```sql
+   update profiles set role='admin', full_name='Tim Caffrey' where email='YOUR_EMAIL_HERE';
+   ```
+5. Put your project values in `env.js`:
+   ```js
+   window.COMMANDCENTER_ENV = {
+     SUPABASE_URL: "https://YOUR-PROJECT.supabase.co",
+     SUPABASE_ANON_KEY: "YOUR-ANON-KEY"
+   };
+   ```
+
+### Supported roles
+- Admin
+- Executive
+- Facility Manager
+- Vendor
+- Technician
+- Client

@@ -241,3 +241,12 @@ table{width:100%;border-collapse:collapse;font-size:14px}th{text-align:left;colo
 .controls{align-items:flex-start}.deployBadge{display:none!important}
 .missionHero,.aihero{background:radial-gradient(circle at 20% 0%,rgba(0,168,255,.24),transparent 35%),linear-gradient(135deg,#020712,#07111f 60%,#020712)!important;border:1px solid rgba(0,168,255,.20);box-shadow:0 22px 60px rgba(0,0,0,.22),0 0 24px rgba(0,168,255,.10)}
 @media(max-width:1000px){#clientSelect,#loginUserSelect{max-width:100%;width:100%}.brandHeroLogo{max-width:260px}}
+
+
+/* V2.16 AUTH + ROLE GATE */
+body.ccAuthLocked .app{filter:blur(2px);pointer-events:none;user-select:none}
+.ccAuthOverlay{position:fixed;inset:0;z-index:9999;background:radial-gradient(circle at top left,rgba(37,99,235,.16),transparent 34%),rgba(9,9,11,.86);display:flex;align-items:center;justify-content:center;padding:22px}
+.ccAuthCard{width:min(520px,96vw);background:#fff;border-radius:30px;padding:26px;border:1px solid var(--line);box-shadow:0 34px 100px rgba(0,0,0,.42)}
+.ccAuthCard img{width:190px;max-width:72%;display:block;margin:0 auto 16px}.ccAuthCard h2{font-size:30px;margin:0 0 8px;letter-spacing:-.03em;text-align:center}.ccAuthCard p{text-align:center;color:#71717a;line-height:1.45;margin:0 0 18px}
+.ccAuthForm{display:grid;gap:10px}.ccAuthForm input{width:100%}.ccAuthError{display:none;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:16px;padding:10px 12px;font-weight:850}.ccAuthHelp{font-size:12px;color:#71717a;text-align:center;margin-top:12px}.ccUserBar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.ccRoleBadge{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:#fff;padding:8px 10px;font-size:12px;font-weight:950}.ccAccessDenied{background:#fff;border:1px solid var(--line);border-radius:24px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.045)}
+.nav button.ccHiddenByRole,.ccHiddenByRole{display:none!important}
