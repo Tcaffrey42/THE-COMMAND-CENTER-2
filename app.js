@@ -120,7 +120,12 @@ const CLOUD_TABLES={
 const STORAGE_BUCKETS=["workorder-photos","cois","contracts","proposals","invoices","project-documents"];
 let supabaseClient=null;
 let cloudReady=false;
-function hasSupabaseConfig(){return Boolean(SUPABASE_CONFIG.url&&SUPABASE_CONFIG.anonKey&&window.supabase)}
+function hasSupabaseConfig(){
+ const url=String(SUPABASE_CONFIG.url||"");
+ const key=String(SUPABASE_CONFIG.anonKey||"");
+ if(!url || !key || url.includes("YOUR_SUPABASE") || key.includes("YOUR_SUPABASE")) return false;
+ return Boolean(window.supabase);
+}
 function cloudModeLabel(){return cloudReady?"Cloud Connected":"Local Demo Mode"}
 function cloudDotClass(){return cloudReady?"live":"off"}
 async function initCloudLayer(){
@@ -205,23 +210,23 @@ function applyRoleUI(){
     el.classList.toggle("hiddenByRole",!ok);
   });
 }
-function enterDemoAdminMode(){
-  currentSession={user:{id:"demo-admin",email:"admin@commandcenter.local",user_metadata:{full_name:"CommandCenter Admin"}}};
-  currentProfile={id:"demo-admin",email:"admin@commandcenter.local",full_name:"CommandCenter Admin",role:"admin",company:"CommandCenter"};
-  cloudReady=false;
+function enterLocalDemoAuth(){
+  currentSession={user:{id:"local-demo-admin",email:"admin@commandcenter.local",user_metadata:{full_name:"CommandCenter Admin"}}};
+  currentProfile={id:"local-demo-admin",email:"admin@commandcenter.local",full_name:"CommandCenter Admin",role:"admin",company:"CommandCenter"};
   localStorage.setItem("commandCenterRole","admin");
   localStorage.setItem("commandCenterLoggedEmail","admin@commandcenter.local");
-  document.body.classList.add("authReady","loggedIn");
-  setAuthMessage("");
+  localStorage.setItem("commandCenterLoggedUser","CommandCenter Admin");
+  cloudReady=false;
+  applyRoleUI();
 }
 async function initAuthGate(){
   if(!hasSupabaseConfig()){
+    if(localStorage.getItem("ccCommandCenterDemoLogin")==="1"){
+      enterLocalDemoAuth();
+      return true;
+    }
     document.body.classList.remove("authReady");
-    const emailEl=document.getElementById("authEmail");
-    const passEl=document.getElementById("authPassword");
-    if(emailEl&&!emailEl.value) emailEl.value="admin@commandcenter.local";
-    if(passEl&&!passEl.value) passEl.value="demo";
-    setAuthMessage("Demo login ready. Click Login to enter CommandCenter.");
+    setAuthMessage("Demo login ready. Use admin@commandcenter.local / demo");
     return false;
   }
   if(!ensureSupabaseClient()) return false;
@@ -235,29 +240,21 @@ async function initAuthGate(){
   return true;
 }
 async function appSignIn(){
-  const email=(document.getElementById("authEmail")||{}).value||"admin@commandcenter.local";
-  const password=(document.getElementById("authPassword")||{}).value||"demo";
+  const email=(document.getElementById("authEmail")||{}).value;
+  const password=(document.getElementById("authPassword")||{}).value;
+  if(!email||!password){setAuthMessage("Enter email and password. Demo: admin@commandcenter.local / demo");return;}
   if(!hasSupabaseConfig()){
-    enterDemoAdminMode();
-    normalizeV24Complete();normalizeV24();normalizeV29Ops();
-    const vp=visiblePages();
-    nav.innerHTML=vp.map((p,i)=>`<button data-id="${p[0]}" onclick="setPage('${p[0]}')" class="${i==0?'active':''}">${p[1]}</button>`).join("");
-    pages.forEach((p,i)=>document.getElementById(p[0])?.classList.toggle("active",i===0&&canAccessPage(p[0])));
-    const first=vp[0]||pages[0];
-    if(first){document.getElementById(first[0])?.classList.add("active");pageTitle.textContent=first[1];pageSub.textContent=first[2];}
-    hydrateSelectors();ensureSeedDataGuard();hydrateSelectors();applyRoleUI();render();
+    setAuthMessage("Entering CommandCenter demo mode...");
+    localStorage.setItem("ccCommandCenterDemoLogin","1");
+    enterLocalDemoAuth();
+    setAuthMessage("");
+    await init();
     return;
   }
   if(!ensureSupabaseClient()) return;
-  if(!email||!password){setAuthMessage("Enter email and password.");return;}
   setAuthMessage("Signing in...");
   const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
-  if(error){
-    console.warn("Supabase login failed; using demo admin mode",error);
-    enterDemoAdminMode();
-    await appSignIn();
-    return;
-  }
+  if(error){setAuthMessage(error.message);return;}
   currentSession=data.session;
   await loadCurrentProfile();
   setAuthMessage("");
@@ -267,6 +264,7 @@ async function appSignOut(){
   if(supabaseClient) await supabaseClient.auth.signOut();
   currentSession=null;currentProfile=null;cloudReady=false;
   localStorage.removeItem("commandCenterRole");
+  localStorage.removeItem("ccCommandCenterDemoLogin");
   document.body.classList.remove("authReady");
   setAuthMessage("Signed out.");
 }
@@ -1576,4 +1574,62 @@ function renderAssetHistory(x){
 
 init();
 
-// Demo-login patch active above.
+
+/* COMMANDCENTER LOGIN SCREEN PATCH - Butch Fix
+   Keeps the Supabase login gate and app shell switching cleanly after sign in/out.
+   Also exposes button handlers for inline onclick attributes after Vercel deploy.
+*/
+(function commandCenterLoginScreenPatch(){
+  function showAppShell(){
+    var authGate=document.getElementById("authGate");
+    var appShell=document.getElementById("appShell");
+    if(authGate) authGate.style.display="none";
+    if(appShell) appShell.style.display="grid";
+    document.body.classList.add("authReady","loggedIn");
+  }
+
+  function showLoginGate(){
+    var authGate=document.getElementById("authGate");
+    var appShell=document.getElementById("appShell");
+    if(authGate) authGate.style.display="grid";
+    if(appShell) appShell.style.display="none";
+    document.body.classList.remove("authReady","loggedIn");
+  }
+
+  window.showAppShell=showAppShell;
+  window.showLoginGate=showLoginGate;
+
+  // Expose existing app functions used by index.html inline onclick/onchange handlers.
+  [
+    "appSignIn","appSignOut","setClient","setLoginUser","render","openWOForm",
+    "openProposalForm","exportData","closeModal","setPage","openModal","openSiteDrawer"
+  ].forEach(function(name){
+    try{
+      if(typeof window[name]==="undefined" && typeof eval(name)==="function"){
+        window[name]=eval(name);
+      }
+    }catch(e){}
+  });
+
+  // Wrap auth functions after they are defined.
+  if(typeof window.appSignIn==="function"){
+    var originalSignIn=window.appSignIn;
+    window.appSignIn=async function(){
+      await originalSignIn.apply(this,arguments);
+      if(document.body.classList.contains("authReady")) showAppShell();
+    };
+  }
+
+  if(typeof window.appSignOut==="function"){
+    var originalSignOut=window.appSignOut;
+    window.appSignOut=async function(){
+      await originalSignOut.apply(this,arguments);
+      showLoginGate();
+    };
+  }
+
+  window.addEventListener("load",function(){
+    if(document.body.classList.contains("authReady")) showAppShell();
+    else showLoginGate();
+  });
+})();
