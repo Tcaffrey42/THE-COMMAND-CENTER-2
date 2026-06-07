@@ -25,10 +25,10 @@
     <img class="authLogo" src="./cc-commandcenter-stacked.png" alt="CC CommandCenter">
     <div class="kicker">Secure Login</div>
     <h1>CommandCenter</h1>
-    <p>Sign in with your Supabase user account. Your role controls what you can see and do.</p>
+    <p>Demo login is ready. Use admin@commandcenter.local / demo. Supabase can be added later.</p>
     <input id="authEmail" type="email" placeholder="Email" autocomplete="email" value="admin@commandcenter.local">
     <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password" value="demo">
-    <button id="authLoginBtn" class="btn dark authBtn" type="button" onclick="appSignIn()">Login</button>
+    <button class="btn dark authBtn" onclick="appSignIn()">Login</button>
     <div id="authMessage" class="authMessage"></div>
     <div class="authHint">Roles supported: Admin, Executive, Facility Manager, Vendor, Technician, Client.</div>
   </div>
@@ -80,7 +80,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./env.js"></script>
 <script src="./app.js"></script>
-<script>document.addEventListener("DOMContentLoaded",function(){var b=document.getElementById("authLoginBtn");if(b)b.addEventListener("click",function(){if(typeof appSignIn==="function")appSignIn();});document.addEventListener("keydown",function(e){if(e.key==="Enter"&&!document.body.classList.contains("authReady")){if(typeof appSignIn==="function")appSignIn();}});});</script>
 <script>window.addEventListener("load",()=>setTimeout(()=>document.body.classList.add("ccLoaded"),650)); setTimeout(()=>document.body.classList.add("ccLoaded"),2200);</script>
 </body>
 </html>

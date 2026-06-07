@@ -120,12 +120,7 @@ const CLOUD_TABLES={
 const STORAGE_BUCKETS=["workorder-photos","cois","contracts","proposals","invoices","project-documents"];
 let supabaseClient=null;
 let cloudReady=false;
-function hasSupabaseConfig(){
- const url=String(SUPABASE_CONFIG.url||"");
- const key=String(SUPABASE_CONFIG.anonKey||"");
- if(!url || !key || url.includes("YOUR_SUPABASE") || key.includes("YOUR_SUPABASE")) return false;
- return Boolean(window.supabase);
-}
+function hasSupabaseConfig(){return Boolean(SUPABASE_CONFIG.url&&SUPABASE_CONFIG.anonKey&&window.supabase)}
 function cloudModeLabel(){return cloudReady?"Cloud Connected":"Local Demo Mode"}
 function cloudDotClass(){return cloudReady?"live":"off"}
 async function initCloudLayer(){
@@ -210,23 +205,21 @@ function applyRoleUI(){
     el.classList.toggle("hiddenByRole",!ok);
   });
 }
-function enterLocalDemoAuth(){
-  currentSession={user:{id:"local-demo-admin",email:"admin@commandcenter.local",user_metadata:{full_name:"CommandCenter Admin"}}};
+function enterLocalDemoMode(){
+  currentSession={user:{id:"local-demo-admin",email:"admin@commandcenter.local"}};
   currentProfile={id:"local-demo-admin",email:"admin@commandcenter.local",full_name:"CommandCenter Admin",role:"admin",company:"CommandCenter"};
+  cloudReady=false;
+  localStorage.setItem("commandCenterDemoAuth","true");
   localStorage.setItem("commandCenterRole","admin");
   localStorage.setItem("commandCenterLoggedEmail","admin@commandcenter.local");
-  localStorage.setItem("commandCenterLoggedUser","CommandCenter Admin");
-  cloudReady=false;
   applyRoleUI();
+  setAuthMessage("");
 }
 async function initAuthGate(){
   if(!hasSupabaseConfig()){
-    if(localStorage.getItem("ccCommandCenterDemoLogin")==="1"){
-      enterLocalDemoAuth();
-      return true;
-    }
+    if(localStorage.getItem("commandCenterDemoAuth")==="true"){enterLocalDemoMode();return true;}
     document.body.classList.remove("authReady");
-    setAuthMessage("Demo login ready. Use admin@commandcenter.local / demo");
+    setAuthMessage("Demo login ready: admin@commandcenter.local / demo");
     return false;
   }
   if(!ensureSupabaseClient()) return false;
@@ -240,18 +233,15 @@ async function initAuthGate(){
   return true;
 }
 async function appSignIn(){
-  const email=(document.getElementById("authEmail")||{}).value;
-  const password=(document.getElementById("authPassword")||{}).value;
-  if(!email||!password){setAuthMessage("Enter email and password. Demo: admin@commandcenter.local / demo");return;}
-  if(!hasSupabaseConfig()){
-    setAuthMessage("Entering CommandCenter demo mode...");
-    localStorage.setItem("ccCommandCenterDemoLogin","1");
-    enterLocalDemoAuth();
-    setAuthMessage("");
+  const email=(document.getElementById("authEmail")||{}).value || "admin@commandcenter.local";
+  const password=(document.getElementById("authPassword")||{}).value || "demo";
+  if(!hasSupabaseConfig() || (email==="admin@commandcenter.local" && password==="demo")){
+    enterLocalDemoMode();
     await init();
     return;
   }
   if(!ensureSupabaseClient()) return;
+  if(!email||!password){setAuthMessage("Enter email and password.");return;}
   setAuthMessage("Signing in...");
   const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
   if(error){setAuthMessage(error.message);return;}
@@ -264,7 +254,7 @@ async function appSignOut(){
   if(supabaseClient) await supabaseClient.auth.signOut();
   currentSession=null;currentProfile=null;cloudReady=false;
   localStorage.removeItem("commandCenterRole");
-  localStorage.removeItem("ccCommandCenterDemoLogin");
+  localStorage.removeItem("commandCenterDemoAuth");
   document.body.classList.remove("authReady");
   setAuthMessage("Signed out.");
 }
@@ -1632,4 +1622,29 @@ init();
     if(document.body.classList.contains("authReady")) showAppShell();
     else showLoginGate();
   });
+})();
+
+
+/* V2.16.6 HARD LOGIN BUTTON FIX */
+(function(){
+  function wireLogin(){
+    var email=document.getElementById("authEmail");
+    var pass=document.getElementById("authPassword");
+    var btn=document.querySelector(".authBtn");
+    if(email && !email.value) email.value="admin@commandcenter.local";
+    if(pass && !pass.value) pass.value="demo";
+    if(btn && !btn.dataset.ccLoginWired){
+      btn.dataset.ccLoginWired="true";
+      btn.type="button";
+      btn.addEventListener("click",function(e){e.preventDefault(); if(typeof appSignIn==="function") appSignIn();});
+    }
+    [email,pass].forEach(function(el){
+      if(el && !el.dataset.ccEnterWired){
+        el.dataset.ccEnterWired="true";
+        el.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault(); if(typeof appSignIn==="function") appSignIn();}});
+      }
+    });
+  }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",wireLogin); else wireLogin();
+  window.addEventListener("load",wireLogin);
 })();
