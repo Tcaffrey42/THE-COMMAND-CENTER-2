@@ -25,7 +25,8 @@ proposals:[
 {id:"P-5100",client:1,location:"FG-PDX",wo:"WO-90111",trade:"Refresh",amount:885000,status:"Draft",age:1,scope:"Full restaurant refresh and reimage package."}
 ],
 assets:[
-{id:"A-RTU-1",client:0,location:"L522",asset:"RTU-1",trade:"HVAC",age:14,repairs:7,spend12:38500,replacement:56000},{id:"A-PL-2",client:0,location:"L319",asset:"Main Drain Line",trade:"Plumbing",age:22,repairs:5,spend12:18800,replacement:26000},
+{id:"A-RTU-1",client:0,location:"L522",asset:"RTU-1",trade:"HVAC",age:14,repairs:7,spend12:38500,replacement:56000},
+{id:"A-PL-2",client:0,location:"L319",asset:"Main Drain Line",trade:"Plumbing",age:22,repairs:5,spend12:18800,replacement:26000},
 {id:"A-DOOR-9",client:2,location:"PC-118",asset:"Rear Security Door",trade:"Doors",age:9,repairs:4,spend12:9200,replacement:14000},
 {id:"A-LIGHT-1",client:0,location:"L101",asset:"Lobby Lighting Package",trade:"Lighting",age:8,repairs:3,spend12:4200,replacement:12000},
 {id:"A-BAR-1",client:1,location:"FG-PDX",asset:"Bar Millwork / Host Stand",trade:"Millwork",age:18,repairs:1,spend12:126000,replacement:185000}
@@ -120,13 +121,7 @@ const CLOUD_TABLES={
 const STORAGE_BUCKETS=["workorder-photos","cois","contracts","proposals","invoices","project-documents"];
 let supabaseClient=null;
 let cloudReady=false;
-function hasSupabaseConfig(){
-  const url=String(SUPABASE_CONFIG.url||"").trim();
-  const key=String(SUPABASE_CONFIG.anonKey||"").trim();
-  const validUrl=/^https:\/\/[^\s]+\.supabase\.co\/?$/.test(url);
-  const validKey=key.length>40 && !/^YOUR_|PASTE_|REPLACE_/i.test(key);
-  return Boolean(validUrl && validKey && window.supabase);
-}
+function hasSupabaseConfig(){return Boolean(SUPABASE_CONFIG.url&&SUPABASE_CONFIG.anonKey&&window.supabase)}
 function cloudModeLabel(){return cloudReady?"Cloud Connected":"Local Demo Mode"}
 function cloudDotClass(){return cloudReady?"live":"off"}
 async function initCloudLayer(){
@@ -183,17 +178,9 @@ function hasPermission(key){return (ROLE_PERMISSIONS[activeRole()]||[]).includes
 function visiblePages(){return pages.filter(p=>canAccessPage(p[0]))}
 function setAuthMessage(msg){let el=document.getElementById("authMessage"); if(el) el.textContent=msg||"";}
 function ensureSupabaseClient(){
-  if(!hasSupabaseConfig()){setAuthMessage("Preview-safe demo login ready: admin@commandcenter.local / demo"); return false;}
-  try{
-    if(!supabaseClient) supabaseClient=window.supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey);
-    return true;
-  }catch(e){
-    console.warn("Supabase client setup failed; staying in local demo mode",e);
-    supabaseClient=null;
-    cloudReady=false;
-    setAuthMessage("Supabase config invalid. Demo login still works: admin@commandcenter.local / demo");
-    return false;
-  }
+  if(!hasSupabaseConfig()){setAuthMessage("Add your Supabase URL and anon key in env.js first."); return false;}
+  if(!supabaseClient) supabaseClient=window.supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey);
+  return true;
 }
 async function loadCurrentProfile(){
   if(!supabaseClient||!currentSession?.user) return null;
@@ -219,23 +206,7 @@ function applyRoleUI(){
     el.classList.toggle("hiddenByRole",!ok);
   });
 }
-function enterLocalDemoMode(){
-  currentSession={user:{id:"local-demo-admin",email:"admin@commandcenter.local"}};
-  currentProfile={id:"local-demo-admin",email:"admin@commandcenter.local",full_name:"CommandCenter Admin",role:"admin",company:"CommandCenter"};
-  cloudReady=false;
-  localStorage.setItem("commandCenterDemoAuth","true");
-  localStorage.setItem("commandCenterRole","admin");
-  localStorage.setItem("commandCenterLoggedEmail","admin@commandcenter.local");
-  applyRoleUI();
-  setAuthMessage("");
-}
 async function initAuthGate(){
-  if(!hasSupabaseConfig()){
-    if(localStorage.getItem("commandCenterDemoAuth")==="true"){enterLocalDemoMode();return true;}
-    document.body.classList.remove("authReady");
-    setAuthMessage("Demo login ready: admin@commandcenter.local / demo");
-    return false;
-  }
   if(!ensureSupabaseClient()) return false;
   const {data,error}=await supabaseClient.auth.getSession();
   if(error){setAuthMessage(error.message);return false;}
@@ -247,14 +218,9 @@ async function initAuthGate(){
   return true;
 }
 async function appSignIn(){
-  const email=(document.getElementById("authEmail")||{}).value || "admin@commandcenter.local";
-  const password=(document.getElementById("authPassword")||{}).value || "demo";
-  if(!hasSupabaseConfig() || (email==="admin@commandcenter.local" && password==="demo")){
-    enterLocalDemoMode();
-    await init();
-    return;
-  }
   if(!ensureSupabaseClient()) return;
+  const email=(document.getElementById("authEmail")||{}).value;
+  const password=(document.getElementById("authPassword")||{}).value;
   if(!email||!password){setAuthMessage("Enter email and password.");return;}
   setAuthMessage("Signing in...");
   const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
@@ -268,7 +234,6 @@ async function appSignOut(){
   if(supabaseClient) await supabaseClient.auth.signOut();
   currentSession=null;currentProfile=null;cloudReady=false;
   localStorage.removeItem("commandCenterRole");
-  localStorage.removeItem("commandCenterDemoAuth");
   document.body.classList.remove("authReady");
   setAuthMessage("Signed out.");
 }
@@ -1282,15 +1247,8 @@ function renderAssetHistory(x){
 }
 function vendorModal(name){let v=db.vendors.find(x=>x.name===name);if(!v)return;openModal(`<h2>${v.name}</h2><p class="muted">${v.trades} · ${v.regions}</p><div class="grid3"><div class="tile"><b>Score</b><div class="big">${v.score}</div></div><div class="tile"><b>SLA</b><div class="big">${v.sla}%</div></div><div class="tile"><b>Response</b><div class="big">${v.response}h</div></div></div><div class="tile"><b>Recommendation</b><p>${v.score<70?"Pressure vendor, limit routing, and source backup coverage.":v.score<82?"Keep approved but monitor SLA/response trends.":"Preferred vendor candidate for expanded routing."}</p></div>`)}
 function renderVendorCards(){vendors.innerHTML=table("Vendor Scorecards",["Vendor","Trades","Regions","Score","Avg Response","SLA","Insurance","Status"],db.vendors.map(v=>`<tr onclick="vendorModal('${v.name}')" style="cursor:pointer"><td><b>${v.name}</b></td><td>${v.trades}</td><td>${v.regions}</td><td><b>${v.score}</b></td><td>${v.response} hrs</td><td>${v.sla}%</td><td>${pill(v.insurance)}</td><td>${pill(v.status)}</td></tr>`).join(""))}
-function ccAiAnswer(q){let x=ai(),f=forecast(x),lower=(q||"").toLowerCase();let urgent=[...x.wo].filter(w=>w.status!="Closed").sort((a,b)=>{let ar=(a.sla=="Breached"?0:a.sla=="At Risk"?1:2),br=(b.sla=="Breached"?0:b.sla=="At Risk"?1:2);return ar-br||({Emergency:0,High:1,Medium:2,Low:3}[a.priority]||9)-({Emergency:0,High:1,Medium:2,Low:3}[b.priority]||9)}).slice(0,5);let ans="CommandCenter snapshot: "+x.wo.length+" open/visible work orders, "+x.at.length+" SLA-sensitive items, "+x.repl.length+" assets in replace review, and "+money(x.pending)+" in pending proposal dollars. Next move: clear breached/at-risk work orders first, then push aged proposals and replacement decisions.";
-if(lower.includes("urgent")||lower.includes("priority")||lower.includes("sla")||lower.includes("risk")){ans="Highest priority work orders:\n"+(urgent.map((w,i)=>`${i+1}. ${w.title||w.trade||"Work order"} — ${w.priority||"Priority N/A"}, SLA: ${w.sla||"N/A"}, Location: ${loc(w.location)?.site||w.location||"N/A"}, Vendor: ${vendor(w.vendor)?.name||w.vendor||"Unassigned"}`).join("\n")||"No urgent work orders found.")+"\n\nRecommended action: escalate breached items, confirm vendor ETA, and send client-facing updates on anything at-risk today.";}
-if(lower.includes("vendor")){let ranked=[...db.vendors].sort((a,b)=>(a.score||0)-(b.score||0));ans="Vendor watch list:\n"+ranked.slice(0,5).map((v,i)=>`${i+1}. ${v.name} — score ${v.score||"N/A"}, SLA ${v.sla||"N/A"}, avg response ${v.response||"N/A"}`).join("\n")+"\n\nRecommended action: use backup coverage for low-score vendors on emergency/high-priority tickets until response time improves.";}
-if(lower.includes("capex")||lower.includes("replace")||lower.includes("asset")){ans="CAPEX / replace-review candidates:\n"+(x.repl.map((a,i)=>`${i+1}. ${a.asset||a.name||"Asset"} at ${loc(a.location)?.site||a.location||"N/A"} — est. exposure ${money(a.replaceCost||a.cost||0)}`).join("\n")||"No current CAPEX candidates in the visible data.")+"\n\nReplacement exposure: "+money(f.capex)+". Recommended action: compare repair history against replacement cost before approving another major repair.";}
-if(lower.includes("budget")||lower.includes("spend")||lower.includes("cost")){ans="Budget view: visible spend is "+money(x.spend)+" against "+money(c().budget)+". Annualized run-rate projection is "+money(f.runRate)+". Pending proposal exposure is "+money(x.pending)+". Recommended action: separate emergency spend from controllable PM/project spend so leadership sees what is preventable.";}
-if(lower.includes("client update")||lower.includes("draft")||lower.includes("message")){ans="Draft client update:\n\nTeam, quick update from CommandCenter: we are actively tracking the highest-risk open work orders, with priority on breached or at-risk SLA items. Vendor follow-up is underway, and any work requiring approval or replacement review is being separated from routine repair activity so next steps are clear. I will keep you posted as each item moves from dispatch to completion.";}
-return ans}
-function askCopilot(){let q=(document.getElementById("copilotQ")||{}).value||"";let ans=ccAiAnswer(q);document.getElementById("copilotAnswer").innerHTML=`<div class="bubble"><b>You:</b> ${ccEscape(q||"Portfolio summary")}</div><div class="bubble ai"><b>AI Copilot:</b><div class="muted">${ccEscape(ans).replace(/\n/g,"<br>")}</div></div>`}
-function renderCopilot(x){copilot.innerHTML=`<div class="grid2"><div class="card"><h3>AI Facilities Copilot</h3><p class="muted">Safe static AI mode: answers from the current CommandCenter portfolio data without crashing deployment.</p><input id="copilotQ" style="width:100%" placeholder="Ask: urgent work orders, vendors, CAPEX, budget risk, client update" onkeydown="if(event.key==='Enter')askCopilot()"/><br><br><button class="btn dark" onclick="askCopilot()">Ask Copilot</button><div id="copilotAnswer" class="chat" style="margin-top:14px"><div class="bubble ai"><b>AI Copilot:</b><div class="muted">Ready. Ask me what is urgent, which vendors are weak, where budget risk sits, or what needs CAPEX review.</div></div></div></div><div class="card"><h3>Suggested Prompts</h3><div class="row" onclick="document.getElementById('copilotQ').value='Which work orders are most urgent and why?';askCopilot()" style="cursor:pointer">Which work orders are most urgent and why?</div><div class="row" onclick="document.getElementById('copilotQ').value='Which vendors are hurting SLA performance?';askCopilot()" style="cursor:pointer">Which vendors are hurting SLA performance?</div><div class="row" onclick="document.getElementById('copilotQ').value='Draft a client update for breached SLA work orders.';askCopilot()" style="cursor:pointer">Draft a client update for breached SLA work orders.</div><div class="row" onclick="document.getElementById('copilotQ').value='What should go to CAPEX review?';askCopilot()" style="cursor:pointer">What should go to CAPEX review?</div><div class="row" onclick="document.getElementById('copilotQ').value='Where is budget risk?';askCopilot()" style="cursor:pointer">Where is budget risk?</div></div></div>`}
+function askCopilot(){let q=(document.getElementById("copilotQ")||{}).value||"";let x=ai(),f=forecast(x),lower=q.toLowerCase();let ans="CommandCenter sees "+x.at.length+" SLA-sensitive work orders, "+x.repl.length+" replace-review assets, and "+money(x.pending)+" in proposal dollars requiring movement.";if(lower.includes("vendor"))ans="Weakest vendor is "+[...db.vendors].sort((a,b)=>a.score-b.score)[0].name+". Review response time, SLA %, and backup coverage.";if(lower.includes("capex")||lower.includes("replace"))ans="CAPEX candidates: "+(x.repl.map(a=>a.asset+" at "+loc(a.location).site).join(", ")||"none currently")+". Replacement exposure: "+money(f.capex)+".";if(lower.includes("budget")||lower.includes("spend"))ans="Visible spend is "+money(x.spend)+" against "+money(c().budget)+". Annualized run-rate projection is "+money(f.runRate)+".";document.getElementById("copilotAnswer").innerHTML=`<div class="bubble"><b>You:</b> ${q||"Portfolio summary"}</div><div class="bubble ai"><b>AI Copilot:</b><div class="muted">${ans}</div></div>`}
+function renderCopilot(x){copilot.innerHTML=`<div class="grid2"><div class="card"><h3>AI Facilities Copilot</h3><input id="copilotQ" style="width:100%" placeholder="Ask about spend, vendors, CAPEX, SLA, assets, or risk"/><br><br><button class="btn dark" onclick="askCopilot()">Ask Copilot</button><div id="copilotAnswer" class="chat" style="margin-top:14px"><div class="bubble ai"><b>AI Copilot:</b><div class="muted">Ready.</div></div></div></div><div class="card"><h3>Suggested Prompts</h3><div class="row" onclick="document.getElementById('copilotQ').value='Which vendors are hurting SLA performance?';askCopilot()" style="cursor:pointer">Which vendors are hurting SLA performance?</div><div class="row" onclick="document.getElementById('copilotQ').value='What should go to CAPEX review?';askCopilot()" style="cursor:pointer">What should go to CAPEX review?</div><div class="row" onclick="document.getElementById('copilotQ').value='Where is budget risk?';askCopilot()" style="cursor:pointer">Where is budget risk?</div></div></div>`}
 function renderExecutive(x){let f=forecast(x);executive.innerHTML=`<div class="grid2"><div class="card"><h3>Executive Action Center</h3><div class="aihero"><div class="kicker">Monday Morning Brief</div><h1>${x.health}/100 Portfolio Health</h1><p>${x.at.length} SLA fires, ${x.repl.length} asset replacement reviews, ${money(x.pending)} pending proposals, and estimated savings opportunity of ${money(f.savings)}.</p></div></div><div class="card"><h3>Top Actions</h3><div class="row"><b>Approve aging proposals</b><span>${money(x.pending)}</span></div><div class="row"><b>Escalate SLA risks</b><span>${x.at.length}</span></div><div class="row"><b>Launch CAPEX review</b><span>${x.repl.length} assets</span></div></div></div>`}
 function renderCFO(x){let f=forecast(x),pct=Math.round((x.spend/c().budget)*100);cfo.innerHTML=`<div class="grid2"><div class="card"><h3>CFO Dashboard</h3><div class="row"><b>Annual Budget</b><span>${money(c().budget)}</span></div><div class="row"><b>Visible Spend</b><span>${money(x.spend)}</span></div><div class="row"><b>Budget Used</b><span>${pct}%</span></div><div class="row"><b>Annualized Run Rate</b><span>${money(f.runRate)}</span></div><div class="row"><b>Forecast Variance</b><span>${money(f.variance)}</span></div></div><div class="card"><h3>Capital Planning</h3><div class="row"><b>Replacement Exposure</b><span>${money(f.capex)}</span></div><div class="row"><b>Potential Savings</b><span>${money(f.savings)}</span></div><div class="row"><b>Budget Signal</b><span>${pill(f.variance>0?"Overrun Risk":"Stable")}</span></div></div></div>`}
 function renderApprovals(){
@@ -1462,15 +1420,8 @@ function renderAssetHistory(x){
 }
 function vendorModal(name){let v=db.vendors.find(x=>x.name===name);if(!v)return;openModal(`<h2>${v.name}</h2><p class="muted">${v.trades} · ${v.regions}</p><div class="grid3"><div class="tile"><b>Score</b><div class="big">${v.score}</div></div><div class="tile"><b>SLA</b><div class="big">${v.sla}%</div></div><div class="tile"><b>Response</b><div class="big">${v.response}h</div></div></div><div class="tile"><b>Recommendation</b><p>${v.score<70?"Pressure vendor, limit routing, and source backup coverage.":v.score<82?"Keep approved but monitor SLA/response trends.":"Preferred vendor candidate for expanded routing."}</p></div>`)}
 function renderVendorCards(){vendors.innerHTML=table("Vendor Scorecards",["Vendor","Trades","Regions","Score","Avg Response","SLA","Insurance","Status"],db.vendors.map(v=>`<tr onclick="vendorModal('${v.name}')" style="cursor:pointer"><td><b>${v.name}</b></td><td>${v.trades}</td><td>${v.regions}</td><td><b>${v.score}</b></td><td>${v.response} hrs</td><td>${v.sla}%</td><td>${pill(v.insurance)}</td><td>${pill(v.status)}</td></tr>`).join(""))}
-function ccAiAnswer(q){let x=ai(),f=forecast(x),lower=(q||"").toLowerCase();let urgent=[...x.wo].filter(w=>w.status!="Closed").sort((a,b)=>{let ar=(a.sla=="Breached"?0:a.sla=="At Risk"?1:2),br=(b.sla=="Breached"?0:b.sla=="At Risk"?1:2);return ar-br||({Emergency:0,High:1,Medium:2,Low:3}[a.priority]||9)-({Emergency:0,High:1,Medium:2,Low:3}[b.priority]||9)}).slice(0,5);let ans="CommandCenter snapshot: "+x.wo.length+" open/visible work orders, "+x.at.length+" SLA-sensitive items, "+x.repl.length+" assets in replace review, and "+money(x.pending)+" in pending proposal dollars. Next move: clear breached/at-risk work orders first, then push aged proposals and replacement decisions.";
-if(lower.includes("urgent")||lower.includes("priority")||lower.includes("sla")||lower.includes("risk")){ans="Highest priority work orders:\n"+(urgent.map((w,i)=>`${i+1}. ${w.title||w.trade||"Work order"} — ${w.priority||"Priority N/A"}, SLA: ${w.sla||"N/A"}, Location: ${loc(w.location)?.site||w.location||"N/A"}, Vendor: ${vendor(w.vendor)?.name||w.vendor||"Unassigned"}`).join("\n")||"No urgent work orders found.")+"\n\nRecommended action: escalate breached items, confirm vendor ETA, and send client-facing updates on anything at-risk today.";}
-if(lower.includes("vendor")){let ranked=[...db.vendors].sort((a,b)=>(a.score||0)-(b.score||0));ans="Vendor watch list:\n"+ranked.slice(0,5).map((v,i)=>`${i+1}. ${v.name} — score ${v.score||"N/A"}, SLA ${v.sla||"N/A"}, avg response ${v.response||"N/A"}`).join("\n")+"\n\nRecommended action: use backup coverage for low-score vendors on emergency/high-priority tickets until response time improves.";}
-if(lower.includes("capex")||lower.includes("replace")||lower.includes("asset")){ans="CAPEX / replace-review candidates:\n"+(x.repl.map((a,i)=>`${i+1}. ${a.asset||a.name||"Asset"} at ${loc(a.location)?.site||a.location||"N/A"} — est. exposure ${money(a.replaceCost||a.cost||0)}`).join("\n")||"No current CAPEX candidates in the visible data.")+"\n\nReplacement exposure: "+money(f.capex)+". Recommended action: compare repair history against replacement cost before approving another major repair.";}
-if(lower.includes("budget")||lower.includes("spend")||lower.includes("cost")){ans="Budget view: visible spend is "+money(x.spend)+" against "+money(c().budget)+". Annualized run-rate projection is "+money(f.runRate)+". Pending proposal exposure is "+money(x.pending)+". Recommended action: separate emergency spend from controllable PM/project spend so leadership sees what is preventable.";}
-if(lower.includes("client update")||lower.includes("draft")||lower.includes("message")){ans="Draft client update:\n\nTeam, quick update from CommandCenter: we are actively tracking the highest-risk open work orders, with priority on breached or at-risk SLA items. Vendor follow-up is underway, and any work requiring approval or replacement review is being separated from routine repair activity so next steps are clear. I will keep you posted as each item moves from dispatch to completion.";}
-return ans}
-function askCopilot(){let q=(document.getElementById("copilotQ")||{}).value||"";let ans=ccAiAnswer(q);document.getElementById("copilotAnswer").innerHTML=`<div class="bubble"><b>You:</b> ${ccEscape(q||"Portfolio summary")}</div><div class="bubble ai"><b>AI Copilot:</b><div class="muted">${ccEscape(ans).replace(/\n/g,"<br>")}</div></div>`}
-function renderCopilot(x){copilot.innerHTML=`<div class="grid2"><div class="card"><h3>AI Facilities Copilot</h3><p class="muted">Safe static AI mode: answers from the current CommandCenter portfolio data without crashing deployment.</p><input id="copilotQ" style="width:100%" placeholder="Ask: urgent work orders, vendors, CAPEX, budget risk, client update" onkeydown="if(event.key==='Enter')askCopilot()"/><br><br><button class="btn dark" onclick="askCopilot()">Ask Copilot</button><div id="copilotAnswer" class="chat" style="margin-top:14px"><div class="bubble ai"><b>AI Copilot:</b><div class="muted">Ready. Ask me what is urgent, which vendors are weak, where budget risk sits, or what needs CAPEX review.</div></div></div></div><div class="card"><h3>Suggested Prompts</h3><div class="row" onclick="document.getElementById('copilotQ').value='Which work orders are most urgent and why?';askCopilot()" style="cursor:pointer">Which work orders are most urgent and why?</div><div class="row" onclick="document.getElementById('copilotQ').value='Which vendors are hurting SLA performance?';askCopilot()" style="cursor:pointer">Which vendors are hurting SLA performance?</div><div class="row" onclick="document.getElementById('copilotQ').value='Draft a client update for breached SLA work orders.';askCopilot()" style="cursor:pointer">Draft a client update for breached SLA work orders.</div><div class="row" onclick="document.getElementById('copilotQ').value='What should go to CAPEX review?';askCopilot()" style="cursor:pointer">What should go to CAPEX review?</div><div class="row" onclick="document.getElementById('copilotQ').value='Where is budget risk?';askCopilot()" style="cursor:pointer">Where is budget risk?</div></div></div>`}
+function askCopilot(){let q=(document.getElementById("copilotQ")||{}).value||"";let x=ai(),f=forecast(x),lower=q.toLowerCase();let ans="CommandCenter sees "+x.at.length+" SLA-sensitive work orders, "+x.repl.length+" replace-review assets, and "+money(x.pending)+" in proposal dollars requiring movement.";if(lower.includes("vendor"))ans="Weakest vendor is "+[...db.vendors].sort((a,b)=>a.score-b.score)[0].name+". Review response time, SLA %, and backup coverage.";if(lower.includes("capex")||lower.includes("replace"))ans="CAPEX candidates: "+(x.repl.map(a=>a.asset+" at "+loc(a.location).site).join(", ")||"none currently")+". Replacement exposure: "+money(f.capex)+".";if(lower.includes("budget")||lower.includes("spend"))ans="Visible spend is "+money(x.spend)+" against "+money(c().budget)+". Annualized run-rate projection is "+money(f.runRate)+".";document.getElementById("copilotAnswer").innerHTML=`<div class="bubble"><b>You:</b> ${q||"Portfolio summary"}</div><div class="bubble ai"><b>AI Copilot:</b><div class="muted">${ans}</div></div>`}
+function renderCopilot(x){copilot.innerHTML=`<div class="grid2"><div class="card"><h3>AI Facilities Copilot</h3><input id="copilotQ" style="width:100%" placeholder="Ask about spend, vendors, CAPEX, SLA, assets, or risk"/><br><br><button class="btn dark" onclick="askCopilot()">Ask Copilot</button><div id="copilotAnswer" class="chat" style="margin-top:14px"><div class="bubble ai"><b>AI Copilot:</b><div class="muted">Ready.</div></div></div></div><div class="card"><h3>Suggested Prompts</h3><div class="row" onclick="document.getElementById('copilotQ').value='Which vendors are hurting SLA performance?';askCopilot()" style="cursor:pointer">Which vendors are hurting SLA performance?</div><div class="row" onclick="document.getElementById('copilotQ').value='What should go to CAPEX review?';askCopilot()" style="cursor:pointer">What should go to CAPEX review?</div><div class="row" onclick="document.getElementById('copilotQ').value='Where is budget risk?';askCopilot()" style="cursor:pointer">Where is budget risk?</div></div></div>`}
 function renderExecutive(x){let f=forecast(x);executive.innerHTML=`<div class="grid2"><div class="card"><h3>Executive Action Center</h3><div class="aihero"><div class="kicker">Monday Morning Brief</div><h1>${x.health}/100 Portfolio Health</h1><p>${x.at.length} SLA fires, ${x.repl.length} asset replacement reviews, ${money(x.pending)} pending proposals, and estimated savings opportunity of ${money(f.savings)}.</p></div></div><div class="card"><h3>Top Actions</h3><div class="row"><b>Approve aging proposals</b><span>${money(x.pending)}</span></div><div class="row"><b>Escalate SLA risks</b><span>${x.at.length}</span></div><div class="row"><b>Launch CAPEX review</b><span>${x.repl.length} assets</span></div></div></div>`}
 function renderCFO(x){let f=forecast(x),pct=Math.round((x.spend/c().budget)*100);cfo.innerHTML=`<div class="grid2"><div class="card"><h3>CFO Dashboard</h3><div class="row"><b>Annual Budget</b><span>${money(c().budget)}</span></div><div class="row"><b>Visible Spend</b><span>${money(x.spend)}</span></div><div class="row"><b>Budget Used</b><span>${pct}%</span></div><div class="row"><b>Annualized Run Rate</b><span>${money(f.runRate)}</span></div><div class="row"><b>Forecast Variance</b><span>${money(f.variance)}</span></div></div><div class="card"><h3>Capital Planning</h3><div class="row"><b>Replacement Exposure</b><span>${money(f.capex)}</span></div><div class="row"><b>Potential Savings</b><span>${money(f.savings)}</span></div><div class="row"><b>Budget Signal</b><span>${pill(f.variance>0?"Overrun Risk":"Stable")}</span></div></div></div>`}
 function renderApprovals(){
@@ -1591,208 +1542,3 @@ function renderAssetHistory(x){
 }
 
 init();
-
-
-/* COMMANDCENTER LOGIN SCREEN PATCH - Butch Fix
-   Keeps the Supabase login gate and app shell switching cleanly after sign in/out.
-   Also exposes button handlers for inline onclick attributes after Vercel deploy.
-*/
-(function commandCenterLoginScreenPatch(){
-  function showAppShell(){
-    var authGate=document.getElementById("authGate");
-    var appShell=document.getElementById("appShell");
-    if(authGate) authGate.style.display="none";
-    if(appShell) appShell.style.display="grid";
-    document.body.classList.add("authReady","loggedIn");
-  }
-
-  function showLoginGate(){
-    var authGate=document.getElementById("authGate");
-    var appShell=document.getElementById("appShell");
-    if(authGate) authGate.style.display="grid";
-    if(appShell) appShell.style.display="none";
-    document.body.classList.remove("authReady","loggedIn");
-  }
-
-  window.showAppShell=showAppShell;
-  window.showLoginGate=showLoginGate;
-
-  // Expose existing app functions used by index.html inline onclick/onchange handlers.
-  [
-    "appSignIn","appSignOut","setClient","setLoginUser","render","openWOForm",
-    "openProposalForm","exportData","closeModal","setPage","openModal","openSiteDrawer"
-  ].forEach(function(name){
-    try{
-      if(typeof window[name]==="undefined" && typeof eval(name)==="function"){
-        window[name]=eval(name);
-      }
-    }catch(e){}
-  });
-
-  // Wrap auth functions after they are defined.
-  if(typeof window.appSignIn==="function"){
-    var originalSignIn=window.appSignIn;
-    window.appSignIn=async function(){
-      await originalSignIn.apply(this,arguments);
-      if(document.body.classList.contains("authReady")) showAppShell();
-    };
-  }
-
-  if(typeof window.appSignOut==="function"){
-    var originalSignOut=window.appSignOut;
-    window.appSignOut=async function(){
-      await originalSignOut.apply(this,arguments);
-      showLoginGate();
-    };
-  }
-
-  window.addEventListener("load",function(){
-    if(document.body.classList.contains("authReady")) showAppShell();
-    else showLoginGate();
-  });
-})();
-
-
-/* V2.16.9 PREVIEW-SAFE LOGIN FIX
-   Guarantees the preview/demo login never gets stuck, even with placeholder Supabase env values.
-*/
-(function(){
-  function forceDemoLogin(){
-    try{
-      currentSession={user:{id:"local-demo-admin",email:"admin@commandcenter.local"}};
-      currentProfile={id:"local-demo-admin",email:"admin@commandcenter.local",full_name:"CommandCenter Admin",role:"admin",company:"CommandCenter"};
-      cloudReady=false;
-      localStorage.setItem("commandCenterDemoAuth","true");
-      localStorage.setItem("commandCenterRole","admin");
-      localStorage.setItem("commandCenterLoggedEmail","admin@commandcenter.local");
-      document.body.classList.add("authReady","loggedIn");
-      var authGate=document.getElementById("authGate");
-      var appShell=document.getElementById("appShell");
-      if(authGate) authGate.style.display="none";
-      if(appShell) appShell.style.display="grid";
-      setAuthMessage("");
-      normalizeV24Complete();normalizeV24();normalizeV29Ops();
-      var vp=visiblePages();
-      if(window.nav) nav.innerHTML=vp.map((p,i)=>`<button data-id="${p[0]}" onclick="setPage('${p[0]}')" class="${i==0?'active':''}">${p[1]}</button>`).join("");
-      pages.forEach((p,i)=>document.getElementById(p[0])?.classList.toggle("active",i===0&&canAccessPage(p[0])));
-      var first=vp[0]||pages[0];
-      if(first){document.getElementById(first[0])?.classList.add("active");pageTitle.textContent=first[1];pageSub.textContent=first[2];}
-      hydrateSelectors();ensureSeedDataGuard();applyRoleUI();render();
-      toast("Preview demo login active");
-    }catch(e){
-      console.error("Preview-safe login failed",e);
-      alert("Login fallback hit an error: "+(e.message||e));
-    }
-  }
-
-  var originalAppSignIn=window.appSignIn || (typeof appSignIn==="function" ? appSignIn : null);
-  window.appSignIn=async function(){
-    var email=(document.getElementById("authEmail")||{}).value || "admin@commandcenter.local";
-    var password=(document.getElementById("authPassword")||{}).value || "demo";
-    if(email==="admin@commandcenter.local" && password==="demo") return forceDemoLogin();
-    if(typeof originalAppSignIn==="function"){
-      try{return await originalAppSignIn.apply(this,arguments);}catch(e){console.warn("Real sign-in failed",e);setAuthMessage(e.message||"Sign-in failed");}
-    }
-  };
-  window.appSignOut=async function(){
-    try{if(supabaseClient) await supabaseClient.auth.signOut();}catch(e){}
-    currentSession=null;currentProfile=null;cloudReady=false;
-    localStorage.removeItem("commandCenterRole");
-    localStorage.removeItem("commandCenterDemoAuth");
-    document.body.classList.remove("authReady","loggedIn");
-    var authGate=document.getElementById("authGate");
-    var appShell=document.getElementById("appShell");
-    if(authGate) authGate.style.display="grid";
-    if(appShell) appShell.style.display="none";
-    setAuthMessage("Signed out.");
-  };
-  function wireLogin(){
-    var email=document.getElementById("authEmail");
-    var pass=document.getElementById("authPassword");
-    var btn=document.querySelector(".authBtn");
-    if(email && !email.value) email.value="admin@commandcenter.local";
-    if(pass && !pass.value) pass.value="demo";
-    if(btn){
-      btn.type="button";
-      btn.onclick=function(e){if(e)e.preventDefault();window.appSignIn();return false;};
-    }
-    [email,pass].forEach(function(el){
-      if(el && !el.dataset.ccEnterWired){
-        el.dataset.ccEnterWired="true";
-        el.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();window.appSignIn();}});
-      }
-    });
-  }
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",wireLogin); else wireLogin();
-  window.addEventListener("load",wireLogin);
-})();
-
-
-/* V2.16.10 NUCLEAR PREVIEW LOGIN BYPASS
-   Purpose: never strand preview/demo users at the login page.
-   This does NOT remove future Supabase auth; it only guarantees static preview access.
-*/
-(function commandCenterNuclearPreviewBypass(){
-  function demoProfile(){
-    try{
-      currentSession={user:{id:"local-demo-admin",email:"admin@commandcenter.local"}};
-      currentProfile={id:"local-demo-admin",email:"admin@commandcenter.local",full_name:"CommandCenter Admin",role:"admin",company:"CommandCenter"};
-      cloudReady=false;
-      localStorage.setItem("commandCenterDemoAuth","true");
-      localStorage.setItem("commandCenterRole","admin");
-      localStorage.setItem("commandCenterLoggedEmail","admin@commandcenter.local");
-    }catch(e){console.warn("Demo profile setup warning",e)}
-  }
-  function openApp(){
-    demoProfile();
-    document.body.classList.add("authReady","loggedIn");
-    var authGate=document.getElementById("authGate");
-    var appShell=document.getElementById("appShell");
-    if(authGate) authGate.style.display="none";
-    if(appShell) appShell.style.display="grid";
-    try{setAuthMessage("");}catch(e){}
-    try{ensureSeedDataGuard();}catch(e){}
-    try{normalizeV24Complete();normalizeV24();normalizeV29Ops();}catch(e){}
-    try{
-      var vp=typeof visiblePages==="function"?visiblePages():pages;
-      if(window.nav) nav.innerHTML=vp.map(function(p,i){return '<button data-id="'+p[0]+'" onclick="setPage(\''+p[0]+'\')" class="'+(i===0?'active':'')+'">'+p[1]+'</button>';}).join("");
-      pages.forEach(function(p,i){var el=document.getElementById(p[0]); if(el) el.classList.toggle("active",i===0);});
-      var first=vp[0]||pages[0];
-      if(first){
-        var firstEl=document.getElementById(first[0]); if(firstEl) firstEl.classList.add("active");
-        if(window.pageTitle) pageTitle.textContent=first[1];
-        if(window.pageSub) pageSub.textContent=first[2];
-      }
-    }catch(e){console.warn("Preview nav setup warning",e)}
-    try{hydrateSelectors();}catch(e){}
-    try{applyRoleUI();}catch(e){}
-    try{render();}catch(e){console.warn("Initial render warning",e)}
-    try{toast("Preview mode opened");}catch(e){}
-  }
-  window.ccPreviewOpenApp=openApp;
-  window.appSignIn=function(e){ if(e&&e.preventDefault)e.preventDefault(); openApp(); return false; };
-  window.appSignOut=function(e){
-    if(e&&e.preventDefault)e.preventDefault();
-    localStorage.removeItem("commandCenterDemoAuth");
-    document.body.classList.remove("authReady","loggedIn");
-    var authGate=document.getElementById("authGate");
-    var appShell=document.getElementById("appShell");
-    if(authGate) authGate.style.display="grid";
-    if(appShell) appShell.style.display="none";
-    return false;
-  };
-  function wire(){
-    var email=document.getElementById("authEmail"), pass=document.getElementById("authPassword"), btn=document.querySelector(".authBtn");
-    if(email) email.value="admin@commandcenter.local";
-    if(pass) pass.value="demo";
-    if(btn){btn.type="button"; btn.onclick=window.appSignIn; btn.disabled=false; btn.textContent="Enter CommandCenter";}
-    [email,pass].forEach(function(el){if(el&&!el.dataset.nuclearEnter){el.dataset.nuclearEnter="1";el.addEventListener("keydown",function(ev){if(ev.key==="Enter"){ev.preventDefault();openApp();}})}});
-  }
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",wire); else wire();
-  window.addEventListener("load",function(){wire(); setTimeout(function(){
-    // Auto-open preview if Supabase env is placeholder/missing or demo was previously used.
-    var cfg=window.COMMANDCENTER_ENV||{};
-    var placeholder=!cfg.SUPABASE_URL || String(cfg.SUPABASE_URL).indexOf("YOUR_SUPABASE")>=0 || !cfg.SUPABASE_ANON_KEY || String(cfg.SUPABASE_ANON_KEY).indexOf("YOUR_SUPABASE")>=0;
-    if(placeholder || localStorage.getItem("commandCenterDemoAuth")==="true") openApp();
-  },250);});
-})();

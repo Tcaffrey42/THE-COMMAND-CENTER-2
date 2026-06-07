@@ -10,7 +10,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <link rel="stylesheet" href="./styles.css">
 </head>
-<body class="authReady loggedIn">
+<body>
 <div id="ccLoader" class="ccLoader" aria-label="CommandCenter loading screen">
   <div class="ccLoaderCard">
     <img class="ccLoaderLogo" src="./cc-commandcenter-loading.png" alt="CC CommandCenter loading logo">
@@ -20,20 +20,20 @@
   </div>
 </div>
 
-<div id="authGate" class="authGate" style="display:none">
+<div id="authGate" class="authGate">
   <div class="authCard">
     <img class="authLogo" src="./cc-commandcenter-stacked.png" alt="CC CommandCenter">
     <div class="kicker">Secure Login</div>
     <h1>CommandCenter</h1>
-    <p>Preview mode opens automatically. Demo login: admin@commandcenter.local / demo. Supabase can be connected later.</p>
-    <input id="authEmail" type="email" placeholder="Email" autocomplete="email" value="admin@commandcenter.local">
-    <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password" value="demo">
-    <button class="btn dark authBtn" type="button" onclick="window.appSignIn(event)">Enter CommandCenter</button>
+    <p>Sign in with your Supabase user account. Your role controls what you can see and do.</p>
+    <input id="authEmail" type="email" placeholder="Email" autocomplete="email">
+    <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+    <button class="btn dark authBtn" onclick="appSignIn()">Login</button>
     <div id="authMessage" class="authMessage"></div>
     <div class="authHint">Roles supported: Admin, Executive, Facility Manager, Vendor, Technician, Client.</div>
   </div>
 </div>
-<div class="app" id="appShell" style="display:grid">
+<div class="app" id="appShell">
 <aside class="side">
   <div class="brand"><div class="brandMark approvedBrand"><img class="brandHeroLogo" src="./cc-commandcenter-stacked.png" alt="CC CommandCenter — Run your portfolio with AI"></div><p>The Facilities Operating System for work orders, assets, vendors, projects, approvals, spend, and executive control.</p><div class="brandTag">Visibility. Accountability. Control.</div></div>
   <div class="nav" id="nav"></div>
@@ -77,15 +77,6 @@
 </main>
 </div>
 <div class="toast" id="toast"></div><div class="modal" id="modal"><div class="box"><button class="close" onclick="closeModal()">Close</button><div id="modalBody"></div></div></div><div class="drawerOverlay" id="siteDrawer"><div class="drawerPanel"><div id="siteDrawerBody"></div></div></div>
-<script>
-// V2.16.11 PREVIEW UNLOCK: force demo auth BEFORE app.js initializes.
-// This prevents the auth gate from blocking static/Vercel preview when Supabase keys are blank.
-try {
-  localStorage.setItem("commandCenterDemoAuth", "true");
-  localStorage.setItem("commandCenterRole", "admin");
-  localStorage.setItem("commandCenterLoggedEmail", "admin@commandcenter.local");
-} catch (e) {}
-</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./env.js"></script>
 <script src="./app.js"></script>
