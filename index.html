@@ -26,11 +26,11 @@
     <div class="kicker">Secure Login</div>
     <h1>CommandCenter</h1>
     <p>Sign in with your Supabase user account. Your role controls what you can see and do.</p>
-    <input id="authEmail" type="email" placeholder="Email" autocomplete="email">
-    <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+    <input id="authEmail" type="email" placeholder="Email" autocomplete="email" value="admin@commandcenter.local">
+    <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password" value="demo">
     <button class="btn dark authBtn" onclick="appSignIn()">Login</button>
     <div id="authMessage" class="authMessage"></div>
-    <div class="authHint">Roles supported: Admin, Executive, Facility Manager, Vendor, Technician, Client.</div>
+    <div class="authHint">Demo login ready: admin@commandcenter.local / demo</div>
   </div>
 </div>
 <div class="app" id="appShell">
@@ -80,6 +80,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./env.js"></script>
 <script src="./app.js"></script>
+<script src="./login-force.js"></script>
 <script>window.addEventListener("load",()=>setTimeout(()=>document.body.classList.add("ccLoaded"),650)); setTimeout(()=>document.body.classList.add("ccLoaded"),2200);</script>
 </body>
 </html>
