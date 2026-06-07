@@ -177,12 +177,7 @@ function hasPermission(key){return (ROLE_PERMISSIONS[activeRole()]||[]).includes
 function visiblePages(){return pages.filter(p=>canAccessPage(p[0]))}
 function setAuthMessage(msg){let el=document.getElementById("authMessage"); if(el) el.textContent=msg||"";}
 function ensureSupabaseClient(){
-  if(!hasSupabaseConfig()){
-    // Static/Vercel demo mode: no Supabase keys required.
-    supabaseClient=null;
-    cloudReady=false;
-    return false;
-  }
+  if(!hasSupabaseConfig()){setAuthMessage("Add your Supabase URL and anon key in env.js first."); return false;}
   if(!supabaseClient) supabaseClient=window.supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey);
   return true;
 }
@@ -210,21 +205,26 @@ function applyRoleUI(){
     el.classList.toggle("hiddenByRole",!ok);
   });
 }
-function startDemoAdminMode(){
+function enterDemoAdminMode(){
   currentSession={user:{id:"demo-admin",email:"admin@commandcenter.local",user_metadata:{full_name:"CommandCenter Admin"}}};
   currentProfile={id:"demo-admin",email:"admin@commandcenter.local",full_name:"CommandCenter Admin",role:"admin",company:"CommandCenter"};
   cloudReady=false;
   localStorage.setItem("commandCenterRole","admin");
   localStorage.setItem("commandCenterLoggedEmail","admin@commandcenter.local");
+  document.body.classList.add("authReady","loggedIn");
   setAuthMessage("");
-  applyRoleUI();
-  return true;
 }
 async function initAuthGate(){
   if(!hasSupabaseConfig()){
-    return startDemoAdminMode();
+    document.body.classList.remove("authReady");
+    const emailEl=document.getElementById("authEmail");
+    const passEl=document.getElementById("authPassword");
+    if(emailEl&&!emailEl.value) emailEl.value="admin@commandcenter.local";
+    if(passEl&&!passEl.value) passEl.value="demo";
+    setAuthMessage("Demo login ready. Click Login to enter CommandCenter.");
+    return false;
   }
-  ensureSupabaseClient();
+  if(!ensureSupabaseClient()) return false;
   const {data,error}=await supabaseClient.auth.getSession();
   if(error){setAuthMessage(error.message);return false;}
   currentSession=data.session;
@@ -235,22 +235,27 @@ async function initAuthGate(){
   return true;
 }
 async function appSignIn(){
-  const email=(document.getElementById("authEmail")||{}).value || "admin@commandcenter.local";
-  const password=(document.getElementById("authPassword")||{}).value || "demo";
+  const email=(document.getElementById("authEmail")||{}).value||"admin@commandcenter.local";
+  const password=(document.getElementById("authPassword")||{}).value||"demo";
   if(!hasSupabaseConfig()){
-    startDemoAdminMode();
-    await init();
+    enterDemoAdminMode();
+    normalizeV24Complete();normalizeV24();normalizeV29Ops();
+    const vp=visiblePages();
+    nav.innerHTML=vp.map((p,i)=>`<button data-id="${p[0]}" onclick="setPage('${p[0]}')" class="${i==0?'active':''}">${p[1]}</button>`).join("");
+    pages.forEach((p,i)=>document.getElementById(p[0])?.classList.toggle("active",i===0&&canAccessPage(p[0])));
+    const first=vp[0]||pages[0];
+    if(first){document.getElementById(first[0])?.classList.add("active");pageTitle.textContent=first[1];pageSub.textContent=first[2];}
+    hydrateSelectors();ensureSeedDataGuard();hydrateSelectors();applyRoleUI();render();
     return;
   }
-  ensureSupabaseClient();
+  if(!ensureSupabaseClient()) return;
   if(!email||!password){setAuthMessage("Enter email and password.");return;}
   setAuthMessage("Signing in...");
   const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
   if(error){
-    // Do not trap staging users on login. Fall back to demo admin mode.
-    setAuthMessage("Supabase login failed. Opening demo admin mode.");
-    startDemoAdminMode();
-    await init();
+    console.warn("Supabase login failed; using demo admin mode",error);
+    enterDemoAdminMode();
+    await appSignIn();
     return;
   }
   currentSession=data.session;
@@ -1571,62 +1576,4 @@ function renderAssetHistory(x){
 
 init();
 
-
-/* COMMANDCENTER LOGIN SCREEN PATCH - Butch Fix
-   Keeps the Supabase login gate and app shell switching cleanly after sign in/out.
-   Also exposes button handlers for inline onclick attributes after Vercel deploy.
-*/
-(function commandCenterLoginScreenPatch(){
-  function showAppShell(){
-    var authGate=document.getElementById("authGate");
-    var appShell=document.getElementById("appShell");
-    if(authGate) authGate.style.display="none";
-    if(appShell) appShell.style.display="grid";
-    document.body.classList.add("authReady","loggedIn");
-  }
-
-  function showLoginGate(){
-    var authGate=document.getElementById("authGate");
-    var appShell=document.getElementById("appShell");
-    if(authGate) authGate.style.display="grid";
-    if(appShell) appShell.style.display="none";
-    document.body.classList.remove("authReady","loggedIn");
-  }
-
-  window.showAppShell=showAppShell;
-  window.showLoginGate=showLoginGate;
-
-  // Expose existing app functions used by index.html inline onclick/onchange handlers.
-  [
-    "appSignIn","appSignOut","setClient","setLoginUser","render","openWOForm",
-    "openProposalForm","exportData","closeModal","setPage","openModal","openSiteDrawer"
-  ].forEach(function(name){
-    try{
-      if(typeof window[name]==="undefined" && typeof eval(name)==="function"){
-        window[name]=eval(name);
-      }
-    }catch(e){}
-  });
-
-  // Wrap auth functions after they are defined.
-  if(typeof window.appSignIn==="function"){
-    var originalSignIn=window.appSignIn;
-    window.appSignIn=async function(){
-      await originalSignIn.apply(this,arguments);
-      if(document.body.classList.contains("authReady")) showAppShell();
-    };
-  }
-
-  if(typeof window.appSignOut==="function"){
-    var originalSignOut=window.appSignOut;
-    window.appSignOut=async function(){
-      await originalSignOut.apply(this,arguments);
-      showLoginGate();
-    };
-  }
-
-  window.addEventListener("load",function(){
-    if(document.body.classList.contains("authReady")) showAppShell();
-    else showLoginGate();
-  });
-})();
+// Demo-login patch active above.
