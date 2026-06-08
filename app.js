@@ -113,7 +113,7 @@ const CLOUD_TABLES={
  assets:"assets",
  vendors:"vendors",
  approvals:"approvals",
- users:"app_users",
+ users:"users",
  documents:"documents",
  tenants:"tenants",
  audit:"audit_logs"
@@ -178,7 +178,7 @@ function hasPermission(key){return (ROLE_PERMISSIONS[activeRole()]||[]).includes
 function visiblePages(){return pages.filter(p=>canAccessPage(p[0]))}
 function setAuthMessage(msg){let el=document.getElementById("authMessage"); if(el) el.textContent=msg||"";}
 function ensureSupabaseClient(){
-  if(!hasSupabaseConfig()){setAuthMessage("Add your Supabase URL and anon key in env.js first."); return false;}
+  if(!hasSupabaseConfig()){setAuthMessage("Supabase config missing or Supabase library did not load. Check env.js and internet/CDN access."); return false;}
   if(!supabaseClient) supabaseClient=window.supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey);
   return true;
 }
