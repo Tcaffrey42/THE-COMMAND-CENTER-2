@@ -177,6 +177,21 @@ function canAccessPage(id){return (ROLE_PAGES[activeRole()]||ROLE_PAGES.client).
 function hasPermission(key){return (ROLE_PERMISSIONS[activeRole()]||[]).includes(key)}
 function visiblePages(){return pages.filter(p=>canAccessPage(p[0]))}
 function setAuthMessage(msg){let el=document.getElementById("authMessage"); if(el) el.textContent=msg||"";}
+
+function isDemoLogin(email,password){
+  const e=String(email||"").trim().toLowerCase();
+  const pw=String(password||"").trim();
+  return (e==="admin@commandcenter.local" || e==="demo@commandcenter.local" || e==="tcaffrey42@gmail.com") && (pw==="demo" || pw==="Demo123!" || pw==="commandcenter");
+}
+function startLocalDemoSession(email){
+  currentSession={user:{id:"local-demo-admin",email:email||"admin@commandcenter.local",user_metadata:{full_name:"Tim Caffrey"}}};
+  currentProfile={id:"local-demo-admin",email:currentSession.user.email,full_name:"Tim Caffrey",role:"admin",company:"CommandCenter"};
+  cloudReady=false;
+  localStorage.setItem("commandCenterLocalDemoAuth","true");
+  localStorage.setItem("commandCenterLoggedEmail",currentSession.user.email);
+  localStorage.setItem("commandCenterRole","admin");
+  applyRoleUI();
+}
 function ensureSupabaseClient(){
   if(!hasSupabaseConfig()){setAuthMessage("Supabase config missing or Supabase library did not load. Check env.js and internet/CDN access."); return false;}
   if(!supabaseClient) supabaseClient=window.supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey);
@@ -207,6 +222,10 @@ function applyRoleUI(){
   });
 }
 async function initAuthGate(){
+  if(localStorage.getItem("commandCenterLocalDemoAuth")==="true"){
+    startLocalDemoSession(localStorage.getItem("commandCenterLoggedEmail")||"admin@commandcenter.local");
+    return true;
+  }
   if(!ensureSupabaseClient()) return false;
   const {data,error}=await supabaseClient.auth.getSession();
   if(error){setAuthMessage(error.message);return false;}
@@ -218,13 +237,26 @@ async function initAuthGate(){
   return true;
 }
 async function appSignIn(){
-  if(!ensureSupabaseClient()) return;
   const email=(document.getElementById("authEmail")||{}).value;
   const password=(document.getElementById("authPassword")||{}).value;
   if(!email||!password){setAuthMessage("Enter email and password.");return;}
   setAuthMessage("Signing in...");
+
+  // Demo safety net: lets the app open even when Supabase Authentication > Users is empty.
+  // Use this for demos/dev, then create real users in Supabase for production.
+  if(isDemoLogin(email,password)){
+    startLocalDemoSession(email);
+    setAuthMessage("");
+    await init();
+    return;
+  }
+
+  if(!ensureSupabaseClient()) return;
   const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
-  if(error){setAuthMessage(error.message);return;}
+  if(error){
+    setAuthMessage(error.message + " — For demo access use admin@commandcenter.local / demo, or create this user in Supabase Authentication > Users.");
+    return;
+  }
   currentSession=data.session;
   await loadCurrentProfile();
   setAuthMessage("");
@@ -234,6 +266,7 @@ async function appSignOut(){
   if(supabaseClient) await supabaseClient.auth.signOut();
   currentSession=null;currentProfile=null;cloudReady=false;
   localStorage.removeItem("commandCenterRole");
+  localStorage.removeItem("commandCenterLocalDemoAuth");
   document.body.classList.remove("authReady");
   setAuthMessage("Signed out.");
 }
