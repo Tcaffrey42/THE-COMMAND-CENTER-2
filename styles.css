@@ -356,3 +356,28 @@ body.demoMode #roleBadge::after{content:" · Demo Mode";}
   .cc-us-map-panel { min-height: 320px; }
   .cc-us-map-footer { left: 16px; right: 16px; max-width: none; }
 }
+
+
+/* ============================================================
+   COMMANDCENTER V2.18.1 REAL USA MAP RESTORATION PATCH
+   Scope: Portfolio Heat Map only
+============================================================ */
+.commandcenter-map-foundation,
+.cc-us-map-panel,
+#portfolio-us-map{display:none!important;}
+.realMapWrap{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:16px;margin-top:14px;align-items:stretch;}
+.realMapCard{border:1px solid var(--line);border-radius:24px;overflow:hidden;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.045);min-height:620px;}
+#geoPortfolioMap{height:620px;width:100%;min-height:620px;background:#dbeafe;z-index:1;}
+.mapSidePanel{display:grid;gap:12px;align-content:start;}
+.mapPinLegend{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;}
+.mapPinLegend span{border:1px solid var(--line);border-radius:999px;padding:6px 9px;background:#fafafa;font-size:12px;font-weight:950;}
+.mapStatGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0;}
+.mapStat{border:1px solid var(--line);border-radius:18px;background:#fafafa;padding:12px;}
+.mapStat b{font-size:22px;}
+.leaflet-container{font-family:Inter,Arial,sans-serif;}
+.leaflet-popup-content-wrapper{border-radius:16px;}
+.ccPopup b{font-size:14px;}
+.ccPopup .muted{font-size:12px;line-height:1.35;margin-top:4px;}
+.ccPopup button{margin-top:8px;border:0;background:#09090b;color:#fff;border-radius:10px;padding:8px 10px;font-weight:900;cursor:pointer;}
+.ccMapFallback{padding:22px;height:100%;overflow:auto;background:#f8fafc;}
+@media(max-width:1100px){.realMapWrap{grid-template-columns:1fr}.realMapCard,#geoPortfolioMap{height:480px;min-height:480px}.mapStatGrid{grid-template-columns:1fr}}

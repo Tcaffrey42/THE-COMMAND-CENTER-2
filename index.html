@@ -1,28 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>CC CommandCenter — Run Your Portfolio with AI</title>
-<link rel="icon" type="image/png" href="./cc-commandcenter-app-icon.png">
+<!-- saved from url=(0050)https://the-command-center-7-cat0lexjn.vercel.app/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQfQhd8lG/9dOfH7WwkxqUH7m3BzLfk=" crossorigin=""/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<link rel="stylesheet" href="./styles.css">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CC CommandCenter — Run Your Portfolio with AI</title>
+<link rel="icon" type="image/png" href="https://the-command-center-7-cat0lexjn.vercel.app/cc-commandcenter-app-icon.png">
+
+<link rel="stylesheet" href="./CC CommandCenter — Run Your Portfolio with AI_files/leaflet.css" integrity="sha256-p4NxAoJBhIINfQfQhd8lG/9dOfH7WwkxqUH7m3BzLfk=" crossorigin="">
+<script src="./CC CommandCenter — Run Your Portfolio with AI_files/leaflet.js.download" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<link rel="stylesheet" href="./CC CommandCenter — Run Your Portfolio with AI_files/styles.css">
 </head>
-<body class="authReady demoMode loggedIn">
+<body class="authReady demoMode loggedIn ccLoaded">
 <div id="ccLoader" class="ccLoader" aria-label="CommandCenter loading screen">
   <div class="ccLoaderCard">
-    <img class="ccLoaderLogo" src="./cc-commandcenter-loading.png" alt="CC CommandCenter loading logo">
+    <img class="ccLoaderLogo" src="./CC CommandCenter — Run Your Portfolio with AI_files/cc-commandcenter-loading.png" alt="CC CommandCenter loading logo">
     <div class="ccLoaderText">Initializing Portfolio Intelligence...</div>
     <div class="ccLoaderBar"><span></span></div>
     <div class="ccLoaderPct">72%</div>
   </div>
 </div>
 
-<div id="authGate" class="authGate" style="display:none!important">
+<div id="authGate" class="authGate" style="display: none !important;">
   <div class="authCard">
-    <img class="authLogo" src="./cc-commandcenter-stacked.png" alt="CC CommandCenter">
+    <img class="authLogo" src="./CC CommandCenter — Run Your Portfolio with AI_files/cc-commandcenter-stacked.png" alt="CC CommandCenter">
     <div class="kicker">Secure Login</div>
     <h1>CommandCenter</h1>
     <p>Sign in with your Supabase user account. Your role controls what you can see and do.</p>
@@ -34,27 +34,61 @@
     <div class="authHint">Roles supported: Admin, Executive, Facility Manager, Vendor, Technician, Client.</div>
   </div>
 </div>
-<div class="app" id="appShell">
+<div class="app" id="appShell" style="display: grid;">
 <aside class="side">
-  <div class="brand"><div class="brandMark approvedBrand"><img class="brandHeroLogo" src="./cc-commandcenter-stacked.png" alt="CC CommandCenter — Run your portfolio with AI"></div><p>The Facilities Operating System for work orders, assets, vendors, projects, approvals, spend, and executive control.</p><div class="brandTag">Visibility. Accountability. Control.</div></div>
-  <div class="nav" id="nav"></div>
+  <div class="brand"><div class="brandMark approvedBrand"><img class="brandHeroLogo" src="./CC CommandCenter — Run Your Portfolio with AI_files/cc-commandcenter-stacked.png" alt="CC CommandCenter — Run your portfolio with AI"></div><p>The Facilities Operating System for work orders, assets, vendors, projects, approvals, spend, and executive control.</p><div class="brandTag">Visibility. Accountability. Control.</div></div>
+  <div class="nav" id="nav"><button data-id="warroom" onclick="setPage(&#39;warroom&#39;)" class="">🚨 Mission Control</button><button data-id="amdashboard" onclick="setPage(&#39;amdashboard&#39;)" class="">👤 AM Dashboard</button><button data-id="dashboard" onclick="setPage(&#39;dashboard&#39;)" class="">📊 Dashboard</button><button data-id="workorders" onclick="setPage(&#39;workorders&#39;)" class="">📋 Work Orders</button><button data-id="pm" onclick="setPage(&#39;pm&#39;)" class="">🗓️ PM Planner</button><button data-id="dispatch" onclick="setPage(&#39;dispatch&#39;)" class="">🚨 Dispatch Center</button><button data-id="escalations" onclick="setPage(&#39;escalations&#39;)" class="">🔥 Escalation Center</button><button data-id="sla" onclick="setPage(&#39;sla&#39;)" class="">📈 SLA Monitor</button><button data-id="locations" onclick="setPage(&#39;locations&#39;)" class="">📍 Locations</button><button data-id="heatmap" onclick="setPage(&#39;heatmap&#39;)" class="active">🗺️ Portfolio Heat Map</button><button data-id="proposals" onclick="setPage(&#39;proposals&#39;)" class="">📄 Proposals</button><button data-id="approvals" onclick="setPage(&#39;approvals&#39;)" class="">✅ Approvals</button><button data-id="assets" onclick="setPage(&#39;assets&#39;)" class="">🛠️ Assets</button><button data-id="vendors" onclick="setPage(&#39;vendors&#39;)" class="">🚚 Vendors</button><button data-id="copilot" onclick="setPage(&#39;copilot&#39;)" class="">🤖 AI Copilot</button><button data-id="executive" onclick="setPage(&#39;executive&#39;)" class="">🎯 Executive Action Center</button><button data-id="cfo" onclick="setPage(&#39;cfo&#39;)" class="">💰 CFO Dashboard</button><button data-id="projects" onclick="setPage(&#39;projects&#39;)" class="">🏗️ Projects</button><button data-id="reports" onclick="setPage(&#39;reports&#39;)" class="">📑 Board Reports</button><button data-id="tenant" onclick="setPage(&#39;tenant&#39;)" class="">🏢 Tenant Admin</button><button data-id="documents" onclick="setPage(&#39;documents&#39;)" class="">🗂️ Documents/COIs</button><button data-id="users" onclick="setPage(&#39;users&#39;)" class="">👥 Users/Roles</button><button data-id="settings" onclick="setPage(&#39;settings&#39;)" class="">⚙️ SaaS Setup</button></div>
 </aside>
 <main class="main">
   <div class="top">
-    <div class="title"><div class="kicker">CC CommandCenter Enterprise V2.16 Auth + Roles</div><h2 id="pageTitle">Mission Control</h2><p id="pageSub">Map, pins, location drawer, asset drilldown, and work order visibility across the portfolio.</p></div>
+    <div class="title"><div class="kicker">CC CommandCenter Enterprise V2.16 Auth + Roles</div><h2 id="pageTitle">🗺️ Portfolio Heat Map</h2><p id="pageSub">Visual risk ranking across locations.</p></div>
     <div class="controls">
-      <select id="clientSelect" onchange="setClient(this.value)"></select><select id="loginUserSelect" onchange="setLoginUser(this.value)"></select>
-      <input id="search" placeholder="Global search..." oninput="render()"/>
+      <select id="clientSelect" onchange="setClient(this.value)"><option value="0">Security Finance</option><option value="1">Fogo de Chão Refresh Program</option><option value="2">Prime Communications</option></select><select id="loginUserSelect" onchange="setLoginUser(this.value)"><option value="Tim Caffrey">Tim Caffrey</option><option value="Sarah Mitchell">Sarah Mitchell</option><option value="Tony Russo">Tony Russo</option><option value="Vendor Portal User">Vendor Portal User</option></select>
+      <input id="search" placeholder="Global search..." oninput="render()">
       <button class="btn dark" data-permission="create_work_order" onclick="openWOForm()">+ Work Order</button>
       <button class="btn" data-permission="create_proposal" onclick="openProposalForm()">+ Proposal</button>
-      <button class="btn" data-permission="export_data" onclick="exportData()">Export JSON</button><button class="btn" id="logoutBtn" onclick="appSignOut()">Logout</button><span id="roleBadge" class="deployBadge">Role loading</span>
+      <button class="btn" data-permission="export_data" onclick="exportData()">Export JSON</button><button class="btn" id="logoutBtn" onclick="appSignOut()">Logout</button><span id="roleBadge" class="deployBadge">admin · tim.caffrey@bossfacilityservices.com</span>
     </div>
   </div>
-  <section class="metrics" id="metrics"></section>
-  <section id="warroom" class="page active"></section>
-  <section id="amdashboard" class="page"></section>
-  <section id="dashboard" class="page"></section>
-  <section id="workorders" class="page"></section>
+  <section class="metrics" id="metrics"><div class="card metric"><div class="label">Portfolio Health</div><div class="value">1/100</div><div class="sub">AI operating score</div></div><div class="card metric"><div class="label">Open Work Orders</div><div class="value">3</div><div class="sub">2 at risk/breached</div></div><div class="card metric"><div class="label">Pending Proposal $</div><div class="value">$78,000</div><div class="sub">Awaiting approval</div></div><div class="card metric"><div class="label">Replace Reviews</div><div class="value">18</div><div class="sub">Capex candidates</div></div></section>
+  <section id="warroom" class="page"><div class="card"><div class="missionHero"><div class="kicker">Internal Operations Backbone</div><h1>CC COMMANDCENTER MISSION CONTROL</h1><p>Good Morning, April Parker. Run your portfolio with AI. This is the fire board: emergencies, SLA pressure, proposal aging, vendor response, invoice closeout, and missing next actions across 754 locations.</p></div>
+<div class="queueGrid">
+<div class="queueCard redline" onclick="showMissionQueue(&#39;Emergency&#39;)"><div class="queueIcon">🔴</div><div class="queueCount">1</div><div class="queueTitle">Emergency Queue</div><div class="queueSub">Priority = Emergency</div></div>
+<div class="queueCard amberline" onclick="showMissionQueue(&#39;SLA Risk&#39;)"><div class="queueIcon">🟠</div><div class="queueCount">2</div><div class="queueTitle">SLA Risk Queue</div><div class="queueSub">At risk or breached</div></div>
+<div class="queueCard darkline" onclick="showMissionQueue(&#39;Proposal Aging&#39;)"><div class="queueIcon">🟡</div><div class="queueCount">1</div><div class="queueTitle">Proposal Aging</div><div class="queueSub">$55,400 over 5 days</div></div>
+<div class="queueCard blueline" onclick="showMissionQueue(&#39;Vendor Response&#39;)"><div class="queueIcon">🔵</div><div class="queueCount">1</div><div class="queueTitle">Vendor Response</div><div class="queueSub">Dispatched, not accepted</div></div>
+<div class="queueCard greenline" onclick="showMissionQueue(&#39;Invoice&#39;)"><div class="queueIcon">🟢</div><div class="queueCount">0</div><div class="queueTitle">Invoice Queue</div><div class="queueSub">Complete, not invoiced</div></div>
+</div>
+<div class="missionTabs"><button onclick="showMissionQueue(&#39;Missing Next Action&#39;)">⚠ Missing Next Action: 0</button><button onclick="setPage(&#39;workorders&#39;)">Open Work Orders</button><button onclick="setPage(&#39;dispatch&#39;)">Dispatch Center</button><button onclick="setPage(&#39;approvals&#39;)">Approvals</button><button onclick="setPage(&#39;heatmap&#39;)">Map</button></div>
+</div>
+<div class="grid2" style="margin-top:16px">
+<div class="card"><h3>Today's Focus</h3>
+<div class="focusItem" onclick="woModal(&#39;WO-78421&#39;)"><div><b>WO-78421</b><div class="muted">Cleveland</div></div><div><b>Cleveland Branch 207</b><div class="muted">HVAC · Vendor Dispatched · Owner: Tony Russo</div><div class="muted">Next: Confirm vendor acceptance and ETA</div></div><div><span class="pill red">At Risk</span></div></div><div class="focusItem" onclick="woModal(&#39;WO-78433&#39;)"><div><b>WO-78433</b><div class="muted">Phoenix</div></div><div><b>Phoenix Branch 122</b><div class="muted">Plumbing · Proposal Needed · Owner: Nina Patel</div><div class="muted">Next: Get proposal uploaded and routed for approval</div></div><div><span class="pill red">Breached</span></div></div>
+</div>
+<div class="card"><h3>Operating Snapshot</h3>
+<div class="opsFields"><div class="opsField"><b>Portfolio Health</b><div>1/100</div></div><div class="opsField"><b>Pending Proposal $</b><div>$78,000</div></div><div class="opsField"><b>Escalations</b><div>3</div></div><div class="opsField"><b>Missing Next Actions</b><div class="">0</div></div></div>
+<br><h3>Biggest Portfolio Risk</h3>
+<div class="row" onclick="openSiteDrawer(&#39;L522&#39;)" style="cursor:pointer"><div><b>Cleveland Branch 207</b><div class="muted">Cleveland · MW-03 · HVAC</div></div><span class="pill red">Critical</span></div><div class="row"><b>Open Work Orders</b><span>11</span></div><div class="row"><b>Repeat Repairs</b><span>7</span></div><div class="row"><b>Visible Spend</b><span>$87,500</span></div>
+</div>
+</div></section>
+  <section id="amdashboard" class="page"><div class="amHero"><div class="kicker">V2.12 Account Manager Operating View</div><h1>April Parker's Daily Command Board</h1><p>What is mine, what is late, what needs a touch today, and what could blow up if nobody owns the next action. Built for account managers, dispatch leads, and internal operators.</p></div>
+ <div class="amQueueGrid">
+  <div class="amQueueCard dark" onclick="showAMQueue(&#39;mine&#39;)"><div class="num">0</div><div class="label">My Open WOs</div><div class="sub">Assigned or admin-visible</div></div>
+  <div class="amQueueCard blue" onclick="showAMQueue(&#39;due&#39;)"><div class="num">0</div><div class="label">Due Today</div><div class="sub">Next action due now</div></div>
+  <div class="amQueueCard red" onclick="showAMQueue(&#39;overdue&#39;)"><div class="num">0</div><div class="label">Overdue</div><div class="sub">Past due date</div></div>
+  <div class="amQueueCard amber" onclick="showAMQueue(&#39;sla&#39;)"><div class="num">0</div><div class="label">SLA Risk</div><div class="sub">At risk or breached</div></div>
+  <div class="amQueueCard red" onclick="showAMQueue(&#39;missing&#39;)"><div class="num">0</div><div class="label">Missing Next Action</div><div class="sub">Owner/date/action gaps</div></div>
+ </div>
+ <div class="grid2">
+  <div class="card"><h3>Daily Touch List</h3><p class="muted">Priority queue for today. Every item needs a documented next action before it leaves the board.</p><div class="amDailyList"><p class="muted">Daily touch list is clear.</p></div></div>
+  <div class="card"><h3>Owner Performance Snapshot</h3><div class="amPerfGrid"><div class="amPerfCard"><div class="muted">Open WOs</div><b>0</b></div><div class="amPerfCard"><div class="muted">Closed / completed</div><b>0</b></div><div class="amPerfCard"><div class="muted">Avg age</div><b>0d</b></div><div class="amPerfCard"><div class="muted">No-touch items</div><b>0</b></div></div><br><h3>One-Click Queue Actions</h3><div class="amActionBar"><button class="btn" onclick="showAMQueue(&#39;vendor&#39;)">Vendor Follow-Ups: 0</button><button class="btn" onclick="showAMQueue(&#39;customer&#39;)">Customer Updates: 0</button><button class="btn" onclick="showAMQueue(&#39;proposals&#39;)">Proposal Follow-Up: 2</button><button class="btn dark" onclick="openAMQuickUpdate()">Quick Update</button></div><div class="tile"><b>CommandCenter Rule</b><p class="muted">No work order should sit without an owner, next action, due date, and last-touch record.</p></div></div>
+ </div>
+ <div class="grid2" style="margin-top:16px">
+  <div class="card"><h3>Account Portfolio Snapshot</h3><div class="row"><b>Client</b><span>Security Finance</span></div><div class="row"><b>Open WOs</b><span>3</span></div><div class="row"><b>Pending proposals</b><span>2</span></div><div class="row"><b>Visible spend</b><span>$234,000</span></div><div class="row"><b>Top risky site</b><span>Cleveland Branch 207</span></div></div>
+  <div class="card"><h3>Risk + Follow-Up Tags</h3><span class="amBadge">0 overdue</span><span class="amBadge">0 vendor follow-ups</span><span class="amBadge">0 customer updates</span><span class="amBadge">2 proposal touches</span><span class="amBadge">0 stale updates</span><span class="amBadge">0 SLA fires</span><div class="tile"><b>Next build hook</b><p class="muted">This dashboard becomes the morning email digest and push notification center in the next notification build.</p></div></div>
+ </div></section>
+  <section id="dashboard" class="page"><div class="grid3"><div class="card"><h3>Executive Dashboard</h3><div class="big">1/100</div><p class="muted">Portfolio health score</p></div><div class="card"><h3>Budget Forecast</h3><div class="big">$1,027,200</div><p class="muted">Annualized run rate</p></div><div class="card"><h3>Highest Risk Site</h3><div class="big">100</div><p class="muted">Cleveland Branch 207</p></div></div><div class="grid2"><div class="card"><h3>Command Summary</h3><div class="row"><b>Open WOs</b><span>3</span></div><div class="row"><b>SLA Fires</b><span>2</span></div><div class="row"><b>Replacement Reviews</b><span>18</span></div><div class="row"><b>Pending Proposal Dollars</b><span>$78,000</span></div></div><div class="card"><h3>Immediate Action</h3><p class="muted">Start with the Heat Map, open the highest-risk pin, review attached work orders, then move repeat-failure assets into replacement review.</p><button class="btn dark" onclick="setPage(&#39;heatmap&#39;)">Open Heat Map</button> <button class="btn" onclick="setPage(&#39;executive&#39;)">Open AI Action Center</button></div></div></section>
+  <section id="workorders" class="page"><div class="card"><h3>Work Order Operating Queue</h3><div class="scroll"><table><thead><tr><th>WO</th><th>Location</th><th>Trade</th><th>Priority</th><th>Status</th><th>SLA</th><th>Owner</th><th>Next Action</th><th>Due</th><th>AI</th><th>View</th></tr></thead><tbody><tr onclick="woModal(&#39;WO-78421&#39;)" style="cursor:pointer"><td><button class="btn dark" onclick="event.stopPropagation();woModal(&#39;WO-78421&#39;)">WO-78421</button></td><td>Cleveland Branch 207</td><td>HVAC</td><td><span class="pill red">Emergency</span></td><td><span class="pill blue">Vendor Dispatched</span></td><td><span class="pill red">At Risk</span></td><td>Tony Russo</td><td>Confirm vendor acceptance and ETA</td><td>2026-06-13</td><td><button class="btn dark" onclick="event.stopPropagation();woModal(&#39;WO-78421&#39;);setTimeout(()=&gt;{document.getElementById(&#39;aiCopilotOutput_WO-78421&#39;)?.scrollIntoView({behavior:&#39;smooth&#39;,block:&#39;center&#39;});},50)">Ask AI</button></td><td><button class="btn" onclick="event.stopPropagation();woModal(&#39;WO-78421&#39;)">Open</button></td></tr><tr onclick="woModal(&#39;WO-78433&#39;)" style="cursor:pointer"><td><button class="btn dark" onclick="event.stopPropagation();woModal(&#39;WO-78433&#39;)">WO-78433</button></td><td>Phoenix Branch 122</td><td>Plumbing</td><td><span class="pill amber">Urgent</span></td><td><span class="pill blue">Proposal Needed</span></td><td><span class="pill red">Breached</span></td><td>Nina Patel</td><td>Get proposal uploaded and routed for approval</td><td>2026-06-14</td><td><button class="btn dark" onclick="event.stopPropagation();woModal(&#39;WO-78433&#39;);setTimeout(()=&gt;{document.getElementById(&#39;aiCopilotOutput_WO-78433&#39;)?.scrollIntoView({behavior:&#39;smooth&#39;,block:&#39;center&#39;});},50)">Ask AI</button></td><td><button class="btn" onclick="event.stopPropagation();woModal(&#39;WO-78433&#39;)">Open</button></td></tr><tr onclick="woModal(&#39;WO-78451&#39;)" style="cursor:pointer"><td><button class="btn dark" onclick="event.stopPropagation();woModal(&#39;WO-78451&#39;)">WO-78451</button></td><td>Charlotte Branch 014</td><td>Lighting</td><td><span class="pill blue">Normal</span></td><td><span class="pill blue">In Progress</span></td><td><span class="pill green">On Track</span></td><td>Evan Brooks</td><td>Get vendor update and next milestone</td><td>2026-06-16</td><td><button class="btn dark" onclick="event.stopPropagation();woModal(&#39;WO-78451&#39;);setTimeout(()=&gt;{document.getElementById(&#39;aiCopilotOutput_WO-78451&#39;)?.scrollIntoView({behavior:&#39;smooth&#39;,block:&#39;center&#39;});},50)">Ask AI</button></td><td><button class="btn" onclick="event.stopPropagation();woModal(&#39;WO-78451&#39;)">Open</button></td></tr></tbody></table></div></div></section>
   <section id="pm" class="page"></section>
   <section id="locations" class="page"></section>
   <section id="proposals" class="page"></section>
@@ -67,7 +101,7 @@
   <section id="dispatch" class="page"></section>
   <section id="escalations" class="page"></section>
   <section id="sla" class="page"></section>
-  <section id="heatmap" class="page"></section>
+  <section id="heatmap" class="page active"></section>
   <section id="approvals" class="page"></section>
   <section id="copilot" class="page"></section>
   <section id="executive" class="page"></section>
@@ -76,32 +110,11 @@
   <section id="documents" class="page"></section>
   <section id="settings" class="page"></section>
 
-<section class="dashboard-card commandcenter-map-foundation">
-  <h2>Portfolio Heat Map</h2>
-  <p>Visible USA map foundation. Pins and work orders come next.</p>
-  
-<div class="cc-us-map-panel" id="portfolio-us-map">
-  <div class="cc-us-map-label"><span class="cc-us-map-label-dot"></span> USA Portfolio Map</div>
-  <svg class="cc-us-map-svg" viewBox="0 0 1000 620" role="img" aria-label="United States portfolio map">
-    <path class="cc-us-map-land" d="M128 196 L184 166 L260 147 L341 138 L421 125 L512 132 L604 128 L690 148 L778 177 L856 220 L902 280 L878 338 L820 383 L746 419 L654 453 L553 476 L448 480 L348 455 L260 413 L190 354 L143 286 Z" />
-    <path class="cc-us-map-land" d="M642 448 L705 480 L763 518 L731 552 L664 538 L614 492 Z" />
-    <path class="cc-us-map-land" d="M176 492 L218 468 L254 486 L236 526 L190 535 Z" />
-    <path class="cc-us-map-state-lines" d="M235 177 L245 405 M325 145 L330 450 M420 128 L415 475 M520 134 L508 476 M610 132 L585 465 M700 150 L660 438 M785 180 L730 414" />
-    <path class="cc-us-map-state-lines" d="M170 280 L890 280 M205 350 L830 350 M270 420 L735 420 M210 220 L850 220" />
-  </svg>
-  <div class="cc-us-map-footer">
-    <strong>Map foundation installed</strong>
-    Step 1 is visible USA map only. Next build adds green/yellow/red location pins, then attached work orders.
-  </div>
-</div>
-
-</section>
-
 </main>
 </div>
 <div class="toast" id="toast"></div><div class="modal" id="modal"><div class="box"><button class="close" onclick="closeModal()">Close</button><div id="modalBody"></div></div></div><div class="drawerOverlay" id="siteDrawer"><div class="drawerPanel"><div id="siteDrawerBody"></div></div></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./env.js"></script>
+<script src="./CC CommandCenter — Run Your Portfolio with AI_files/supabase-js@2"></script>
+<script src="./CC CommandCenter — Run Your Portfolio with AI_files/env.js.download"></script>
 <script>
 // CommandCenter demo bypass: force the app open even if auth/session checks stall.
 window.__COMMANDCENTER_DEMO_BYPASS__ = true;
@@ -118,7 +131,8 @@ window.forceDemoCommandCenter = function(){
 window.addEventListener('DOMContentLoaded', function(){ setTimeout(window.forceDemoCommandCenter, 50); });
 window.addEventListener('load', function(){ setTimeout(window.forceDemoCommandCenter, 50); setTimeout(window.forceDemoCommandCenter, 800); });
 </script>
-<script src="./app.js"></script>
+<script src="./CC CommandCenter — Run Your Portfolio with AI_files/app.js.download"></script>
 <script>window.addEventListener("load",()=>setTimeout(()=>document.body.classList.add("ccLoaded"),650)); setTimeout(()=>document.body.classList.add("ccLoaded"),2200);</script>
-</body>
-</html>
+
+
+</body></html>

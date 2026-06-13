@@ -1833,51 +1833,205 @@ init();
 })();
 
 
+// ============================================================
+// COMMANDCENTER V2.18.1 REAL USA MAP RESTORATION PATCH
+// Replaces the fake SVG USA map with a real Leaflet/OpenStreetMap layer.
+// Scope: Portfolio Heat Map only.
+// ============================================================
+(function commandCenterRealUSAMapPatch(){
+  function removeFakeMapBlocks(){
+    try{
+      document.querySelectorAll('.commandcenter-map-foundation,#portfolio-us-map,.cc-us-map-panel').forEach(function(el){
+        var section = el.closest('.commandcenter-map-foundation');
+        (section || el).remove();
+      });
+    }catch(e){ console.warn('Map cleanup warning', e); }
+  }
 
-// === CommandCenter US Map Patch: force visible USA map if heat map area is empty ===
-(function ensureCommandCenterUSMap(){
-  const mapMarkup = `
-    <div class="cc-us-map-panel" id="portfolio-us-map">
-      <div class="cc-us-map-label"><span class="cc-us-map-label-dot"></span> USA Portfolio Map</div>
-      <svg class="cc-us-map-svg" viewBox="0 0 1000 620" role="img" aria-label="United States portfolio map">
-        <path class="cc-us-map-land" d="M128 196 L184 166 L260 147 L341 138 L421 125 L512 132 L604 128 L690 148 L778 177 L856 220 L902 280 L878 338 L820 383 L746 419 L654 453 L553 476 L448 480 L348 455 L260 413 L190 354 L143 286 Z" />
-        <path class="cc-us-map-land" d="M642 448 L705 480 L763 518 L731 552 L664 538 L614 492 Z" />
-        <path class="cc-us-map-land" d="M176 492 L218 468 L254 486 L236 526 L190 535 Z" />
-        <path class="cc-us-map-state-lines" d="M235 177 L245 405 M325 145 L330 450 M420 128 L415 475 M520 134 L508 476 M610 132 L585 465 M700 150 L660 438 M785 180 L730 414" />
-        <path class="cc-us-map-state-lines" d="M170 280 L890 280 M205 350 L830 350 M270 420 L735 420 M210 220 L850 220" />
-      </svg>
-      <div class="cc-us-map-footer">
-        <strong>Map foundation installed</strong>
-        Step 1 is visible USA map only. Next build adds green/yellow/red location pins, then attached work orders.
-      </div>
-    </div>`;
-  function install(){
-    if (document.getElementById("portfolio-us-map")) return;
-    const candidates = [
-      document.getElementById("portfolio-heat-map"),
-      document.getElementById("portfolioHeatMap"),
-      document.getElementById("heat-map"),
-      document.querySelector("[data-section='portfolio-heat-map']"),
-      document.querySelector(".portfolio-heat-map"),
-      document.querySelector(".heat-map"),
-      [...document.querySelectorAll("section, .card, .dashboard-card")].find(el => /portfolio heat map|heat map/i.test(el.textContent || ""))
-    ].filter(Boolean);
-    const target = candidates[0];
-    if (target) {
-      target.innerHTML = mapMarkup;
-    } else {
-      const container = document.querySelector("main") || document.querySelector("#app") || document.body;
-      const wrapper = document.createElement("section");
-      wrapper.className = "dashboard-card commandcenter-map-foundation";
-      wrapper.innerHTML = "<h2>Portfolio Heat Map</h2><p>Visible USA map foundation. Pins and work orders come next.</p>" + mapMarkup;
-      container.appendChild(wrapper);
+  function safeMoney(n){
+    try { return typeof money === 'function' ? money(n||0) : '$' + Number(n||0).toLocaleString(); }
+    catch(e){ return '$0'; }
+  }
+  function safeRisk(site){
+    try { return typeof riskScore === 'function' ? riskScore(site) : Number(site.risk_score || site.score || site.riskScore || 0); }
+    catch(e){ return 0; }
+  }
+  function safeTier(site){
+    var score = safeRisk(site);
+    return score >= 90 ? 'critical' : score >= 65 ? 'high' : score >= 35 ? 'medium' : 'low';
+  }
+  function tierColor(tier){
+    return tier === 'critical' ? '#dc2626' : tier === 'high' ? '#f59e0b' : tier === 'medium' ? '#eab308' : '#16a34a';
+  }
+  function siteLat(site){ return Number(site.latitude ?? site.lat); }
+  function siteLng(site){ return Number(site.longitude ?? site.lng); }
+  function hasLatLng(site){ return Number.isFinite(siteLat(site)) && Number.isFinite(siteLng(site)); }
+  function currentSites(){
+    try{
+      var x = typeof ai === 'function' ? ai() : null;
+      var sites = x && Array.isArray(x.ls) ? x.ls : [];
+      if(sites.length) return sites;
+    }catch(e){}
+    return [
+      {id:'DEMO-NY', site:'New York Demo Site', market:'New York', trade:'HVAC', latitude:40.7128, longitude:-74.0060, open:7, repeat:3, spend:42500, risk_score:96},
+      {id:'DEMO-DAL', site:'Dallas Demo Site', market:'Dallas', trade:'Plumbing', latitude:32.7767, longitude:-96.7970, open:4, repeat:2, spend:31000, risk_score:72},
+      {id:'DEMO-DEN', site:'Denver Demo Site', market:'Denver', trade:'Electrical', latitude:39.7392, longitude:-104.9903, open:1, repeat:0, spend:9400, risk_score:22}
+    ];
+  }
+  function attachedWOCount(locationId){
+    try { return (db.workOrders || []).filter(function(w){ return w.location === locationId; }).length; }
+    catch(e){ return 0; }
+  }
+  function openLocation(site){
+    try{
+      if(site.id && typeof openSiteDrawer === 'function') openSiteDrawer(site.id);
+    }catch(e){}
+  }
+
+  window.initializePortfolioMap = function initializePortfolioMap(){
+    removeFakeMapBlocks();
+    var el = document.getElementById('geoPortfolioMap');
+    if(!el) return;
+    var sites = currentSites();
+    var mappable = sites.filter(hasLatLng);
+
+    if(!window.L){
+      el.innerHTML = '<div class="ccMapFallback"><h3>Map library not loaded</h3><p class="muted">Leaflet did not load, so CommandCenter is showing the location list instead of a blank screen.</p>' +
+        sites.map(function(s){ return '<div class="siteRiskCard"><b>'+(s.site||s.name||'Location')+'</b><div class="muted">'+(s.market||s.region||'Market pending')+' · '+(s.trade||'Trade pending')+'</div></div>'; }).join('') +
+        '</div>';
+      return;
+    }
+
+    if(window.portfolioMap){
+      try { window.portfolioMap.remove(); } catch(e){}
+      window.portfolioMap = null;
+    }
+
+    el.innerHTML = '';
+    window.portfolioMap = L.map('geoPortfolioMap', {
+      zoomControl: true,
+      attributionControl: true,
+      scrollWheelZoom: true
+    }).setView([39.8283, -98.5795], 4);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(window.portfolioMap);
+
+    var bounds = [];
+    mappable.forEach(function(site){
+      var tier = safeTier(site);
+      var marker = L.circleMarker([siteLat(site), siteLng(site)], {
+        radius: 11,
+        color: '#ffffff',
+        weight: 3,
+        fillColor: tierColor(tier),
+        fillOpacity: 1
+      }).addTo(window.portfolioMap);
+
+      marker.bindPopup(
+        '<div class="ccPopup"><b>'+(site.site||site.name||'Location')+'</b>'+
+        '<div class="muted">'+(site.market||site.region||'Market pending')+' · '+(site.trade||'Trade pending')+'<br>'+
+        'Risk '+safeRisk(site)+' · Open WOs '+(site.open||attachedWOCount(site.id))+' · '+safeMoney(site.spend||0)+'</div>'+
+        '<button type="button" onclick="openSiteDrawer && openSiteDrawer(\''+(site.id||'')+'\')">Open Location Drawer</button></div>'
+      );
+      marker.on('click', function(){ setTimeout(function(){ openLocation(site); }, 75); });
+      bounds.push([siteLat(site), siteLng(site)]);
+    });
+
+    setTimeout(function(){
+      try{
+        window.portfolioMap.invalidateSize();
+        if(bounds.length > 1){
+          window.portfolioMap.fitBounds(bounds, {padding:[40,40], maxZoom:6});
+        } else if(bounds.length === 1){
+          window.portfolioMap.setView(bounds[0], 7);
+        } else {
+          window.portfolioMap.setView([39.8283, -98.5795], 4);
+        }
+      }catch(e){ console.warn('Map resize warning', e); }
+    }, 150);
+  };
+
+  window.renderHeatMap = function renderHeatMap(x){
+    removeFakeMapBlocks();
+    var allSites = currentSites();
+    var sorted = allSites.slice().sort(function(a,b){ return safeRisk(b)-safeRisk(a); });
+    var top = sorted[0] || {};
+    var totalOpen = allSites.reduce(function(sum,s){ return sum + Number(s.open || attachedWOCount(s.id) || 0); }, 0);
+    var totalSpend = allSites.reduce(function(sum,s){ return sum + Number(s.spend || 0); }, 0);
+    var critical = allSites.filter(function(s){ return safeTier(s) === 'critical'; }).length;
+    var high = allSites.filter(function(s){ return safeTier(s) === 'high'; }).length;
+    var heatmapEl = document.getElementById('heatmap') || window.heatmap;
+    if(!heatmapEl) return;
+
+    heatmapEl.innerHTML = `
+      <div class="card">
+        <div class="mapToolbar">
+          <div>
+            <h3>Real USA Portfolio Map</h3>
+            <p class="muted">Interactive OpenStreetMap USA layer with CommandCenter risk pins. Pins open location drilldowns. Live work-order wiring comes next.</p>
+          </div>
+          <button class="btn dark" type="button" onclick="initializePortfolioMap()">Refresh Map</button>
+        </div>
+
+        <div class="mapPinLegend">
+          <span>🔴 Critical 90+</span>
+          <span>🟠 High 65-89</span>
+          <span>🟡 Medium 35-64</span>
+          <span>🟢 Low 0-34</span>
+          <span>Click pin = location drawer</span>
+        </div>
+
+        <div class="mapStatGrid">
+          <div class="mapStat"><div class="muted">Visible Sites</div><b>${allSites.length}</b></div>
+          <div class="mapStat"><div class="muted">Critical / High</div><b>${critical + high}</b></div>
+          <div class="mapStat"><div class="muted">Open WOs</div><b>${totalOpen}</b></div>
+        </div>
+
+        <div class="realMapWrap">
+          <div class="realMapCard"><div id="geoPortfolioMap"></div></div>
+          <div class="mapSidePanel">
+            <div class="card">
+              <h3>Portfolio Summary</h3>
+              <div class="row"><b>Total Locations</b><span>${allSites.length}</span></div>
+              <div class="row"><b>Critical Sites</b><span>${critical}</span></div>
+              <div class="row"><b>High Risk</b><span>${high}</span></div>
+              <div class="row"><b>Visible Spend</b><span>${safeMoney(totalSpend)}</span></div>
+            </div>
+            <div class="card">
+              <h3>Highest Risk Site</h3>
+              ${top.site ? `<div class="siteRiskCard" onclick="openSiteDrawer && openSiteDrawer('${top.id}')"><b>${top.site}</b><div class="muted">${top.market || top.region || 'Market pending'} · ${top.trade || 'Trade pending'}</div><br><span class="badge">Risk ${safeRisk(top)}</span><div class="muted">${top.open || attachedWOCount(top.id)} open · ${top.repeat || 0} repeat · ${safeMoney(top.spend || 0)}</div></div>` : `<p class="muted">No site data loaded.</p>`}
+            </div>
+            <div class="card">
+              <h3>Top Risk Locations</h3>
+              ${sorted.slice(0,8).map(function(s){ return `<div class="siteRiskCard" onclick="openSiteDrawer && openSiteDrawer('${s.id}')"><div style="display:flex;justify-content:space-between;gap:10px"><div><b>${s.site || s.name || 'Location'}</b><div class="muted">${s.market || s.region || 'Market pending'} · ${s.trade || 'Trade pending'} · ${s.open || attachedWOCount(s.id)} WOs</div></div><span class="badge">${safeRisk(s)}</span></div></div>`; }).join('')}
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    setTimeout(window.initializePortfolioMap, 100);
+  };
+
+  var oldSetPage = window.setPage;
+  if(typeof oldSetPage === 'function'){
+    window.setPage = function patchedSetPage(id){
+      oldSetPage(id);
+      if(id === 'heatmap') setTimeout(window.initializePortfolioMap, 150);
+    };
+  }
+
+  function bootMapPatch(){
+    removeFakeMapBlocks();
+    var active = document.getElementById('heatmap');
+    if(active && active.classList.contains('active')){
+      try { window.renderHeatMap(typeof ai === 'function' ? ai() : null); } catch(e){ console.warn('Heat map render warning', e); }
     }
   }
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", install);
-  } else {
-    install();
-  }
-  setTimeout(install, 500);
-  setTimeout(install, 1500);
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootMapPatch);
+  else bootMapPatch();
+  window.addEventListener('load', function(){ setTimeout(bootMapPatch, 250); setTimeout(bootMapPatch, 1200); });
 })();
