@@ -167,3 +167,8 @@ table{width:100%;border-collapse:collapse;font-size:14px}th{text-align:left;colo
 .nav{padding-bottom:96px;}
 .brand{position:sticky;top:0;z-index:100;}
 .deployBadge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 10px;font-weight:950;font-size:12px;color:#52525b}
+
+/* HARD NO-LOGIN LOCK: legacy auth/login screens can never cover the app. */
+#loginGate,#authGate,#loginScreen,#authScreen,.loginGate,.authGate,.login-screen,.auth-screen,[data-auth-gate]{display:none!important;visibility:hidden!important;pointer-events:none!important;opacity:0!important;}
+.app{display:grid!important;visibility:visible!important;opacity:1!important;}
+body.noLoginMode .app, body.authReady .app{display:grid!important;visibility:visible!important;}

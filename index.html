@@ -8,7 +8,23 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQfQhd8lG/9dOfH7WwkxqUH7m3BzLfk=" crossorigin=""/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<link rel="stylesheet" href="/src/styles.css">
+<link rel="stylesheet" href="src/styles.css">
+
+<script>
+(function(){
+  window.COMMANDCENTER_NO_LOGIN = true;
+  document.documentElement.classList.add('no-login-mode');
+  function unlock(){
+    document.body.classList.add('authReady','demoMode','noLoginMode');
+    ['loginGate','authGate','loginScreen','authScreen'].forEach(function(id){var el=document.getElementById(id); if(el){el.style.display='none'; el.remove();}});
+    document.querySelectorAll('.loginGate,.authGate,.login-screen,.auth-screen,[data-auth-gate]').forEach(function(el){el.style.display='none';});
+    var shell=document.getElementById('appShell')||document.querySelector('.app'); if(shell){shell.style.display='grid'; shell.style.visibility='visible'; shell.hidden=false;}
+  }
+  unlock();
+  document.addEventListener('DOMContentLoaded', unlock);
+  setTimeout(unlock,50); setTimeout(unlock,500);
+})();
+</script>
 </head>
 <body>
 <div class="app">
@@ -54,8 +70,7 @@
 </main>
 </div>
 <div class="toast" id="toast"></div><div class="modal" id="modal"><div class="box"><button class="close" onclick="closeModal()">Close</button><div id="modalBody"></div></div></div><div class="drawerOverlay" id="siteDrawer"><div class="drawerPanel"><div id="siteDrawerBody"></div></div></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/src/env.js"></script>
-<script src="/src/app.js"></script>
+<script src="src/env.js"></script>
+<script src="src/app.js"></script>
 </body>
 </html>
