@@ -101,34 +101,7 @@
   <section id="dispatch" class="page"></section>
   <section id="escalations" class="page"></section>
   <section id="sla" class="page"></section>
-  <section id="heatmap" class="page active">
-  <div class="card">
-    <h3>Portfolio Heat Map</h3>
-    <p class="muted">Real interactive USA map foundation. Demo pins only — work order integration comes next.</p>
-    <div class="realMapWrap">
-      <div class="realMapCard">
-        <div id="geoPortfolioMap" style="height:560px;width:100%;background:#e5e7eb;"></div>
-      </div>
-      <div class="mapSidePanel">
-        <div class="card">
-          <h3>Portfolio Summary</h3>
-          <div class="row"><b>Total Locations</b><span>754</span></div>
-          <div class="row"><b>Critical Sites</b><span>1</span></div>
-          <div class="row"><b>High Risk</b><span>1</span></div>
-          <div class="row"><b>Normal Sites</b><span>1</span></div>
-        </div>
-        <div class="card">
-          <h3>Map Legend</h3>
-          <div class="mapPinLegend">
-            <span>🟢 Normal</span>
-            <span>🟡 Warning</span>
-            <span>🔴 Critical</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+  <section id="heatmap" class="page active"></section>
   <section id="approvals" class="page"></section>
   <section id="copilot" class="page"></section>
   <section id="executive" class="page"></section>
@@ -136,7 +109,6 @@
   <section id="tenant" class="page"></section>
   <section id="documents" class="page"></section>
   <section id="settings" class="page"></section>
-
 
 
 </main>
@@ -161,59 +133,6 @@ window.addEventListener('DOMContentLoaded', function(){ setTimeout(window.forceD
 window.addEventListener('load', function(){ setTimeout(window.forceDemoCommandCenter, 50); setTimeout(window.forceDemoCommandCenter, 800); });
 </script>
 <script src="./CC CommandCenter — Run Your Portfolio with AI_files/app.js.download"></script>
-
-<script>
-(function(){
-  function ccAddDemoPins(map){
-    var locations = [
-      {name:"New York / Northeast", lat:40.7128, lng:-74.0060, status:"critical", color:"#dc2626"},
-      {name:"Dallas / Central", lat:32.7767, lng:-96.7970, status:"warning", color:"#f59e0b"},
-      {name:"Denver / Mountain", lat:39.7392, lng:-104.9903, status:"normal", color:"#16a34a"}
-    ];
-    locations.forEach(function(site){
-      L.circleMarker([site.lat, site.lng], {
-        radius: 10,
-        color: "#ffffff",
-        weight: 3,
-        fillColor: site.color,
-        fillOpacity: 1
-      }).addTo(map).bindPopup(
-        "<b>" + site.name + "</b><br>Demo " + site.status + " location"
-      );
-    });
-  }
-
-  window.initializePortfolioMap = function(){
-    var el = document.getElementById("geoPortfolioMap");
-    if (!el || !window.L) return;
-    if (window.portfolioMap) {
-      try { window.portfolioMap.remove(); } catch(e) {}
-      window.portfolioMap = null;
-    }
-    window.portfolioMap = L.map("geoPortfolioMap", {
-      zoomControl: true,
-      attributionControl: false
-    }).setView([39.8283, -98.5795], 4);
-
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 18
-    }).addTo(window.portfolioMap);
-
-    ccAddDemoPins(window.portfolioMap);
-    setTimeout(function(){ window.portfolioMap.invalidateSize(); }, 200);
-  };
-
-  var originalSetPage = window.setPage;
-  window.setPage = function(id){
-    if (typeof originalSetPage === "function") originalSetPage(id);
-    if (id === "heatmap") setTimeout(window.initializePortfolioMap, 150);
-  };
-
-  window.addEventListener("load", function(){
-    setTimeout(window.initializePortfolioMap, 300);
-  });
-})();
-</script>
 <script>window.addEventListener("load",()=>setTimeout(()=>document.body.classList.add("ccLoaded"),650)); setTimeout(()=>document.body.classList.add("ccLoaded"),2200);</script>
 
 

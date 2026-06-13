@@ -1834,50 +1834,113 @@ init();
 
 
 
-// === CommandCenter US Map Patch: force visible USA map if heat map area is empty ===
-(function ensureCommandCenterUSMap(){
-  const mapMarkup = `
-    <div class="cc-us-map-panel" id="portfolio-us-map">
-      <div class="cc-us-map-label"><span class="cc-us-map-label-dot"></span> USA Portfolio Map</div>
-      <svg class="cc-us-map-svg" viewBox="0 0 1000 620" role="img" aria-label="United States portfolio map">
-        <path class="cc-us-map-land" d="M128 196 L184 166 L260 147 L341 138 L421 125 L512 132 L604 128 L690 148 L778 177 L856 220 L902 280 L878 338 L820 383 L746 419 L654 453 L553 476 L448 480 L348 455 L260 413 L190 354 L143 286 Z" />
-        <path class="cc-us-map-land" d="M642 448 L705 480 L763 518 L731 552 L664 538 L614 492 Z" />
-        <path class="cc-us-map-land" d="M176 492 L218 468 L254 486 L236 526 L190 535 Z" />
-        <path class="cc-us-map-state-lines" d="M235 177 L245 405 M325 145 L330 450 M420 128 L415 475 M520 134 L508 476 M610 132 L585 465 M700 150 L660 438 M785 180 L730 414" />
-        <path class="cc-us-map-state-lines" d="M170 280 L890 280 M205 350 L830 350 M270 420 L735 420 M210 220 L850 220" />
-      </svg>
-      <div class="cc-us-map-footer">
-        <strong>Map foundation installed</strong>
-        Step 1 is visible USA map only. Next build adds green/yellow/red location pins, then attached work orders.
-      </div>
-    </div>`;
-  function install(){
-    if (document.getElementById("portfolio-us-map")) return;
-    const candidates = [
-      document.getElementById("portfolio-heat-map"),
-      document.getElementById("portfolioHeatMap"),
-      document.getElementById("heat-map"),
-      document.querySelector("[data-section='portfolio-heat-map']"),
-      document.querySelector(".portfolio-heat-map"),
-      document.querySelector(".heat-map"),
-      [...document.querySelectorAll("section, .card, .dashboard-card")].find(el => /portfolio heat map|heat map/i.test(el.textContent || ""))
-    ].filter(Boolean);
-    const target = candidates[0];
-    if (target) {
-      target.innerHTML = mapMarkup;
-    } else {
-      const container = document.querySelector("main") || document.querySelector("#app") || document.body;
-      const wrapper = document.createElement("section");
-      wrapper.className = "dashboard-card commandcenter-map-foundation";
-      wrapper.innerHTML = "<h2>Portfolio Heat Map</h2><p>Visible USA map foundation. Pins and work orders come next.</p>" + mapMarkup;
-      container.appendChild(wrapper);
+// V2.18.3: Removed fake SVG USA map injector. Heat Map now renders via Leaflet only.
+
+/* COMMANDCENTER V2.18.3 REAL MAP FINAL OVERRIDE
+   Purpose: kill the blue SVG blob and render the real Leaflet/OpenStreetMap USA layer only.
+   Scope: Portfolio Heat Map only. No auth/work orders/dashboard changes.
+*/
+(function commandCenterRealMapFinalOverride(){
+  function ccTier(site){
+    var score = (typeof riskScore === 'function') ? riskScore(site) : Number(site.risk_score || 0);
+    return score >= 90 ? 'critical' : score >= 65 ? 'high' : score >= 35 ? 'medium' : 'low';
+  }
+  function ccColor(site){
+    var tier = ccTier(site);
+    return tier === 'critical' ? '#dc2626' : tier === 'high' ? '#f59e0b' : tier === 'medium' ? '#eab308' : '#16a34a';
+  }
+  function ccHasGeo(site){
+    return Number.isFinite(Number(site.latitude)) && Number.isFinite(Number(site.longitude));
+  }
+  function ccMoney(n){
+    try { return typeof money === 'function' ? money(n) : '$' + Number(n || 0).toLocaleString(); }
+    catch(e){ return '$' + Number(n || 0).toLocaleString(); }
+  }
+  function ccPill(txt){
+    try { return typeof pill === 'function' ? pill(txt) : '<span class="pill">'+txt+'</span>'; }
+    catch(e){ return '<span class="pill">'+txt+'</span>'; }
+  }
+
+  window.renderHeatMap = function(x){
+    var target = document.getElementById('heatmap');
+    if(!target) return;
+    var sites = (x && x.ls) ? x.ls : ((window.db && db.locations) ? db.locations : []);
+    var mapReady = sites.filter(ccHasGeo);
+    var sorted = sites.slice().sort(function(a,b){ return (riskScore(b)||0) - (riskScore(a)||0); });
+    var top = sorted[0] || {};
+    var totalOpen = sites.reduce(function(s,l){ return s + Number(l.open || 0); }, 0);
+    var spend = sites.reduce(function(s,l){ return s + Number(l.spend || 0); }, 0);
+
+    target.innerHTML = `
+      <div class="card">
+        <div class="mapToolbar">
+          <div>
+            <h3>Real USA Portfolio Map</h3>
+            <p class="muted">Live OpenStreetMap USA layer. Pins are based on latitude/longitude. Click a pin or row to open the location cockpit.</p>
+          </div>
+          <button class="btn dark" type="button" onclick="renderHeatMap(ai())">Refresh Map</button>
+        </div>
+        <div class="mapPinLegend">
+          <span>🔴 Critical 90+</span><span>🟠 High 65-89</span><span>🟡 Medium 35-64</span><span>🟢 Low 0-34</span><span>Pin = location + work orders</span>
+        </div>
+        <div class="mapStatGrid">
+          <div class="mapStat"><div class="muted">Visible Sites</div><b>${sites.length}</b></div>
+          <div class="mapStat"><div class="muted">Map Pins</div><b>${mapReady.length}</b></div>
+          <div class="mapStat"><div class="muted">Open WOs</div><b>${totalOpen}</b></div>
+        </div>
+        <div class="realMapWrap">
+          <div class="realMapCard"><div id="geoPortfolioMap"></div></div>
+          <div class="mapSidePanel">
+            <div class="tile"><b>Highest Risk Site</b>${top.site ? `<div class="siteRiskCard" onclick="openSiteDrawer('${top.id}')"><b>${top.site}</b><div class="muted">${top.market || top.region || ''} · ${top.district || 'Unassigned'} · ${top.trade || ''}</div><br>${ccPill(top.risk || ccTier(top))} <span class="badge">Risk ${riskScore(top)}</span><div class="muted">${top.open || 0} open · ${top.repeat || 0} repeat · ${ccMoney(top.spend || 0)}</div></div>` : `<p class="muted">No site risk data available.</p>`}</div>
+            <div class="tile"><b>Portfolio Summary</b><div class="row"><b>Total Locations</b><span>${sites.length}</span></div><div class="row"><b>Map-ready Pins</b><span>${mapReady.length}</span></div><div class="row"><b>Open Work Orders</b><span>${totalOpen}</span></div><div class="row"><b>Visible Spend</b><span>${ccMoney(spend)}</span></div></div>
+            <div class="tile"><b>Top Risk Locations</b>${sorted.slice(0,8).map(function(l){return `<div class="siteRiskCard" onclick="openSiteDrawer('${l.id}')"><div style="display:flex;justify-content:space-between;gap:10px"><div><b>${l.site}</b><div class="muted">${l.market || l.region || ''} · ${l.trade || ''}</div></div><span class="badge">${riskScore(l)}</span></div></div>`;}).join('')}</div>
+          </div>
+        </div>
+      </div>`;
+
+    setTimeout(function(){
+      var el = document.getElementById('geoPortfolioMap');
+      if(!el) return;
+      if(!window.L){
+        el.innerHTML = '<div style="padding:18px">Leaflet did not load. The map library is missing.</div>';
+        return;
+      }
+      if(window.portfolioMap){
+        try { window.portfolioMap.remove(); } catch(e){}
+        window.portfolioMap = null;
+      }
+      window.portfolioMap = L.map('geoPortfolioMap', { zoomControl:true, attributionControl:false, scrollWheelZoom:false }).setView([39.8283,-98.5795], 4);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(window.portfolioMap);
+      var bounds = [];
+      mapReady.forEach(function(site){
+        var lat = Number(site.latitude), lng = Number(site.longitude);
+        var marker = L.circleMarker([lat,lng], { radius:10, color:'#ffffff', weight:3, fillColor:ccColor(site), fillOpacity:1 });
+        marker.addTo(window.portfolioMap).bindPopup(`<div class="ccPopup"><b>${site.site}</b><div class="muted">${site.address || 'Address pending'}<br>${site.market || site.region || ''} · ${site.trade || ''}<br>Risk ${riskScore(site)}</div><button onclick="openSiteDrawer('${site.id}')">Open Location Drawer</button></div>`);
+        marker.on('click', function(){ setTimeout(function(){ if(typeof openSiteDrawer === 'function') openSiteDrawer(site.id); }, 80); });
+        bounds.push([lat,lng]);
+      });
+      setTimeout(function(){
+        try {
+          window.portfolioMap.invalidateSize();
+          if(bounds.length > 1) window.portfolioMap.fitBounds(bounds, { padding:[35,35], maxZoom:6 });
+          else window.portfolioMap.setView([39.8283,-98.5795], 4);
+        } catch(e){}
+      }, 150);
+    }, 120);
+  };
+
+  var oldSetPage = window.setPage;
+  if(typeof oldSetPage === 'function'){
+    window.setPage = function(id){
+      var result = oldSetPage.apply(this, arguments);
+      if(id === 'heatmap') setTimeout(function(){ window.renderHeatMap(typeof ai === 'function' ? ai() : {}); }, 160);
+      return result;
+    };
+  }
+
+  window.addEventListener('load', function(){
+    if(document.getElementById('heatmap') && document.getElementById('heatmap').classList.contains('active')){
+      setTimeout(function(){ window.renderHeatMap(typeof ai === 'function' ? ai() : {}); }, 250);
     }
-  }
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", install);
-  } else {
-    install();
-  }
-  setTimeout(install, 500);
-  setTimeout(install, 1500);
+  });
 })();
