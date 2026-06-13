@@ -4,9 +4,10 @@
   "private": true,
   "description": "CommandCenter Enterprise V2.7 — single self-contained index.html build deployed to Vercel.",
   "scripts": {
+    "dev": "serve . -l 3000",
     "build": "mkdir -p dist && cp index.html dist/index.html",
-    "start": "npx serve .",
-    "preview": "npx serve dist"
+    "start": "serve . -l 3000",
+    "preview": "serve dist -l 3000"
   },
   "engines": {
     "node": "20.x"
