@@ -277,6 +277,7 @@ async function enterDemoCommandCenter(){
 window.enterDemoCommandCenter=enterDemoCommandCenter;
 
 async function initAuthGate(){
+  if(window.__COMMANDCENTER_DEMO_BYPASS__){ enableDemoAccess(); return true; }
   // Demo-first behavior: if Supabase is not configured, unlock local demo mode instead of trapping users on login.
   if(!hasSupabaseConfig()){
     enableDemoAccess();
@@ -297,6 +298,7 @@ async function initAuthGate(){
   return true;
 }
 async function appSignIn(){
+  if(window.__COMMANDCENTER_DEMO_BYPASS__){ await enterDemoCommandCenter(); return; }
   if(!hasSupabaseConfig()){
     await enterDemoCommandCenter();
     return;
@@ -314,6 +316,7 @@ async function appSignIn(){
   await init();
 }
 async function appSignOut(){
+  if(window.__COMMANDCENTER_DEMO_BYPASS__){ enableDemoAccess(); render(); toast("Demo mode stays open"); return; }
   if(supabaseClient) await supabaseClient.auth.signOut();
   currentSession=null;currentProfile=null;cloudReady=false;
   localStorage.removeItem("commandCenterRole");
@@ -1810,4 +1813,21 @@ init();
     if(document.body.classList.contains("authReady")) showAppShell();
     else showLoginGate();
   });
+})();
+
+
+/* COMMANDCENTER HARD DEMO BYPASS - final guard */
+(function(){
+  function hardOpen(){
+    try{
+      if(window.__COMMANDCENTER_DEMO_BYPASS__){
+        document.body.classList.add('authReady','demoMode','loggedIn');
+        var gate=document.getElementById('authGate'); if(gate) gate.style.setProperty('display','none','important');
+        var shell=document.getElementById('appShell'); if(shell) shell.style.display='grid';
+        localStorage.setItem('commandCenterRole','admin');
+      }
+    }catch(e){}
+  }
+  window.addEventListener('DOMContentLoaded', hardOpen);
+  window.addEventListener('load', function(){ hardOpen(); setTimeout(hardOpen,500); setTimeout(hardOpen,1500); });
 })();

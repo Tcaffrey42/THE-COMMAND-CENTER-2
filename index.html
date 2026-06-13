@@ -10,7 +10,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <link rel="stylesheet" href="./styles.css">
 </head>
-<body>
+<body class="authReady demoMode loggedIn">
 <div id="ccLoader" class="ccLoader" aria-label="CommandCenter loading screen">
   <div class="ccLoaderCard">
     <img class="ccLoaderLogo" src="./cc-commandcenter-loading.png" alt="CC CommandCenter loading logo">
@@ -20,7 +20,7 @@
   </div>
 </div>
 
-<div id="authGate" class="authGate">
+<div id="authGate" class="authGate" style="display:none!important">
   <div class="authCard">
     <img class="authLogo" src="./cc-commandcenter-stacked.png" alt="CC CommandCenter">
     <div class="kicker">Secure Login</div>
@@ -80,6 +80,22 @@
 <div class="toast" id="toast"></div><div class="modal" id="modal"><div class="box"><button class="close" onclick="closeModal()">Close</button><div id="modalBody"></div></div></div><div class="drawerOverlay" id="siteDrawer"><div class="drawerPanel"><div id="siteDrawerBody"></div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./env.js"></script>
+<script>
+// CommandCenter demo bypass: force the app open even if auth/session checks stall.
+window.__COMMANDCENTER_DEMO_BYPASS__ = true;
+window.forceDemoCommandCenter = function(){
+  try {
+    document.body.classList.add('authReady','demoMode','loggedIn');
+    var gate=document.getElementById('authGate'); if(gate) gate.style.setProperty('display','none','important');
+    var shell=document.getElementById('appShell'); if(shell) shell.style.display='grid';
+    localStorage.setItem('commandCenterRole','admin');
+    localStorage.setItem('commandCenterLoggedEmail','tim.caffrey@bossfacilityservices.com');
+    if (typeof window.render === 'function') window.render();
+  } catch(e) { console.warn('Demo bypass warning', e); }
+};
+window.addEventListener('DOMContentLoaded', function(){ setTimeout(window.forceDemoCommandCenter, 50); });
+window.addEventListener('load', function(){ setTimeout(window.forceDemoCommandCenter, 50); setTimeout(window.forceDemoCommandCenter, 800); });
+</script>
 <script src="./app.js"></script>
 <script>window.addEventListener("load",()=>setTimeout(()=>document.body.classList.add("ccLoaded"),650)); setTimeout(()=>document.body.classList.add("ccLoaded"),2200);</script>
 </body>
