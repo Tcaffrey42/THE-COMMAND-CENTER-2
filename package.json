@@ -1,11 +1,11 @@
 {
-  "name": "commandcenter-v2-7-clean-master",
-  "version": "2.7.1",
+  "name": "commandcenter-v2-16-1-auth-roles",
+  "version": "2.16.1",
   "private": true,
-  "description": "CommandCenter Enterprise V2.7 — single self-contained index.html build deployed to Vercel.",
+  "description": "CC CommandCenter V2.16.1 — multi-file static app (Supabase auth + roles, Leaflet map) deployed to Vercel.",
   "scripts": {
     "dev": "serve . -l 3000",
-    "build": "mkdir -p dist && cp index.html dist/index.html",
+    "build": "mkdir -p dist && cp -R index.html styles.css app.js auth.js env.js *.png *.svg *.sql README.md dist/ 2>/dev/null || true",
     "start": "serve . -l 3000",
     "preview": "serve dist -l 3000"
   },
