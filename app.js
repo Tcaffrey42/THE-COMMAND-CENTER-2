@@ -113,7 +113,7 @@ const CLOUD_TABLES={
  assets:"assets",
  vendors:"vendors",
  approvals:"approvals",
- users:"users",
+ users:"app_users",
  documents:"documents",
  tenants:"tenants",
  audit:"audit_logs"
@@ -146,131 +146,6 @@ async function cloudSignIn(){
  cloudReady=true;toast("Signed in");render();
 }
 async function cloudSignOut(){if(supabaseClient){await supabaseClient.auth.signOut();}cloudReady=false;toast("Signed out");render();}
-
-
-// ============================
-// V2.16 AUTH + USER ROLES
-// Uses your EXISTING Supabase project. No reconnect required.
-// Requires public.profiles table with: id, email, full_name, role, company.
-// ============================
-let currentSession=null;
-let currentProfile=null;
-const ROLE_PAGES={
-  admin:["warroom","amdashboard","dashboard","workorders","pm","dispatch","escalations","sla","locations","heatmap","proposals","approvals","assets","vendors","copilot","executive","cfo","projects","reports","tenant","documents","users","settings"],
-  executive:["warroom","dashboard","sla","locations","heatmap","proposals","approvals","assets","vendors","copilot","executive","cfo","projects","reports","documents"],
-  facility_manager:["warroom","amdashboard","dashboard","workorders","pm","dispatch","escalations","sla","locations","heatmap","proposals","approvals","assets","vendors","copilot","projects","documents"],
-  vendor:["workorders","dispatch","documents"],
-  technician:["workorders","dispatch","assets","documents"],
-  client:["dashboard","workorders","locations","heatmap","proposals","approvals","documents","copilot"]
-};
-const ROLE_PERMISSIONS={
-  admin:["create_work_order","create_proposal","export_data","assign_vendor","approve_spend","manage_users"],
-  executive:["export_data","approve_spend"],
-  facility_manager:["create_work_order","create_proposal","export_data","assign_vendor"],
-  vendor:[], technician:["create_work_order"], client:["create_work_order"]
-};
-function normalizeRole(role){
-  return String(role||"client").toLowerCase().replace(/\s+/g,"_").replace(/-/g,"_");
-}
-function activeRole(){return normalizeRole(currentProfile?.role || localStorage.getItem("commandCenterRole") || "client")}
-function canAccessPage(id){return (ROLE_PAGES[activeRole()]||ROLE_PAGES.client).includes(id)}
-function hasPermission(key){return (ROLE_PERMISSIONS[activeRole()]||[]).includes(key)}
-function visiblePages(){return pages.filter(p=>canAccessPage(p[0]))}
-function setAuthMessage(msg){let el=document.getElementById("authMessage"); if(el) el.textContent=msg||"";}
-
-function isDemoLogin(email,password){
-  const e=String(email||"").trim().toLowerCase();
-  const pw=String(password||"").trim();
-  return (e==="admin@commandcenter.local" || e==="demo@commandcenter.local" || e==="tcaffrey42@gmail.com") && (pw==="demo" || pw==="Demo123!" || pw==="commandcenter");
-}
-function startLocalDemoSession(email){
-  currentSession={user:{id:"local-demo-admin",email:email||"admin@commandcenter.local",user_metadata:{full_name:"Tim Caffrey"}}};
-  currentProfile={id:"local-demo-admin",email:currentSession.user.email,full_name:"Tim Caffrey",role:"admin",company:"CommandCenter"};
-  cloudReady=false;
-  localStorage.setItem("commandCenterLocalDemoAuth","true");
-  localStorage.setItem("commandCenterLoggedEmail",currentSession.user.email);
-  localStorage.setItem("commandCenterRole","admin");
-  applyRoleUI();
-}
-function ensureSupabaseClient(){
-  if(!hasSupabaseConfig()){setAuthMessage("Supabase config missing or Supabase library did not load. Check env.js and internet/CDN access."); return false;}
-  if(!supabaseClient) supabaseClient=window.supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey);
-  return true;
-}
-async function loadCurrentProfile(){
-  if(!supabaseClient||!currentSession?.user) return null;
-  const user=currentSession.user;
-  let {data,error}=await supabaseClient.from("profiles").select("id,email,full_name,role,company").eq("id",user.id).maybeSingle();
-  if(error){console.warn("Profile read failed",error);setAuthMessage(error.message);return null;}
-  if(!data){
-    const fallback={id:user.id,email:user.email,full_name:user.user_metadata?.full_name||user.email,role:"client",company:"CommandCenter"};
-    const up=await supabaseClient.from("profiles").upsert(fallback,{onConflict:"id"}).select().maybeSingle();
-    data=up.data||fallback;
-  }
-  currentProfile=data;
-  localStorage.setItem("commandCenterRole",normalizeRole(data.role));
-  localStorage.setItem("commandCenterLoggedEmail",data.email||user.email||"");
-  return data;
-}
-function applyRoleUI(){
-  document.body.classList.add("authReady");
-  const badge=document.getElementById("roleBadge");
-  if(badge){badge.textContent=`${(currentProfile?.role||"client").replace(/_/g," ")} · ${currentProfile?.email||currentSession?.user?.email||"signed in"}`;}
-  document.querySelectorAll("[data-permission]").forEach(el=>{
-    const ok=hasPermission(el.getAttribute("data-permission"));
-    el.classList.toggle("hiddenByRole",!ok);
-  });
-}
-async function initAuthGate(){
-  if(localStorage.getItem("commandCenterLocalDemoAuth")==="true"){
-    startLocalDemoSession(localStorage.getItem("commandCenterLoggedEmail")||"admin@commandcenter.local");
-    return true;
-  }
-  if(!ensureSupabaseClient()) return false;
-  const {data,error}=await supabaseClient.auth.getSession();
-  if(error){setAuthMessage(error.message);return false;}
-  currentSession=data.session;
-  cloudReady=Boolean(currentSession);
-  if(!currentSession){document.body.classList.remove("authReady");return false;}
-  await loadCurrentProfile();
-  applyRoleUI();
-  return true;
-}
-async function appSignIn(){
-  const email=(document.getElementById("authEmail")||{}).value;
-  const password=(document.getElementById("authPassword")||{}).value;
-  if(!email||!password){setAuthMessage("Enter email and password.");return;}
-  setAuthMessage("Signing in...");
-
-  // Demo safety net: lets the app open even when Supabase Authentication > Users is empty.
-  // Use this for demos/dev, then create real users in Supabase for production.
-  if(isDemoLogin(email,password)){
-    startLocalDemoSession(email);
-    setAuthMessage("");
-    await init();
-    return;
-  }
-
-  if(!ensureSupabaseClient()) return;
-  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
-  if(error){
-    setAuthMessage(error.message + " — For demo access use admin@commandcenter.local / demo, or create this user in Supabase Authentication > Users.");
-    return;
-  }
-  currentSession=data.session;
-  await loadCurrentProfile();
-  setAuthMessage("");
-  await init();
-}
-async function appSignOut(){
-  if(supabaseClient) await supabaseClient.auth.signOut();
-  currentSession=null;currentProfile=null;cloudReady=false;
-  localStorage.removeItem("commandCenterRole");
-  localStorage.removeItem("commandCenterLocalDemoAuth");
-  document.body.classList.remove("authReady");
-  setAuthMessage("Signed out.");
-}
-
 function mapRows(rows,mapper){return (rows||[]).map(mapper)}
 function demoToCloudPayload(){
  return {
@@ -832,22 +707,16 @@ function closeWO(id){
  save();render();woModal(id);toast("Closed");
 }
 
-function setPage(id){if(!canAccessPage(id)){toast("Role access required");return;} pages.forEach(p=>document.getElementById(p[0]).classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.id===id));let p=pages.find(x=>x[0]===id);pageTitle.textContent=p[1];pageSub.textContent=p[2];render()}
+function setPage(id){pages.forEach(p=>document.getElementById(p[0]).classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.id===id));let p=pages.find(x=>x[0]===id);pageTitle.textContent=p[1];pageSub.textContent=p[2];render()}
 function setClient(v){db.activeClient=Number(v);save();render()}
 async function init(){
- const authed=await initAuthGate();
- if(!authed) return;
+ await initCloudLayer();
  normalizeV24Complete();normalizeV24();normalizeV29Ops();
- const vp=visiblePages();
- nav.innerHTML=vp.map((p,i)=>`<button data-id="${p[0]}" onclick="setPage('${p[0]}')" class="${i==0?'active':''}">${p[1]}</button>`).join("");
- pages.forEach((p,i)=>document.getElementById(p[0])?.classList.toggle("active",i===0&&canAccessPage(p[0])));
- const first=vp[0]||pages[0];
- if(first){document.getElementById(first[0])?.classList.add("active");pageTitle.textContent=first[1];pageSub.textContent=first[2];}
+ nav.innerHTML=pages.map((p,i)=>`<button data-id="${p[0]}" onclick="setPage('${p[0]}')" class="${i==0?'active':''}">${p[1]}</button>`).join("");
  hydrateSelectors();
- if(cloudReady){try{await loadFromSupabase();hydrateSelectors();}catch(e){console.warn("Startup cloud load failed; local demo continues",e);}}
+ if(cloudReady){try{await loadFromSupabase();hydrateSelectors();}catch(e){console.warn("Startup cloud load failed; local demo continues",e);cloudReady=false;}}
  ensureSeedDataGuard();
  hydrateSelectors();
- applyRoleUI();
  render();
 }
 function metric(label,value,sub){return `<div class="card metric"><div class="label">${label}</div><div class="value">${value}</div><div class="sub">${sub}</div></div>`}
@@ -998,7 +867,7 @@ async function submitAMQuickUpdate(){
  save(); if(updated) await cloudUpsert('workOrders',updated); await cloudInsertAudit('AM quick update saved for '+id); closeModal(); render(); toast('Quick update saved');
 }
 
-function render(){applyRoleUI();let x=ai(), q=(search.value||"").toLowerCase();metrics.innerHTML=metric("Portfolio Health",x.health+"/100","AI operating score")+metric("Open Work Orders",x.wo.length,x.at.length+" at risk/breached")+metric("Pending Proposal $",money(x.pending),"Awaiting approval")+metric("Replace Reviews",x.repl.length,"Capex candidates");renderWarroom(x);renderAMDashboard(x);renderDashboard(x);renderWO(x,q);renderPMPlanner(x);renderDispatch(x);renderEscalations(x);renderSLA(x);renderLocations(x,q);renderHeatMap(x);renderProposals(x);renderApprovals();renderAssetHistory(x);renderVendorCards();renderCopilot(x);renderExecutive(x);renderCFO(x);renderProjects(x);renderBoardReports(x);renderTenant();renderDocuments();renderUsers();renderSettings()}
+function render(){let x=ai(), q=(search.value||"").toLowerCase();metrics.innerHTML=metric("Portfolio Health",x.health+"/100","AI operating score")+metric("Open Work Orders",x.wo.length,x.at.length+" at risk/breached")+metric("Pending Proposal $",money(x.pending),"Awaiting approval")+metric("Replace Reviews",x.repl.length,"Capex candidates");renderWarroom(x);renderAMDashboard(x);renderDashboard(x);renderWO(x,q);renderPMPlanner(x);renderDispatch(x);renderEscalations(x);renderSLA(x);renderLocations(x,q);renderHeatMap(x);renderProposals(x);renderApprovals();renderAssetHistory(x);renderVendorCards();renderCopilot(x);renderExecutive(x);renderCFO(x);renderProjects(x);renderBoardReports(x);renderTenant();renderDocuments();renderUsers();renderSettings()}
 function renderWarroom(x){
 let user=loggedUser();
 let mq=missionQueues(x);
@@ -1131,7 +1000,7 @@ function optionList(arr,labelFn,valFn){
  return arr.map(x=>`<option value="${valFn(x)}">${labelFn(x)}</option>`).join("");
 }
 
-function openWOForm(){if(!hasPermission("create_work_order")){toast("Your role cannot create work orders");return;}
+function openWOForm(){
  let ls=scope(db.locations), as=scope(db.assets);
  openModal(`<h2>Create Work Order</h2>
  <p class="muted">Operator intake form. This creates an actual ticket in the queue.</p>
@@ -1171,7 +1040,7 @@ async function submitWOForm(){
  save();closeModal();render();toast(cloudReady?"Work order created + synced":"Work order created locally");
 }
 
-function openProposalForm(){if(!hasPermission("create_proposal")){toast("Your role cannot create proposals");return;}
+function openProposalForm(){
  let ls=scope(db.locations), wos=scope(db.workOrders);
  openModal(`<h2>Create Proposal</h2>
  <p class="muted">Proposal intake form. This adds a proposal into the approval workflow.</p>
@@ -1208,7 +1077,7 @@ function submitProposalForm(){
 function addWO(){let l=scope(db.locations)[0]||db.locations[0];let a=scope(db.assets).find(x=>x.location===l.id)||scope(db.assets)[0];db.workOrders.unshift({id:"WO-"+Math.floor(90000+Math.random()*9999),client:db.activeClient,asset:a?a.id:"",location:l.id,trade:a?a.trade:"HVAC",priority:"Normal",status:"New",owner:"Unassigned",vendor:"TBD",age:0,cost:0,sla:"On Track",notes:"New ticket created."});save();render();toast("Work order created")}
 function addProposal(){let l=scope(db.locations)[0]||db.locations[0];db.proposals.unshift({id:"P-"+Math.floor(5000+Math.random()*999),client:db.activeClient,location:l.id,wo:"",trade:"HVAC",amount:0,status:"Draft",age:0,scope:"New proposal draft."});save();render();toast("Proposal created")}
 async function setProp(id,status){let updated=null;db.proposals=db.proposals.map(p=>{if(p.id!==id)return p;updated={...p,status};return updated;});await cloudUpsert("proposals",updated);await cloudInsertAudit("Proposal "+id+" marked "+status);save();render();toast("Proposal "+status+(cloudReady?" + synced":""))}
-function exportData(){if(!hasPermission("export_data")){toast("Your role cannot export data");return;}let blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"});let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="commandcenter-enterprise-data.json";a.click()}
+function exportData(){let blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"});let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="commandcenter-enterprise-data.json";a.click()}
 function copyReport(){navigator.clipboard.writeText(`${c().name}: Portfolio Control Summary\nOpen work orders: ${ai().wo.length}\nPending proposal dollars: ${money(ai().pending)}\nReplace-review assets: ${ai().repl.length}\nHealth score: ${ai().health}/100`);toast("Executive summary copied")}
 function resetDemo(){localStorage.removeItem("commandCenterEnterpriseData");db=JSON.parse(JSON.stringify(seed));
 
@@ -1575,79 +1444,3 @@ function renderAssetHistory(x){
 }
 
 init();
-
-// =====================================================
-// V2.16.34 FINAL SAFE PORTFOLIO HEAT MAP PATCH
-// Scope: Portfolio Heat Map only. No Leaflet/CDN. No iframe.
-// Renders a visible USA SVG map first, then overlays heat pins from db.locations.
-// Pin number = attached work order count. Pin click = existing site drawer + attached WOs.
-// =====================================================
-function ccSafeHtml(v){return String(v??'').replace(/[&<>"]/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch];});}
-function ccHeatLocations(){
- const active=Number(db?.activeClient??0);
- const sites=Array.isArray(db?.locations)?db.locations:[];
- const filtered=sites.filter(l=>Number(l.client)===active);
- return filtered.length?filtered:sites;
-}
-function ccWorkOrdersForLocation(locationId){return (Array.isArray(db?.workOrders)?db.workOrders:[]).filter(w=>w.location===locationId);}
-function ccRiskValue(site){
- if(typeof riskScore==='function') return Number(riskScore(site)||0);
- return Number(site?.risk_score||site?.riskScore||site?.open*7+site?.repeat*12||0);
-}
-function ccRiskClass(score){return score>=90?'critical':score>=65?'high':score>=35?'medium':'low';}
-function ccProjectUsaPin(site){
- const lat=Number(site.latitude), lon=Number(site.longitude);
- if(!Number.isFinite(lat)||!Number.isFinite(lon)) return null;
- // Lower 48 projection tuned for the dashboard panel.
- const minLon=-125, maxLon=-66, minLat=24, maxLat=50;
- const x=((lon-minLon)/(maxLon-minLon))*100;
- const y=((maxLat-lat)/(maxLat-minLat))*100;
- if(x<-5||x>105||y<-8||y>108) return null;
- return {x:Math.max(4,Math.min(96,x)),y:Math.max(7,Math.min(93,y))};
-}
-function ccUsaSvgMap(){
- return `<svg class="ccUsaSvg" viewBox="0 0 1000 600" role="img" aria-label="USA portfolio heat map">
-  <defs>
-   <linearGradient id="ccUsaLand" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f8fafc"/><stop offset="1" stop-color="#dbeafe"/></linearGradient>
-   <filter id="ccGlow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-  </defs>
-  <rect width="1000" height="600" rx="26" fill="#07111f"/>
-  <g opacity=".2" stroke="#38bdf8" stroke-width="1">
-   <path d="M85 110 H930 M85 190 H930 M85 270 H930 M85 350 H930 M85 430 H930 M85 510 H930"/>
-   <path d="M130 70 V535 M250 70 V535 M370 70 V535 M490 70 V535 M610 70 V535 M730 70 V535 M850 70 V535"/>
-  </g>
-  <path filter="url(#ccGlow)" fill="url(#ccUsaLand)" stroke="#60a5fa" stroke-width="4" d="M138 242 L176 190 L258 164 L350 126 L475 108 L585 126 L690 150 L800 190 L870 247 L850 302 L788 330 L746 378 L694 405 L625 427 L570 456 L495 450 L433 423 L356 430 L292 392 L238 375 L202 330 L145 305 Z"/>
-  <path fill="#bfdbfe" opacity=".75" stroke="#60a5fa" stroke-width="3" d="M195 405 L238 420 L285 462 L330 508 L305 528 L247 492 L197 455 Z"/>
-  <path fill="#bfdbfe" opacity=".75" stroke="#60a5fa" stroke-width="3" d="M794 394 L836 420 L858 468 L840 520 L800 490 L780 440 Z"/>
-  <text x="58" y="60" fill="#93c5fd" font-size="18" font-weight="800">CC CommandCenter USA Portfolio Heat Map</text>
-  <text x="58" y="548" fill="#bae6fd" font-size="13" font-weight="700">Self-contained SVG layer • no CDN • no external map dependency</text>
- </svg>`;
-}
-function ccRenderUsaPins(sites){
- return sites.map(site=>{
-  const pt=ccProjectUsaPin(site); if(!pt) return '';
-  const wos=ccWorkOrdersForLocation(site.id);
-  const score=ccRiskValue(site); const cls=ccRiskClass(score);
-  const label=ccSafeHtml(site.site||site.id||'Site');
-  return `<button class="ccUsaPin ${cls}" style="left:${pt.x}%;top:${pt.y}%" title="${label}: ${wos.length} WOs" onclick="openSiteDrawer('${ccSafeHtml(site.id)}')"><span>${wos.length}</span></button><div class="ccUsaPinLabel" style="left:${pt.x}%;top:${pt.y}%">${label}</div>`;
- }).join('');
-}
-function ccRenderSiteRows(sites){
- const ranked=[...sites].sort((a,b)=>ccRiskValue(b)-ccRiskValue(a));
- return ranked.map(site=>{
-  const wos=ccWorkOrdersForLocation(site.id); const score=ccRiskValue(site);
-  return `<div class="ccMapSiteRow" onclick="openSiteDrawer('${ccSafeHtml(site.id)}')"><div><b>${ccSafeHtml(site.site||site.id)}</b><div class="muted">${ccSafeHtml(site.market||site.region||'Market pending')} · ${ccSafeHtml(site.trade||'Trade pending')}</div></div><div><span class="badge">${wos.length} WO</span> <span class="badge">Risk ${score}</span></div></div>`;
- }).join('') || `<p class="muted">No locations loaded for this client yet.</p>`;
-}
-function renderHeatMap(x){
- const panel=document.getElementById('heatmap');
- if(!panel) return;
- const sites=ccHeatLocations();
- const mapReady=sites.filter(ccProjectUsaPin);
- const openWos=sites.reduce((n,l)=>n+ccWorkOrdersForLocation(l.id).length,0);
- const spend=sites.reduce((n,l)=>n+Number(l.spend||0),0);
- panel.innerHTML=`<div class="card ccHeatMapCard"><div class="mapToolbar"><div><h3>Portfolio Heat Map</h3><p class="muted">USA map and heat pins rebuilt inside the existing dashboard. Pin number equals attached work orders. Click any pin or site row to open the location drawer.</p></div><button class="btn dark" type="button" onclick="renderHeatMap(ai())">Refresh Map</button></div>
- <div class="mapStatGrid"><div class="mapStat"><div class="muted">Locations</div><b>${sites.length}</b></div><div class="mapStat"><div class="muted">Pins</div><b>${mapReady.length}</b></div><div class="mapStat"><div class="muted">Attached WOs</div><b>${openWos}</b></div><div class="mapStat"><div class="muted">Spend</div><b>${typeof money==='function'?money(spend):spend}</b></div></div>
- <div class="ccUsaMapLayout"><div class="ccUsaMapBox">${ccUsaSvgMap()}<div class="ccUsaPinLayer">${ccRenderUsaPins(mapReady)}</div></div><div class="ccUsaSide"><h3>Location Drilldown</h3><p class="muted">These rows use the same location/work-order links as the pins.</p>${ccRenderSiteRows(sites)}</div></div></div>`;
-}
-function refreshPortfolioMap(){renderHeatMap(ai()); if(typeof toast==='function') toast('USA heat map refreshed');}

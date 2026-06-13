@@ -6,6 +6,8 @@
 <title>CC CommandCenter — Run Your Portfolio with AI</title>
 <link rel="icon" type="image/png" href="./cc-commandcenter-app-icon.png">
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQfQhd8lG/9dOfH7WwkxqUH7m3BzLfk=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -17,34 +19,20 @@
     <div class="ccLoaderPct">72%</div>
   </div>
 </div>
-
-<div id="authGate" class="authGate">
-  <div class="authCard">
-    <img class="authLogo" src="./cc-commandcenter-stacked.png" alt="CC CommandCenter">
-    <div class="kicker">Secure Login</div>
-    <h1>CommandCenter</h1>
-    <p>Sign in with your Supabase user account. Your role controls what you can see and do.</p>
-    <input id="authEmail" type="email" placeholder="Email" autocomplete="email">
-    <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
-    <button class="btn dark authBtn" onclick="appSignIn()">Login</button>
-    <div id="authMessage" class="authMessage"></div>
-    <div class="authHint">Roles supported: Admin, Executive, Facility Manager, Vendor, Technician, Client.</div>
-  </div>
-</div>
-<div class="app" id="appShell">
+<div class="app">
 <aside class="side">
   <div class="brand"><div class="brandMark approvedBrand"><img class="brandHeroLogo" src="./cc-commandcenter-stacked.png" alt="CC CommandCenter — Run your portfolio with AI"></div><p>The Facilities Operating System for work orders, assets, vendors, projects, approvals, spend, and executive control.</p><div class="brandTag">Visibility. Accountability. Control.</div></div>
   <div class="nav" id="nav"></div>
 </aside>
 <main class="main">
   <div class="top">
-    <div class="title"><div class="kicker">CC CommandCenter V2.16.21 Supabase Env Login Master</div><h2 id="pageTitle">Mission Control</h2><p id="pageSub">Map, pins, location drawer, asset drilldown, and work order visibility across the portfolio.</p></div>
+    <div class="title"><div class="kicker">CC CommandCenter Enterprise V2.15.7</div><h2 id="pageTitle">Mission Control</h2><p id="pageSub">Map, pins, location drawer, asset drilldown, and work order visibility across the portfolio.</p></div>
     <div class="controls">
       <select id="clientSelect" onchange="setClient(this.value)"></select><select id="loginUserSelect" onchange="setLoginUser(this.value)"></select>
       <input id="search" placeholder="Global search..." oninput="render()"/>
-      <button class="btn dark" data-permission="create_work_order" onclick="openWOForm()">+ Work Order</button>
-      <button class="btn" data-permission="create_proposal" onclick="openProposalForm()">+ Proposal</button>
-      <button class="btn" data-permission="export_data" onclick="exportData()">Export JSON</button><button class="btn" id="logoutBtn" onclick="appSignOut()">Logout</button><span id="roleBadge" class="deployBadge">Role loading</span>
+      <button class="btn dark" onclick="openWOForm()">+ Work Order</button>
+      <button class="btn" onclick="openProposalForm()">+ Proposal</button>
+      <button class="btn" onclick="exportData()">Export JSON</button><span class="deployBadge">Vercel staging-ready</span>
     </div>
   </div>
   <section class="metrics" id="metrics"></section>
@@ -78,6 +66,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./env.js"></script>
 <script src="./app.js"></script>
+<script src="./auth.js"></script>
 <script>window.addEventListener("load",()=>setTimeout(()=>document.body.classList.add("ccLoaded"),650)); setTimeout(()=>document.body.classList.add("ccLoaded"),2200);</script>
 </body>
 </html>
