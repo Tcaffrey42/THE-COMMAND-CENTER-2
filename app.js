@@ -25,8 +25,7 @@ proposals:[
 {id:"P-5100",client:1,location:"FG-PDX",wo:"WO-90111",trade:"Refresh",amount:885000,status:"Draft",age:1,scope:"Full restaurant refresh and reimage package."}
 ],
 assets:[
-{id:"A-RTU-1",client:0,location:"L522",asset:"RTU-1",trade:"HVAC",age:14,repairs:7,spend12:38500,replacement:56000},
-{id:"A-PL-2",client:0,location:"L319",asset:"Main Drain Line",trade:"Plumbing",age:22,repairs:5,spend12:18800,replacement:26000},
+{id:"A-RTU-1",client:0,location:"L522",asset:"RTU-1",trade:"HVAC",age:14,repairs:7,spend12:38500,replacement:56000},{id:"A-PL-2",client:0,location:"L319",asset:"Main Drain Line",trade:"Plumbing",age:22,repairs:5,spend12:18800,replacement:26000},
 {id:"A-DOOR-9",client:2,location:"PC-118",asset:"Rear Security Door",trade:"Doors",age:9,repairs:4,spend12:9200,replacement:14000},
 {id:"A-LIGHT-1",client:0,location:"L101",asset:"Lobby Lighting Package",trade:"Lighting",age:8,repairs:3,spend12:4200,replacement:12000},
 {id:"A-BAR-1",client:1,location:"FG-PDX",asset:"Bar Millwork / Host Stand",trade:"Millwork",age:18,repairs:1,spend12:126000,replacement:185000}
@@ -98,6 +97,59 @@ function ensureSeedDataGuard(){
 ensureSeedDataGuard();
 
 // ============================
+// V2.18 PRIORITIES 1-4 DATA UPGRADE
+// Priority 1: real USA heat map + pins + work orders
+// Priority 2: 50+ asset intelligence registry
+// Priority 3: vendor scorecards/action logic
+// Priority 4: executive dashboard/action center
+// ============================
+function ensureV218PriorityData(){
+ const assetTypes=[
+  "RTU","Split System","Compressor","Condenser","Evaporator Coil","Thermostat","Exhaust Fan","Make-Up Air Unit","Walk-In Cooler","Walk-In Freezer","Ice Machine","Water Heater","Boiler","Backflow Preventer","Grease Trap","Sump Pump","Main Electrical Panel","Sub Panel","Transformer","Generator","Lighting Control Panel","Emergency Lights","Exit Signs","Exterior Signage","Monument Sign","Automatic Door","Storefront Door","Overhead Door","Dock Door","Door Hardware","Access Control","Alarm Panel","Cameras","Fire Alarm Panel","Sprinkler System","Ansul System","Roof Section","Gutter System","Flooring","Ceiling Grid","Millwork","Bar Equipment","POS Station","Restroom Fixture","Hand Dryer","Toilet","Sink","Parking Lot Lights","Asphalt Area","Dumpster Enclosure","Landscaping Zone","Irrigation Controller"
+ ];
+ const locations=(db.locations&&db.locations.length?db.locations:seed.locations)||[];
+ const existing=new Set((db.assets||[]).map(a=>a.id));
+ const makes=["Carrier","Trane","Lennox","Rheem","Siemens","Honeywell","Stanley","Horton","Kohler","Square D","York","Daikin"];
+ assetTypes.forEach((type,i)=>{
+  const location=locations[i%locations.length]||{};
+  const id="V218-ASSET-"+String(i+1).padStart(3,"0");
+  if(existing.has(id))return;
+  const age=[3,6,9,12,14,16,19,21][i%8];
+  const repairs=[1,2,3,4,5,6,7,3][i%8];
+  const replacement=[9000,14000,22000,30000,42000,56000,76000,12000][i%8];
+  const spend12=[950,1800,4200,6100,8400,11750,16200,6900][i%8];
+  db.assets.push({
+   id,client:Number(location.client||0),location:location.id||"L101",asset:type,trade:tradeForAssetType(type),age,repairs,spend12,replacement,
+   manufacturer:makes[i%makes.length],model:"CC-"+(2200+i),serial:"SN-"+(100000+i*791),installDate:String(2026-age)+"-06-01",
+   condition:age>=16?"Poor":age>=12?"Fair":"Good",warranty:age<5?"Active":"Expired",photos:[],documents:[]
+  });
+ });
+ (db.vendors||[]).forEach((v,i)=>{
+  if(v.firstFix==null)v.firstFix=Math.max(55,Math.min(98,Number(v.score||75)+7-(i*3)));
+  if(v.rework==null)v.rework=Math.max(2,Math.round((100-Number(v.score||75))/3));
+  if(v.nte==null)v.nte=Math.max(60,Math.min(98,Number(v.sla||80)+4));
+  if(v.proposalTurnaround==null)v.proposalTurnaround=(1.2+i*.8).toFixed(1)+"d";
+  if(v.costVariance==null)v.costVariance=(Number(v.score||75)>=85?"-2%":Number(v.score||75)>=75?"+6%":Number(v.score||75)>=65?"+14%":"+22%");
+  if(v.action==null)v.action=Number(v.score||0)<70?"Source alternate vendor and restrict P1 routing":Number(v.score||0)<80?"Watch SLA and require ETA discipline":"Preferred vendor for matched region/trade";
+ });
+ localStorage.setItem("commandCenterEnterpriseData",JSON.stringify(db));
+}
+function tradeForAssetType(type){
+ const t=String(type||"").toLowerCase();
+ if(t.includes("rtu")||t.includes("compressor")||t.includes("condenser")||t.includes("coil")||t.includes("thermostat")||t.includes("exhaust")||t.includes("make-up"))return "HVAC";
+ if(t.includes("cooler")||t.includes("freezer")||t.includes("ice"))return "Refrigeration";
+ if(t.includes("water")||t.includes("boiler")||t.includes("backflow")||t.includes("grease")||t.includes("sump")||t.includes("toilet")||t.includes("sink"))return "Plumbing";
+ if(t.includes("panel")||t.includes("transformer")||t.includes("generator")||t.includes("lighting")||t.includes("exit")||t.includes("emergency"))return "Electrical";
+ if(t.includes("door")||t.includes("access")||t.includes("alarm")||t.includes("camera"))return "Doors/Security";
+ if(t.includes("roof")||t.includes("gutter"))return "Roofing";
+ if(t.includes("floor")||t.includes("ceiling")||t.includes("millwork")||t.includes("bar")||t.includes("pos")||t.includes("restroom"))return "Refresh";
+ if(t.includes("parking")||t.includes("asphalt")||t.includes("dumpster")||t.includes("landscaping")||t.includes("irrigation"))return "Exterior";
+ return "General Repairs";
+}
+ensureV218PriorityData();
+
+
+// ============================
 // SPRINT 1 CLOUD FOUNDATION
 // ============================
 // Fill these in from Supabase Project Settings > API before going live.
@@ -113,7 +165,7 @@ const CLOUD_TABLES={
  assets:"assets",
  vendors:"vendors",
  approvals:"approvals",
- users:"users",
+ users:"app_users",
  documents:"documents",
  tenants:"tenants",
  audit:"audit_logs"
@@ -177,23 +229,8 @@ function canAccessPage(id){return (ROLE_PAGES[activeRole()]||ROLE_PAGES.client).
 function hasPermission(key){return (ROLE_PERMISSIONS[activeRole()]||[]).includes(key)}
 function visiblePages(){return pages.filter(p=>canAccessPage(p[0]))}
 function setAuthMessage(msg){let el=document.getElementById("authMessage"); if(el) el.textContent=msg||"";}
-
-function isDemoLogin(email,password){
-  const e=String(email||"").trim().toLowerCase();
-  const pw=String(password||"").trim();
-  return (e==="admin@commandcenter.local" || e==="demo@commandcenter.local" || e==="tcaffrey42@gmail.com") && (pw==="demo" || pw==="Demo123!" || pw==="commandcenter");
-}
-function startLocalDemoSession(email){
-  currentSession={user:{id:"local-demo-admin",email:email||"admin@commandcenter.local",user_metadata:{full_name:"Tim Caffrey"}}};
-  currentProfile={id:"local-demo-admin",email:currentSession.user.email,full_name:"Tim Caffrey",role:"admin",company:"CommandCenter"};
-  cloudReady=false;
-  localStorage.setItem("commandCenterLocalDemoAuth","true");
-  localStorage.setItem("commandCenterLoggedEmail",currentSession.user.email);
-  localStorage.setItem("commandCenterRole","admin");
-  applyRoleUI();
-}
 function ensureSupabaseClient(){
-  if(!hasSupabaseConfig()){setAuthMessage("Supabase config missing or Supabase library did not load. Check env.js and internet/CDN access."); return false;}
+  if(!hasSupabaseConfig()){setAuthMessage("Add your Supabase URL and anon key in env.js first."); return false;}
   if(!supabaseClient) supabaseClient=window.supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey);
   return true;
 }
@@ -222,10 +259,6 @@ function applyRoleUI(){
   });
 }
 async function initAuthGate(){
-  if(localStorage.getItem("commandCenterLocalDemoAuth")==="true"){
-    startLocalDemoSession(localStorage.getItem("commandCenterLoggedEmail")||"admin@commandcenter.local");
-    return true;
-  }
   if(!ensureSupabaseClient()) return false;
   const {data,error}=await supabaseClient.auth.getSession();
   if(error){setAuthMessage(error.message);return false;}
@@ -237,26 +270,13 @@ async function initAuthGate(){
   return true;
 }
 async function appSignIn(){
+  if(!ensureSupabaseClient()) return;
   const email=(document.getElementById("authEmail")||{}).value;
   const password=(document.getElementById("authPassword")||{}).value;
   if(!email||!password){setAuthMessage("Enter email and password.");return;}
   setAuthMessage("Signing in...");
-
-  // Demo safety net: lets the app open even when Supabase Authentication > Users is empty.
-  // Use this for demos/dev, then create real users in Supabase for production.
-  if(isDemoLogin(email,password)){
-    startLocalDemoSession(email);
-    setAuthMessage("");
-    await init();
-    return;
-  }
-
-  if(!ensureSupabaseClient()) return;
   const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
-  if(error){
-    setAuthMessage(error.message + " — For demo access use admin@commandcenter.local / demo, or create this user in Supabase Authentication > Users.");
-    return;
-  }
+  if(error){setAuthMessage(error.message);return;}
   currentSession=data.session;
   await loadCurrentProfile();
   setAuthMessage("");
@@ -266,7 +286,6 @@ async function appSignOut(){
   if(supabaseClient) await supabaseClient.auth.signOut();
   currentSession=null;currentProfile=null;cloudReady=false;
   localStorage.removeItem("commandCenterRole");
-  localStorage.removeItem("commandCenterLocalDemoAuth");
   document.body.classList.remove("authReady");
   setAuthMessage("Signed out.");
 }
@@ -1039,6 +1058,77 @@ dashboard.innerHTML=`<div class="grid2">
 <div class="card"><h3>Client Profile</h3><div class="row"><b>Vertical</b><span>${c().vertical}</span></div><div class="row"><b>Locations</b><span>${c().locations.toLocaleString()}</span></div><div class="row"><b>Executive Owner</b><span>${c().owner}</span></div></div>
 </div>`}
 
+
+function ccEscape(s){return String(s||"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]))}
+function aiCopilotWOContext(id){
+ let w=db.workOrders.find(x=>x.id===id); if(!w)return null;
+ let l=loc(w.location)||{};
+ let a=db.assets.find(x=>x.id===w.asset)||{};
+ let p=db.proposals.filter(x=>x.wo===w.id);
+ let v=db.vendors.find(x=>x.name===w.vendor)||{};
+ let sv=typeof bestVendor==="function"?bestVendor(w):{};
+ return {w,l,a,p,v,sv};
+}
+function aiCopilotSignals(ctx){
+ if(!ctx)return [];
+ let {w,a,p,v}=ctx, signals=[];
+ if(["Emergency","Urgent","High"].includes(w.priority))signals.push("priority pressure");
+ if(["At Risk","Breached"].includes(w.sla))signals.push("SLA exposure");
+ if(Number(w.age||0)>=5)signals.push("aging ticket");
+ if(Number(w.cost||0)>=10000)signals.push("high visible spend");
+ if(a.id && ((a.repairs||0)>=5 || (a.spend12||0)/Math.max(a.replacement||1,1)>.55))signals.push("repeat asset / replace-review signal");
+ if(p.some(x=>["Pending","Review","Draft"].includes(x.status)))signals.push("proposal approval dependency");
+ if(v.status&&!["Strong","Active"].includes(v.status))signals.push("vendor performance watch");
+ if(missingNextAction(w))signals.push("missing owner / next action / due date");
+ return signals;
+}
+function aiCopilotPriority(ctx){
+ let {w,a}=ctx; let score=0;
+ if(w.priority==="Emergency")score+=45; else if(w.priority==="Urgent"||w.priority==="High")score+=30; else score+=10;
+ if(w.sla==="Breached")score+=35; else if(w.sla==="At Risk")score+=25;
+ score+=Math.min(Number(w.age||0)*4,24);
+ if(Number(w.cost||0)>=25000)score+=14; else if(Number(w.cost||0)>=10000)score+=8;
+ if(a.id && ((a.repairs||0)>=5 || (a.spend12||0)/Math.max(a.replacement||1,1)>.55))score+=16;
+ if(missingNextAction(w))score+=12;
+ if(score>=85)return {label:"CRITICAL",tone:"red",score};
+ if(score>=60)return {label:"HIGH",tone:"orange",score};
+ if(score>=35)return {label:"MEDIUM",tone:"amber",score};
+ return {label:"NORMAL",tone:"green",score};
+}
+function aiCopilotAnalyzeWO(id,type){
+ let ctx=aiCopilotWOContext(id); if(!ctx)return "Work order not found.";
+ let {w,l,a,p,v,sv}=ctx;
+ let pri=aiCopilotPriority(ctx), sig=aiCopilotSignals(ctx);
+ let related=p.length?p.map(x=>`${x.id} ${x.status} ${money(x.amount)} — ${x.scope}`).join("\n"):"No related proposals found.";
+ let assetLine=a.id?`${a.asset} · age ${a.age||"N/A"} · repairs ${a.repairs||0} · 12-mo spend ${money(a.spend12||0)} · replacement ${money(a.replacement||0)}`:"No asset history attached.";
+ let vendorLine=v.name?`${v.name} · score ${v.score||"N/A"} · SLA ${v.sla||"N/A"}% · response ${v.response||"N/A"} hrs · status ${v.status||"N/A"}`:"Current vendor scorecard not attached.";
+ let next=`Confirm vendor ETA, update customer notes, document next action/date, and escalate if there is no same-day movement.`;
+ if(type==="summary")return `AI SUMMARY\n\n${w.id} is a ${w.priority} ${w.trade} work order at ${l.site||w.location}. Current status is ${w.status}, SLA is ${w.sla}, age is ${w.age||0} days, owner is ${w.owner||"missing"}, and current visible cost/NTE is ${money(w.cost||0)}.\n\nNotes: ${w.notes||"No notes entered."}\n\nAsset: ${assetLine}\n\nRelated proposals:\n${related}\n\nRecommended next step: ${w.nextAction||next}`;
+ if(type==="priority")return `AI PRIORITY RECOMMENDATION\n\nRecommended Priority: ${pri.label}\nRisk Score: ${pri.score}/100\n\nWhy:\n${sig.length?sig.map(x=>"• "+x).join("\n"):"• No major escalation signals detected."}\n\nAction:\n${pri.label==="CRITICAL"?"Escalate now, confirm vendor ETA, and notify the customer/client owner.":pri.label==="HIGH"?"Move to same-day review. Confirm vendor assignment and next action before end of day.":"Keep moving through normal queue with documented next action and due date."}`;
+ if(type==="vendor")return `AI VENDOR / DISPATCH RECOMMENDATION\n\nRecommended Vendor: ${sv.name||w.vendor||"TBD"}\nRoute Score: ${sv.routeScore||"N/A"}\n\nCurrent Vendor:\n${vendorLine}\n\nDispatch Instructions:\n• Confirm receipt immediately\n• Require ETA and technician assignment\n• Require diagnostic photos / closeout notes\n• Confirm materials or proposal need before leaving site\n\nSuggested message:\nPlease confirm receipt of ${w.id} for ${l.site||w.location}. This is a ${w.priority} ${w.trade} issue with SLA status ${w.sla}. Provide earliest ETA, technician assignment, diagnostic requirements, and whether any approval or materials are needed.`;
+ if(type==="draft")return `AI DRAFT UPDATES\n\nCustomer Update:\nWe are actively managing ${w.id} for the ${w.trade} issue at ${l.site||w.location}. Current status is ${w.status}. We are confirming vendor movement, ETA, and any approval requirements, and will keep the next action documented.\n\nVendor Message:\nPlease confirm receipt of ${w.id}, earliest ETA, technician assignment, access needs, and whether this can be completed under the current NTE. Upload photos and diagnostic notes after the visit.\n\nInternal Note:\nAI review flags this as ${pri.label}. Signals: ${sig.length?sig.join(", "):"no major flags"}. Next action: ${w.nextAction||next}`;
+ if(type==="escalation")return `AI ESCALATION CHECK\n\nEscalation Status: ${pri.label==="CRITICAL"||w.sla==="Breached"?"ESCALATE":"WATCH"}\n\nFlags:\n${sig.length?sig.map(x=>"🚨 "+x).join("\n"):"✅ No immediate escalation flags."}\n\nTrigger Rules:\n• Breached SLA = escalate\n• Emergency without ETA = escalate\n• Aging 5+ days with no next action = escalate\n• Repeat asset failure with high spend = capital/replacement review\n\nRecommended action:\n${pri.label==="CRITICAL"||w.sla==="Breached"?"Escalate to owner/client immediately and force vendor ETA.":"Keep on watch list and require documented next action."}`;
+ return "Choose an AI action.";
+}
+function runWOAI(id,type){
+ let out=document.getElementById("aiCopilotOutput_"+id); if(!out)return;
+ out.textContent=aiCopilotAnalyzeWO(id,type);
+}
+function copyWOAI(id){
+ let out=document.getElementById("aiCopilotOutput_"+id); if(!out)return;
+ navigator.clipboard.writeText(out.textContent||""); toast("AI Copilot output copied");
+}
+function saveWOAIAsInternalNote(id){
+ let out=document.getElementById("aiCopilotOutput_"+id); if(!out||!out.textContent){toast("Run an AI action first");return;}
+ let updated=null;
+ db.workOrders=db.workOrders.map(w=>{if(w.id!==id)return w;updated={...w,internalNotes:[w.internalNotes,"AI Copilot Note — "+new Date().toLocaleString()+"\n"+out.textContent].filter(Boolean).join("\n\n"),lastTouch:new Date().toLocaleString(),timeline:[...(w.timeline||[]),{step:"AI Copilot",time:new Date().toLocaleString(),by:loggedUser().name,note:"AI analysis saved to internal notes"}]};return updated;});
+ save(); if(updated){cloudUpsert("workOrders",updated);cloudInsertAudit("Saved AI Copilot analysis for "+id);} render(); woModal(id); toast("AI analysis saved to internal notes");
+}
+function renderAICopilotTile(w){
+ let preview=ccEscape(aiCopilotAnalyzeWO(w.id,"summary"));
+ return `<div class="tile aiCopilotTile"><div class="aiCopilotHead"><div><div class="kicker">Run Your Portfolio with AI</div><h3>AI Work Order Copilot</h3><p class="muted">Analyze this ticket, recommend priority, pick dispatch, draft updates, and flag escalations from the live work order data.</p></div><span class="badge">V1 Local Engine</span></div><div class="aiCopilotActions"><button class="btn dark" onclick="runWOAI('${w.id}','summary')">Summarize</button><button class="btn" onclick="runWOAI('${w.id}','priority')">Recommend Priority</button><button class="btn" onclick="runWOAI('${w.id}','vendor')">Suggest Vendor / Dispatch</button><button class="btn" onclick="runWOAI('${w.id}','draft')">Draft Updates</button><button class="btn red" onclick="runWOAI('${w.id}','escalation')">Flag Escalations</button><button class="btn green" onclick="copyWOAI('${w.id}')">Copy</button><button class="btn" onclick="saveWOAIAsInternalNote('${w.id}')">Save Internal Note</button></div><pre id="aiCopilotOutput_${w.id}" class="aiCopilotOutput">${preview}</pre></div>`;
+}
+
 function woModal(id){
  let w=db.workOrders.find(x=>x.id===id);
  if(!w){toast("Work order not found");return;}
@@ -1055,6 +1145,7 @@ function woModal(id){
    <div class="tile"><b>Vendor</b><p>${w.vendor}</p><p class="muted">${v?`Score ${v.score} · SLA ${v.sla}% · Response ${v.response} hrs`:"Vendor scorecard not attached yet."}</p></div>
  </div>
  <div class="tile"><b>Scope / Notes</b><p>${w.notes||"No notes entered."}</p></div>
+ ${renderAICopilotTile(w)}
  ${renderLifecycleTimeline(w)}
  <div class="tile"><h3>Move Work Order Forward</h3><p class="muted">Next recommended action: <b>${nextLifecycleAction(w)}</b></p><div class="lifecycleActions">${WO_LIFECYCLE.slice(1).map(st=>`<button class="btn" onclick="advanceWOStage('${w.id}','${st}')">${st}</button>`).join("")}</div></div>
  <div class="tile"><h3>Split Notes</h3><div class="noteSplitGrid"><div class="noteBox"><label>Internal Notes</label><textarea id="noteInternal" placeholder="Private internal ops notes">${w.internalNotes||""}</textarea></div><div class="noteBox"><label>Customer Notes</label><textarea id="noteCustomer" placeholder="Customer-facing update">${w.customerNotes||""}</textarea></div><div class="noteBox"><label>Vendor Notes</label><textarea id="noteVendor" placeholder="Vendor instructions">${w.vendorNotes||""}</textarea></div></div><br><button class="btn dark" onclick="saveSplitNotes('${w.id}')">Save Split Notes</button></div>
@@ -1098,7 +1189,7 @@ function woModal(id){
 
 function renderWO(x,q){
 let rows=x.wo.filter(w=>(w.id+w.trade+w.status+w.vendor+w.owner+w.nextAction+loc(w.location).site).toLowerCase().includes(q));
-workorders.innerHTML=table("Work Order Operating Queue",["WO","Location","Trade","Priority","Status","SLA","Owner","Next Action","Due","View"],rows.map(w=>`<tr onclick="woModal('${w.id}')" style="cursor:pointer"><td><button class="btn dark" onclick="event.stopPropagation();woModal('${w.id}')">${w.id}</button></td><td>${loc(w.location).site}</td><td>${w.trade}</td><td>${pill(w.priority)}</td><td>${pill(w.status)}</td><td>${pill(w.sla)}</td><td>${w.owner||"Missing"}</td><td>${w.nextAction||"<span class='warningText'>Missing</span>"}</td><td>${w.dueDate||"<span class='warningText'>Missing</span>"}</td><td><button class="btn" onclick="event.stopPropagation();woModal('${w.id}')">Open</button></td></tr>`).join(""))}
+workorders.innerHTML=table("Work Order Operating Queue",["WO","Location","Trade","Priority","Status","SLA","Owner","Next Action","Due","AI","View"],rows.map(w=>`<tr onclick="woModal('${w.id}')" style="cursor:pointer"><td><button class="btn dark" onclick="event.stopPropagation();woModal('${w.id}')">${w.id}</button></td><td>${loc(w.location).site}</td><td>${w.trade}</td><td>${pill(w.priority)}</td><td>${pill(w.status)}</td><td>${pill(w.sla)}</td><td>${w.owner||"Missing"}</td><td>${w.nextAction||"<span class='warningText'>Missing</span>"}</td><td>${w.dueDate||"<span class='warningText'>Missing</span>"}</td><td><button class="btn dark" onclick="event.stopPropagation();woModal('${w.id}');setTimeout(()=>{document.getElementById('aiCopilotOutput_${w.id}')?.scrollIntoView({behavior:'smooth',block:'center'});},50)">Ask AI</button></td><td><button class="btn" onclick="event.stopPropagation();woModal('${w.id}')">Open</button></td></tr>`).join(""))}
 function renderLocations(x,q){
 let rows=x.ls.filter(l=>(l.site+l.region+l.fm+l.trade+l.risk).toLowerCase().includes(q));
 locations.innerHTML=table("Location Intelligence",["Site","Region","Owner","Risk Trade","Risk","Open WO","Spend","CapEx","View"],rows.map(l=>`<tr onclick="locationModal('${l.id}')" style="cursor:pointer"><td><button class="btn dark" onclick="event.stopPropagation();locationModal('${l.id}')">${l.site}</button></td><td>${l.region}</td><td>${l.fm}</td><td>${l.trade}</td><td>${pill(l.risk)}</td><td>${l.open}</td><td><b>${money(l.spend)}</b></td><td>${l.capex?pill("Review"):pill("Stable")}</td><td><button class="btn" onclick="event.stopPropagation();locationModal('${l.id}')">Open</button></td></tr>`).join(""))}
@@ -1574,4 +1665,118 @@ function renderAssetHistory(x){
  }).join(""));
 }
 
+
+// ============================
+// V2.18 PRIORITIES 1-4 RENDER OVERRIDES
+// These override older display functions without changing the working app shell/auth.
+// ============================
+function mapRiskTier(l){const r=riskScore(l);return r>=90?"critical":r>=65?"high":r>=35?"medium":"low"}
+function mapRiskColor(l){const t=mapRiskTier(l);return t==="critical"?"#ef4444":t==="high"?"#f97316":t==="medium"?"#f59e0b":"#22c55e"}
+function renderHeatMap(x){
+ const allSites=x.ls||[];
+ const sorted=[...allSites].sort((a,b)=>riskScore(b)-riskScore(a));
+ const top=sorted[0]||{};
+ heatmap.innerHTML=`<div class="card"><div class="mapToolbar"><div><h3>Priority 1 — USA Portfolio Heat Map</h3><p class="muted">Visible USA map, risk pins, and attached work orders. Click any pin or row to open the location cockpit.</p></div><button class="btn dark" onclick="renderHeatMap(ai())">Refresh Map</button></div>
+ <div class="mapPinLegend"><span>🔴 Critical 90+</span><span>🟠 High 65-89</span><span>🟡 Medium 35-64</span><span>🟢 Low 0-34</span><span>Pin = location + work orders</span></div>
+ <div class="mapStatGrid"><div class="mapStat"><div class="muted">Visible Sites</div><b>${allSites.length}</b></div><div class="mapStat"><div class="muted">Open WOs</div><b>${allSites.reduce((s,l)=>s+(l.open||0),0)}</b></div><div class="mapStat"><div class="muted">Visible Spend</div><b>${money(allSites.reduce((s,l)=>s+(l.spend||0),0))}</b></div></div>
+ <div class="usaMapGrid"><div class="usaMapCard"><svg viewBox="0 0 1000 620" class="usaSvg" aria-label="USA CommandCenter map">
+ <path d="M132 194 L198 160 L290 144 L382 128 L465 137 L560 128 L650 150 L740 174 L840 218 L895 280 L860 356 L790 402 L705 438 L604 472 L502 488 L390 468 L295 430 L220 372 L150 302 Z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="4"/>
+ <path d="M642 442 L700 480 L752 514 L724 548 L656 534 L614 492 Z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="4"/>
+ ${allSites.map(l=>{const pos=usaPinPosition(l);return `<g class="mapPinGroup" onclick="openSiteDrawer('${l.id}')" style="cursor:pointer"><circle cx="${pos.x}" cy="${pos.y}" r="18" fill="white" opacity=".92"></circle><circle cx="${pos.x}" cy="${pos.y}" r="12" fill="${mapRiskColor(l)}"></circle><text x="${pos.x+20}" y="${pos.y-12}" font-size="18" font-weight="900" fill="#0f172a">${String(l.market||l.state||l.region||'Site').slice(0,12)}</text></g>`}).join("")}
+ </svg></div><div class="mapSidePanel"><div class="tile"><b>Highest Risk Site</b>${top.site?`<div class="siteRiskCard" onclick="openSiteDrawer('${top.id}')"><b>${top.site}</b><div class="muted">${top.market||top.region} · ${top.district||"Unassigned"} · ${top.trade}</div><br>${pill(top.risk)} <span class="badge">Risk ${riskScore(top)}</span><div class="muted">${top.open} open · ${top.repeat} repeat · ${money(top.spend)}</div></div>`:"<p class='muted'>No site risk data available.</p>"}</div><div class="tile"><b>Top Risk Locations</b>${sorted.slice(0,8).map(l=>`<div class="siteRiskCard" onclick="openSiteDrawer('${l.id}')"><div style="display:flex;justify-content:space-between;gap:10px"><div><b>${l.site}</b><div class="muted">${l.market||l.region} · ${l.trade} · ${attachedWOCount(l.id)} WOs</div></div><span class="badge">${riskScore(l)}</span></div></div>`).join("")}</div></div></div></div>`;
+}
+function usaPinPosition(l){
+ const lon=Number(l.longitude),lat=Number(l.latitude);
+ if(Number.isFinite(lon)&&Number.isFinite(lat))return{x:Math.max(80,Math.min(920,(lon+125)*13.8)),y:Math.max(80,Math.min(530,(50-lat)*16.5))};
+ const map={NC:[710,365],TX:[510,450],AZ:[330,410],OH:[690,285],OR:[230,175],GA:[715,405],VA:[760,340],AL:[650,430],TN:[675,380]};
+ const key=String(l.state||l.region||"").slice(0,2).toUpperCase();
+ const p=map[key]||[500,330];return{x:p[0],y:p[1]};
+}
+function attachedWOCount(locationId){return db.workOrders.filter(w=>w.location===locationId).length}
+function renderAssetHistory(x){
+ assets.innerHTML=`<div class="card"><div class="mapToolbar"><div><h3>Priority 2 — 50+ Asset Intelligence Registry</h3><p class="muted">Lifecycle, make/model, repair history, replacement exposure, and work-order drilldowns.</p></div><span class="deployBadge">${x.as.length} assets loaded</span></div><div class="scroll"><table><thead><tr><th>Asset</th><th>Location</th><th>Trade</th><th>Make / Model</th><th>Age</th><th>Failure Risk</th><th>12 Mo Spend</th><th>Attached WOs</th><th>Open</th></tr></thead><tbody>${x.as.map(a=>{let fail=predictedFailure(a);let wos=db.workOrders.filter(w=>w.location===a.location);return `<tr onclick="openAssetLocationWorkOrders('${a.id}')" style="cursor:pointer"><td><b>${a.asset}</b><div class="muted">${a.id}</div></td><td>${loc(a.location).site}</td><td>${a.trade}</td><td>${a.manufacturer||"N/A"} ${a.model||""}</td><td>${a.age||"N/A"}</td><td>${pill(fail>70?"High":fail>45?"Medium":"Low")} ${fail}%</td><td><b>${money(a.spend12||0)}</b></td><td>${wos.length}</td><td><button class="btn" onclick="event.stopPropagation();openAssetLocationWorkOrders('${a.id}')">Open</button></td></tr>`}).join("")}</tbody></table></div></div>`;
+}
+function vendorHealthAction(v){return Number(v.score||0)<70?"Source alternate vendor and restrict P1 routing":Number(v.score||0)<80?"Watch SLA discipline and tighten ETA requirements":"Preferred for matching trade/region"}
+function renderVendorCards(){
+ vendors.innerHTML=`<div class="card"><div class="mapToolbar"><div><h3>Priority 3 — Vendor Scorecards</h3><p class="muted">Response time, SLA, first-time fix, rework, NTE discipline, proposal speed, cost variance, and action logic.</p></div><span class="deployBadge">Vendor command layer</span></div><div class="vendorScoreGrid">${db.vendors.map(v=>`<div class="vendorScoreCard" onclick="vendorModal('${v.name}')"><div class="vendorScoreTop"><div><h3>${v.name}</h3><p class="muted">${v.trades} · ${v.regions}</p></div><div class="vendorScore ${Number(v.score||0)<70?'bad':Number(v.score||0)<80?'watch':'good'}">${v.score}</div></div><div class="miniGrid"><div class="miniStat"><span>Response</span><b>${v.response}h</b></div><div class="miniStat"><span>SLA</span><b>${v.sla}%</b></div><div class="miniStat"><span>First Fix</span><b>${v.firstFix||"—"}%</b></div><div class="miniStat"><span>Rework</span><b>${v.rework||"—"}%</b></div><div class="miniStat"><span>NTE</span><b>${v.nte||"—"}%</b></div><div class="miniStat"><span>Proposal</span><b>${v.proposalTurnaround||"—"}</b></div></div><div class="tile"><b>Action:</b><p class="muted">${v.action||vendorHealthAction(v)}</p></div>${pill(v.status)}</div>`).join("")}</div></div>`;
+}
+function renderExecutive(x){
+ let f=forecast(x);let highest=(x.risk||[])[0]||{};let savings=f.savings;let highVendors=db.vendors.filter(v=>Number(v.score||0)<75).length;
+ executive.innerHTML=`<div class="grid2"><div class="card"><div class="missionHero"><div class="kicker">Priority 4 — Executive Command Dashboard</div><h1>${x.health}/100 Portfolio Health</h1><p>${x.at.length} SLA fires, ${x.repl.length} replacement reviews, ${money(x.pending)} pending proposals, ${highVendors} vendor pressure points, and ${money(savings)} savings opportunity.</p></div></div><div class="card"><h3>Top Executive Actions</h3><div class="row"><b>Highest risk site</b><span>${highest.site||"N/A"} ${highest.site?"· "+riskScore(highest):""}</span></div><div class="row"><b>Approve aging proposals</b><span>${money(x.pending)}</span></div><div class="row"><b>Escalate SLA risks</b><span>${x.at.length}</span></div><div class="row"><b>Launch CAPEX review</b><span>${x.repl.length} assets</span></div><div class="row"><b>Vendor scorecard pressure</b><span>${highVendors}</span></div></div></div><div class="card"><h3>AI Action Center</h3><div class="grid3">${executiveActionCards(x).map(a=>`<div class="tile"><b>${a.title}</b><p class="muted">${a.reason}</p>${pill(a.severity)}</div>`).join("")}</div></div>`;
+}
+function executiveActionCards(x){
+ const top=(x.risk||[])[0]||{};return [
+  {title:"Open Site Cockpit",reason:top.site?`${top.site} is the top risk location with ${top.open||0} open WOs and ${top.repeat||0} repeats.`:"No top site available",severity:"High"},
+  {title:"Approve / Reject Proposals",reason:`${money(x.pending)} is pending and aging in the proposal queue.`,severity:x.pending>50000?"High":"Review"},
+  {title:"Replacement Review",reason:`${x.repl.length} assets crossed repair-vs-replace economics.`,severity:x.repl.length?"High":"Stable"},
+  {title:"Vendor Pressure",reason:`Underperforming vendors should be restricted from emergency routing.`,severity:"At Risk"},
+  {title:"Budget Forecast",reason:`Annualized run rate is ${money(forecast(x).runRate)} against budget ${money(c().budget)}.`,severity:forecast(x).variance>0?"High":"Stable"},
+  {title:"No Soft Exit Rule",reason:"Every open item needs owner, next action, due date, and calendar hold.",severity:"Active"}
+ ];
+}
+function renderDashboard(x){
+ let f=forecast(x);let highest=(x.risk||[])[0]||{};
+ dashboard.innerHTML=`<div class="grid3"><div class="card"><h3>Executive Dashboard</h3><div class="big">${x.health}/100</div><p class="muted">Portfolio health score</p></div><div class="card"><h3>Budget Forecast</h3><div class="big">${money(f.runRate)}</div><p class="muted">Annualized run rate</p></div><div class="card"><h3>Highest Risk Site</h3><div class="big">${highest.site?riskScore(highest):0}</div><p class="muted">${highest.site||"No site selected"}</p></div></div><div class="grid2"><div class="card"><h3>Command Summary</h3><div class="row"><b>Open WOs</b><span>${x.wo.length}</span></div><div class="row"><b>SLA Fires</b><span>${x.at.length}</span></div><div class="row"><b>Replacement Reviews</b><span>${x.repl.length}</span></div><div class="row"><b>Pending Proposal Dollars</b><span>${money(x.pending)}</span></div></div><div class="card"><h3>Immediate Action</h3><p class="muted">Start with the Heat Map, open the highest-risk pin, review attached work orders, then move repeat-failure assets into replacement review.</p><button class="btn dark" onclick="setPage('heatmap')">Open Heat Map</button> <button class="btn" onclick="setPage('executive')">Open AI Action Center</button></div></div>`;
+}
+
 init();
+
+
+/* COMMANDCENTER LOGIN SCREEN PATCH - Butch Fix
+   Keeps the Supabase login gate and app shell switching cleanly after sign in/out.
+   Also exposes button handlers for inline onclick attributes after Vercel deploy.
+*/
+(function commandCenterLoginScreenPatch(){
+  function showAppShell(){
+    var authGate=document.getElementById("authGate");
+    var appShell=document.getElementById("appShell");
+    if(authGate) authGate.style.display="none";
+    if(appShell) appShell.style.display="grid";
+    document.body.classList.add("authReady","loggedIn");
+  }
+
+  function showLoginGate(){
+    var authGate=document.getElementById("authGate");
+    var appShell=document.getElementById("appShell");
+    if(authGate) authGate.style.display="grid";
+    if(appShell) appShell.style.display="none";
+    document.body.classList.remove("authReady","loggedIn");
+  }
+
+  window.showAppShell=showAppShell;
+  window.showLoginGate=showLoginGate;
+
+  // Expose existing app functions used by index.html inline onclick/onchange handlers.
+  [
+    "appSignIn","appSignOut","setClient","setLoginUser","render","openWOForm",
+    "openProposalForm","exportData","closeModal","setPage","openModal","openSiteDrawer","runWOAI","copyWOAI","saveWOAIAsInternalNote"
+  ].forEach(function(name){
+    try{
+      if(typeof window[name]==="undefined" && typeof eval(name)==="function"){
+        window[name]=eval(name);
+      }
+    }catch(e){}
+  });
+
+  // Wrap auth functions after they are defined.
+  if(typeof window.appSignIn==="function"){
+    var originalSignIn=window.appSignIn;
+    window.appSignIn=async function(){
+      await originalSignIn.apply(this,arguments);
+      if(document.body.classList.contains("authReady")) showAppShell();
+    };
+  }
+
+  if(typeof window.appSignOut==="function"){
+    var originalSignOut=window.appSignOut;
+    window.appSignOut=async function(){
+      await originalSignOut.apply(this,arguments);
+      showLoginGate();
+    };
+  }
+
+  window.addEventListener("load",function(){
+    if(document.body.classList.contains("authReady")) showAppShell();
+    else showLoginGate();
+  });
+})();

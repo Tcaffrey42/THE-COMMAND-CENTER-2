@@ -63,3 +63,20 @@ V2.14.1 hotfix: preserves root-only Vercel-safe deployment and restores/backfill
   - all work orders attached to the asset's location
   - related assets at the same location
 - Every listed work order remains clickable into the full work-order modal.
+
+## V2.17 AI Work Order Copilot Upgrade
+
+Added directly into the existing V2.16.1 CommandCenter source without removing the project modules.
+
+New work order tools:
+- Ask AI button in Work Order Operating Queue
+- AI Work Order Copilot panel inside each work order detail modal
+- Summarize Work Order
+- Recommend Priority
+- Suggest Vendor / Dispatch
+- Draft Customer, Vendor, and Internal Updates
+- Flag Escalations
+- Copy AI output
+- Save AI output into Internal Notes and work order timeline
+
+This V1 uses the live local/Supabase work order fields already in CommandCenter: priority, SLA, age, cost/NTE, vendor scorecard, related proposals, asset history, owner, next action, and due date.
