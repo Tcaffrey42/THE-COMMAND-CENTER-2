@@ -63,39 +63,9 @@ tenants:[
 {name:"Security Finance",plan:"Enterprise",users:14,roles:"Admin / Operator / Trade Lead / Vendor",storage:"2.4 GB",status:"Active"},
 {name:"Fogo de Chão Refresh Program",plan:"Projects",users:7,roles:"Admin / Project Manager / GC",storage:"1.1 GB",status:"Pilot"},
 {name:"Prime Communications",plan:"Enterprise",users:22,roles:"Admin / FM / Vendor / Finance",storage:"3.8 GB",status:"Demo"}
-],
-pmPlans:[
-{id:"PM-100",client:0,location:"L522",asset:"A-RTU-1",trade:"HVAC",frequency:"Quarterly",nextDue:"2026-07-15",vendor:"Metro Mechanical",status:"Due Soon",estSavings:9600,scope:"Filter change, coil inspection, belt check, economizer check, amperage readings, photo report."},
-{id:"PM-101",client:0,location:"L319",asset:"A-PL-2",trade:"Plumbing",frequency:"Semi-Annual",nextDue:"2026-08-01",vendor:"Desert Pipe",status:"Scheduled",estSavings:4200,scope:"Drain camera, jetting, cleanout verification, repeat blockage prevention."},
-{id:"PM-200",client:1,location:"FG-PDX",asset:"A-BAR-1",trade:"Refresh",frequency:"Milestone",nextDue:"2026-06-30",vendor:"Portland GC",status:"Planning",estSavings:18000,scope:"Punch walk, warranty items, finish protection, closeout docs."}
-],
-buildRoadmap:[
-{version:"V2.14.1",title:"Stable Data Restore Root-Only Baseline",status:"Protected Baseline",owner:"Butch + Tim"},
-{version:"V2.15",title:"CC CommandCenter Brand Upgrade — Run Your Portfolio with AI",status:"Current Build",owner:"Butch + Tim"},
-{version:"V2.16",title:"WO Edit/Close Workflow + Photo Intake",status:"Next",owner:"Operations"},
-{version:"V2.16",title:"Vendor Portal Lite + COI Expiration Alerts",status:"Queued",owner:"Vendor Management"}
 ]
 };
 let db=JSON.parse(localStorage.getItem("commandCenterEnterpriseData")||JSON.stringify(seed));
-// V2.14.1 DATA GUARD: keep the deployment-safe root build, but never let an older/broken
-// localStorage or empty cloud table wipe the demo modules that power SLA, Locations, and Heat Map.
-function ensureSeedDataGuard(){
- const required=["clients","locations","workOrders","proposals","assets","vendors","users","documents","approvals","audit","tenants","pmPlans","buildRoadmap"];
- let changed=false;
- if(!db || typeof db!=="object"){db=JSON.parse(JSON.stringify(seed)); changed=true;}
- required.forEach(k=>{
-  if(!Array.isArray(db[k]) || db[k].length===0){db[k]=JSON.parse(JSON.stringify(seed[k]||[])); changed=true;}
- });
- if(!Number.isInteger(Number(db.activeClient)) || Number(db.activeClient)<0 || Number(db.activeClient)>=db.clients.length){db.activeClient=0; changed=true;}
- // Preserve user's current data, but backfill missing demo records needed for the command modules.
- ["locations","workOrders","proposals","assets"].forEach(k=>{
-  const idKey=k==="workOrders"?"id":"id";
-  const existing=new Set((db[k]||[]).map(x=>x&&x[idKey]));
-  (seed[k]||[]).forEach(x=>{ if(!existing.has(x[idKey])){ db[k].push(JSON.parse(JSON.stringify(x))); changed=true; } });
- });
- if(changed){localStorage.setItem("commandCenterEnterpriseData",JSON.stringify(db));}
-}
-ensureSeedDataGuard();
 
 // ============================
 // SPRINT 1 CLOUD FOUNDATION
@@ -146,111 +116,6 @@ async function cloudSignIn(){
  cloudReady=true;toast("Signed in");render();
 }
 async function cloudSignOut(){if(supabaseClient){await supabaseClient.auth.signOut();}cloudReady=false;toast("Signed out");render();}
-
-
-// ============================
-// V2.16 AUTH + USER ROLES
-// Uses your EXISTING Supabase project. No reconnect required.
-// Requires public.profiles table with: id, email, full_name, role, company.
-// ============================
-let currentSession=null;
-let currentProfile=null;
-const ROLE_PAGES={
-  admin:["warroom","amdashboard","dashboard","workorders","pm","dispatch","escalations","sla","locations","heatmap","proposals","approvals","assets","vendors","copilot","executive","cfo","projects","reports","tenant","documents","users","settings"],
-  executive:["warroom","dashboard","sla","locations","heatmap","proposals","approvals","assets","vendors","copilot","executive","cfo","projects","reports","documents"],
-  facility_manager:["warroom","amdashboard","dashboard","workorders","pm","dispatch","escalations","sla","locations","heatmap","proposals","approvals","assets","vendors","copilot","projects","documents"],
-  vendor:["workorders","dispatch","documents"],
-  technician:["workorders","dispatch","assets","documents"],
-  client:["dashboard","workorders","locations","heatmap","proposals","approvals","documents","copilot"]
-};
-const ROLE_PERMISSIONS={
-  admin:["create_work_order","create_proposal","export_data","assign_vendor","approve_spend","manage_users"],
-  executive:["export_data","approve_spend"],
-  facility_manager:["create_work_order","create_proposal","export_data","assign_vendor"],
-  vendor:[], technician:["create_work_order"], client:["create_work_order"]
-};
-function normalizeRole(role){
-  return String(role||"client").toLowerCase().replace(/\s+/g,"_").replace(/-/g,"_");
-}
-function activeRole(){return normalizeRole(currentProfile?.role || localStorage.getItem("commandCenterRole") || "client")}
-function canAccessPage(id){return (ROLE_PAGES[activeRole()]||ROLE_PAGES.client).includes(id)}
-function hasPermission(key){return (ROLE_PERMISSIONS[activeRole()]||[]).includes(key)}
-function visiblePages(){return pages.filter(p=>canAccessPage(p[0]))}
-function setAuthMessage(msg){let el=document.getElementById("authMessage"); if(el) el.textContent=msg||"";}
-function ensureSupabaseClient(){
-  if(!hasSupabaseConfig()){
-    cloudReady=false;
-    return false;
-  }
-  if(!supabaseClient) supabaseClient=window.supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey);
-  return true;
-}
-function enableDemoAdminMode(){
-  currentSession={user:{email:"demo@commandcenter.local",user_metadata:{full_name:"Demo Admin"}}};
-  currentProfile={email:"demo@commandcenter.local",full_name:"Demo Admin",role:"admin",company:"CommandCenter"};
-  localStorage.setItem("commandCenterRole","admin");
-  localStorage.setItem("commandCenterLoggedEmail",currentProfile.email);
-  cloudReady=false;
-  document.body.classList.add("authReady");
-  setAuthMessage("");
-  return true;
-}
-async function loadCurrentProfile(){
-  if(!supabaseClient||!currentSession?.user) return null;
-  const user=currentSession.user;
-  let {data,error}=await supabaseClient.from("profiles").select("id,email,full_name,role,company").eq("id",user.id).maybeSingle();
-  if(error){console.warn("Profile read failed",error);setAuthMessage(error.message);return null;}
-  if(!data){
-    const fallback={id:user.id,email:user.email,full_name:user.user_metadata?.full_name||user.email,role:"client",company:"CommandCenter"};
-    const up=await supabaseClient.from("profiles").upsert(fallback,{onConflict:"id"}).select().maybeSingle();
-    data=up.data||fallback;
-  }
-  currentProfile=data;
-  localStorage.setItem("commandCenterRole",normalizeRole(data.role));
-  localStorage.setItem("commandCenterLoggedEmail",data.email||user.email||"");
-  return data;
-}
-function applyRoleUI(){
-  document.body.classList.add("authReady");
-  const badge=document.getElementById("roleBadge");
-  if(badge){badge.textContent=`${(currentProfile?.role||"client").replace(/_/g," ")} · ${currentProfile?.email||currentSession?.user?.email||"signed in"}`;}
-  document.querySelectorAll("[data-permission]").forEach(el=>{
-    const ok=hasPermission(el.getAttribute("data-permission"));
-    el.classList.toggle("hiddenByRole",!ok);
-  });
-}
-async function initAuthGate(){
-  if(!ensureSupabaseClient()){return enableDemoAdminMode();}
-  const {data,error}=await supabaseClient.auth.getSession();
-  if(error){console.warn("Auth session check failed; using demo admin mode",error);return enableDemoAdminMode();}
-  currentSession=data.session;
-  cloudReady=Boolean(currentSession);
-  if(!currentSession){return enableDemoAdminMode();}
-  await loadCurrentProfile();
-  applyRoleUI();
-  return true;
-}
-async function appSignIn(){
-  if(!ensureSupabaseClient()) return;
-  const email=(document.getElementById("authEmail")||{}).value;
-  const password=(document.getElementById("authPassword")||{}).value;
-  if(!email||!password){setAuthMessage("Enter email and password.");return;}
-  setAuthMessage("Signing in...");
-  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
-  if(error){setAuthMessage(error.message);return;}
-  currentSession=data.session;
-  await loadCurrentProfile();
-  setAuthMessage("");
-  await init();
-}
-async function appSignOut(){
-  if(supabaseClient) await supabaseClient.auth.signOut();
-  currentSession=null;currentProfile=null;cloudReady=false;
-  localStorage.removeItem("commandCenterRole");
-  document.body.classList.remove("authReady");
-  setAuthMessage("Signed out.");
-}
-
 function mapRows(rows,mapper){return (rows||[]).map(mapper)}
 function demoToCloudPayload(){
  return {
@@ -462,7 +327,6 @@ const pages=[
 ["amdashboard","👤 AM Dashboard","My work queue, daily touch list, owner performance, account snapshot, and one-click update flow."],
 ["dashboard","📊 Dashboard","Executive KPIs and portfolio visibility."],
 ["workorders","📋 Work Orders","Dispatch board, SLA pressure, and status control."],
-["pm","🗓️ PM Planner","Preventive maintenance calendar, savings logic, and PM-to-work-order conversion."],
 ["dispatch","🚨 Dispatch Center","Auto-routing, vendor assignment, and live dispatch command."],
 ["escalations","🔥 Escalation Center","Auto-detected operational fires by SLA, vendor response, proposal aging, repeat repair, and high spend."],
 ["sla","📈 SLA Monitor","SLA performance, breach pressure, and escalation visibility."],
@@ -812,22 +676,14 @@ function closeWO(id){
  save();render();woModal(id);toast("Closed");
 }
 
-function setPage(id){if(!canAccessPage(id)){toast("Role access required");return;} pages.forEach(p=>document.getElementById(p[0]).classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.id===id));let p=pages.find(x=>x[0]===id);pageTitle.textContent=p[1];pageSub.textContent=p[2];render()}
+function setPage(id){pages.forEach(p=>document.getElementById(p[0]).classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.id===id));let p=pages.find(x=>x[0]===id);pageTitle.textContent=p[1];pageSub.textContent=p[2];render()}
 function setClient(v){db.activeClient=Number(v);save();render()}
 async function init(){
- const authed=await initAuthGate();
- if(!authed) return;
+ await initCloudLayer();
  normalizeV24Complete();normalizeV24();normalizeV29Ops();
- const vp=visiblePages();
- nav.innerHTML=vp.map((p,i)=>`<button data-id="${p[0]}" onclick="setPage('${p[0]}')" class="${i==0?'active':''}">${p[1]}</button>`).join("");
- pages.forEach((p,i)=>document.getElementById(p[0])?.classList.toggle("active",i===0&&canAccessPage(p[0])));
- const first=vp[0]||pages[0];
- if(first){document.getElementById(first[0])?.classList.add("active");pageTitle.textContent=first[1];pageSub.textContent=first[2];}
+ nav.innerHTML=pages.map((p,i)=>`<button data-id="${p[0]}" onclick="setPage('${p[0]}')" class="${i==0?'active':''}">${p[1]}</button>`).join("");
  hydrateSelectors();
- if(cloudReady){try{await loadFromSupabase();hydrateSelectors();}catch(e){console.warn("Startup cloud load failed; local demo continues",e);}}
- ensureSeedDataGuard();
- hydrateSelectors();
- applyRoleUI();
+ if(cloudReady){try{await loadFromSupabase();hydrateSelectors();}catch(e){console.warn("Startup cloud load failed; local demo continues",e);cloudReady=false;}}
  render();
 }
 function metric(label,value,sub){return `<div class="card metric"><div class="label">${label}</div><div class="value">${value}</div><div class="sub">${sub}</div></div>`}
@@ -978,13 +834,13 @@ async function submitAMQuickUpdate(){
  save(); if(updated) await cloudUpsert('workOrders',updated); await cloudInsertAudit('AM quick update saved for '+id); closeModal(); render(); toast('Quick update saved');
 }
 
-function render(){applyRoleUI();let x=ai(), q=(search.value||"").toLowerCase();metrics.innerHTML=metric("Portfolio Health",x.health+"/100","AI operating score")+metric("Open Work Orders",x.wo.length,x.at.length+" at risk/breached")+metric("Pending Proposal $",money(x.pending),"Awaiting approval")+metric("Replace Reviews",x.repl.length,"Capex candidates");renderWarroom(x);renderAMDashboard(x);renderDashboard(x);renderWO(x,q);renderPMPlanner(x);renderDispatch(x);renderEscalations(x);renderSLA(x);renderLocations(x,q);renderHeatMap(x);renderProposals(x);renderApprovals();renderAssetHistory(x);renderVendorCards();renderCopilot(x);renderExecutive(x);renderCFO(x);renderProjects(x);renderBoardReports(x);renderTenant();renderDocuments();renderUsers();renderSettings()}
+function render(){let x=ai(), q=(search.value||"").toLowerCase();metrics.innerHTML=metric("Portfolio Health",x.health+"/100","AI operating score")+metric("Open Work Orders",x.wo.length,x.at.length+" at risk/breached")+metric("Pending Proposal $",money(x.pending),"Awaiting approval")+metric("Replace Reviews",x.repl.length,"Capex candidates");renderWarroom(x);renderAMDashboard(x);renderDashboard(x);renderWO(x,q);renderDispatch(x);renderEscalations(x);renderSLA(x);renderLocations(x,q);renderHeatMap(x);renderProposals(x);renderApprovals();renderAssetHistory(x);renderVendorCards();renderCopilot(x);renderExecutive(x);renderCFO(x);renderProjects(x);renderBoardReports(x);renderTenant();renderDocuments();renderUsers();renderSettings()}
 function renderWarroom(x){
 let user=loggedUser();
 let mq=missionQueues(x);
 let top=x.risk[0]||{};
 let proposalDollars=mq.prop.reduce((s,p)=>s+Number(p.amount||0),0);
-warroom.innerHTML=`<div class="card"><div class="missionHero"><div class="kicker">Internal Operations Backbone</div><h1>CC COMMANDCENTER MISSION CONTROL</h1><p>${greeting()}, ${user.name}. Run your portfolio with AI. This is the fire board: emergencies, SLA pressure, proposal aging, vendor response, invoice closeout, and missing next actions across ${c().locations.toLocaleString()} locations.</p></div>
+warroom.innerHTML=`<div class="card"><div class="missionHero"><div class="kicker">Internal Operations Backbone</div><h1>COMMANDCENTER MISSION CONTROL</h1><p>${greeting()}, ${user.name}. This is the fire board: emergencies, SLA pressure, proposal aging, vendor response, invoice closeout, and missing next actions across ${c().locations.toLocaleString()} locations.</p></div>
 <div class="queueGrid">
 ${queueCard("Emergency Queue",mq.emergency.length,"Priority = Emergency","🔴","redline","showMissionQueue('Emergency')")}
 ${queueCard("SLA Risk Queue",mq.sla.length,"At risk or breached","🟠","amberline","showMissionQueue('SLA Risk')")}
@@ -1111,7 +967,7 @@ function optionList(arr,labelFn,valFn){
  return arr.map(x=>`<option value="${valFn(x)}">${labelFn(x)}</option>`).join("");
 }
 
-function openWOForm(){if(!hasPermission("create_work_order")){toast("Your role cannot create work orders");return;}
+function openWOForm(){
  let ls=scope(db.locations), as=scope(db.assets);
  openModal(`<h2>Create Work Order</h2>
  <p class="muted">Operator intake form. This creates an actual ticket in the queue.</p>
@@ -1151,7 +1007,7 @@ async function submitWOForm(){
  save();closeModal();render();toast(cloudReady?"Work order created + synced":"Work order created locally");
 }
 
-function openProposalForm(){if(!hasPermission("create_proposal")){toast("Your role cannot create proposals");return;}
+function openProposalForm(){
  let ls=scope(db.locations), wos=scope(db.workOrders);
  openModal(`<h2>Create Proposal</h2>
  <p class="muted">Proposal intake form. This adds a proposal into the approval workflow.</p>
@@ -1188,7 +1044,7 @@ function submitProposalForm(){
 function addWO(){let l=scope(db.locations)[0]||db.locations[0];let a=scope(db.assets).find(x=>x.location===l.id)||scope(db.assets)[0];db.workOrders.unshift({id:"WO-"+Math.floor(90000+Math.random()*9999),client:db.activeClient,asset:a?a.id:"",location:l.id,trade:a?a.trade:"HVAC",priority:"Normal",status:"New",owner:"Unassigned",vendor:"TBD",age:0,cost:0,sla:"On Track",notes:"New ticket created."});save();render();toast("Work order created")}
 function addProposal(){let l=scope(db.locations)[0]||db.locations[0];db.proposals.unshift({id:"P-"+Math.floor(5000+Math.random()*999),client:db.activeClient,location:l.id,wo:"",trade:"HVAC",amount:0,status:"Draft",age:0,scope:"New proposal draft."});save();render();toast("Proposal created")}
 async function setProp(id,status){let updated=null;db.proposals=db.proposals.map(p=>{if(p.id!==id)return p;updated={...p,status};return updated;});await cloudUpsert("proposals",updated);await cloudInsertAudit("Proposal "+id+" marked "+status);save();render();toast("Proposal "+status+(cloudReady?" + synced":""))}
-function exportData(){if(!hasPermission("export_data")){toast("Your role cannot export data");return;}let blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"});let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="commandcenter-enterprise-data.json";a.click()}
+function exportData(){let blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"});let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="commandcenter-enterprise-data.json";a.click()}
 function copyReport(){navigator.clipboard.writeText(`${c().name}: Portfolio Control Summary\nOpen work orders: ${ai().wo.length}\nPending proposal dollars: ${money(ai().pending)}\nReplace-review assets: ${ai().repl.length}\nHealth score: ${ai().health}/100`);toast("Executive summary copied")}
 function resetDemo(){localStorage.removeItem("commandCenterEnterpriseData");db=JSON.parse(JSON.stringify(seed));
 
@@ -1524,34 +1380,6 @@ function openRegionMap(region){
  let sites=x.ls.filter(l=>mapRegionName(l.region)===region && siteMatchesMapFilters(l)).sort((a,b)=>riskScore(b)-riskScore(a));
  let open=sites.reduce((s,l)=>s+(l.open||0),0), repeat=sites.reduce((s,l)=>s+(l.repeat||0),0), spend=sites.reduce((s,l)=>s+(l.spend||0),0);
  openModal(`<h2>${region} Region Risk Map</h2><p class="muted">Filtered view: ${sites.length} sites · ${open} open work orders · ${repeat} repeat issues · ${money(spend)} visible spend</p><div class="grid3"><div class="tile"><b>Sites</b><div class="big">${sites.length}</div></div><div class="tile"><b>Open WOs</b><div class="big">${open}</div></div><div class="tile"><b>Spend</b><div class="big">${money(spend)}</div></div></div><div class="tile"><b>Sites Ranked by Risk</b>${sites.length?sites.map(l=>`<div class="row" onclick="openSiteDrawer('${l.id}');closeModal()" style="cursor:pointer"><div><b>${l.site}</b><div class="muted">${l.trade} · ${l.open} open · ${l.repeat} repeat</div></div><div>${pill(l.risk)} <span class="badge">${riskScore(l)}</span></div></div>`).join(''):"<p class='muted'>No locations in this region match current filters.</p>"}</div>`);
-}
-
-
-// ============================
-// V2.15.4 HOT PATCH: CLICKABLE ASSETS + LOCATION WORK ORDER DRILLDOWN
-// Every asset row now opens the location work-order cockpit. From there, all work orders
-// attached to that location are clickable into the full WO modal.
-// ============================
-function openAssetLocationWorkOrders(assetId){
- let a=db.assets.find(x=>x.id===assetId);
- if(!a){toast("Asset not found");return;}
- let l=db.locations.find(x=>x.id===a.location)||{id:a.location,site:a.location,region:"Unknown",fm:"Unassigned",spend:0,open:0,repeat:0,risk:"Unknown"};
- let wos=db.workOrders.filter(w=>w.location===a.location).sort((x,y)=>(y.sla==='Breached')-(x.sla==='Breached') || (y.priority==='Emergency')-(x.priority==='Emergency') || (y.age||0)-(x.age||0));
- let assetSpecific=wos.filter(w=>w.asset===a.id);
- let siblingAssets=db.assets.filter(x=>x.location===a.location && x.id!==a.id);
- let fail=predictedFailure(a);
- openModal(`<h2>${a.asset}</h2><p class="muted">${l.site} · ${a.trade} · asset ${a.id}</p>
- <div class="grid3"><div class="tile"><b>Asset Failure Risk</b><div class="big">${fail}%</div></div><div class="tile"><b>Location WOs</b><div class="big">${wos.length}</div></div><div class="tile"><b>Location Spend</b><div class="big">${money(l.spend||0)}</div></div></div>
- <div class="tile"><b>Asset Snapshot</b><p class="muted">Age: ${a.age||'N/A'} years<br>Repairs: ${a.repairs||0}<br>12-month spend: ${money(a.spend12||0)}<br>Replacement estimate: ${money(a.replacement||0)}</p><button class="btn dark" onclick="openSiteDrawer('${l.id}');closeModal()">Open Location Drawer</button> <button class="btn" onclick="assetLifecycleModal('${a.id}')">Asset Lifecycle</button></div>
- <div class="tile"><b>Work Orders Directly Attached to This Asset</b>${assetSpecific.length?assetSpecific.map(w=>`<div class="row" onclick="woModal('${w.id}')" style="cursor:pointer"><div><b>${w.id}</b><div class="muted">${w.trade} · ${w.status} · ${w.vendor}</div></div><div>${pill(w.priority)} ${pill(w.sla)}</div></div>`).join(''):"<p class='muted'>No work orders are directly tied to this asset ID yet.</p>"}</div>
- <div class="tile"><b>All Work Orders at ${l.site}</b>${wos.length?wos.map(w=>`<div class="row" onclick="woModal('${w.id}')" style="cursor:pointer"><div><b>${w.id}</b><div class="muted">Asset: ${w.asset||'Unassigned'} · ${w.trade} · ${w.status} · ${w.vendor}</div></div><div>${pill(w.priority)} ${pill(w.sla)}</div></div>`).join(''):"<p class='muted'>No work orders attached to this location yet.</p>"}</div>
- <div class="tile"><b>Other Assets at This Location</b>${siblingAssets.length?siblingAssets.map(x=>`<div class="row" onclick="openAssetLocationWorkOrders('${x.id}')" style="cursor:pointer"><div><b>${x.asset}</b><div class="muted">${x.trade} · ${x.age||'N/A'} yrs · ${money(x.spend12||0)} 12-mo spend</div></div><span class="badge">${predictedFailure(x)}%</span></div>`).join(''):"<p class='muted'>No other assets at this location.</p>"}</div>`);
-}
-function renderAssetHistory(x){
- assets.innerHTML=table("Asset Lifecycle History — Click Asset for Location WOs",["Asset","Location","Trade","Age","Failure Risk","12 Mo Spend","Attached WOs","Open"],x.as.map(a=>{
-  let fail=predictedFailure(a);let wos=db.workOrders.filter(w=>w.location===a.location);let direct=wos.filter(w=>w.asset===a.id).length;
-  return `<tr onclick="openAssetLocationWorkOrders('${a.id}')" style="cursor:pointer"><td><button class="btn dark" onclick="event.stopPropagation();openAssetLocationWorkOrders('${a.id}')">${a.asset}</button></td><td>${loc(a.location).site}</td><td>${a.trade}</td><td>${a.age||'N/A'}</td><td>${pill(fail>70?"High":fail>45?"Medium":"Low")} ${fail}%</td><td><b>${money(a.spend12||0)}</b></td><td><b>${wos.length}</b> location / ${direct} direct</td><td><button class="btn" onclick="event.stopPropagation();openAssetLocationWorkOrders('${a.id}')">View WOs</button></td></tr>`
- }).join(""));
 }
 
 init();
