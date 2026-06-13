@@ -1831,3 +1831,53 @@ init();
   window.addEventListener('DOMContentLoaded', hardOpen);
   window.addEventListener('load', function(){ hardOpen(); setTimeout(hardOpen,500); setTimeout(hardOpen,1500); });
 })();
+
+
+
+// === CommandCenter US Map Patch: force visible USA map if heat map area is empty ===
+(function ensureCommandCenterUSMap(){
+  const mapMarkup = `
+    <div class="cc-us-map-panel" id="portfolio-us-map">
+      <div class="cc-us-map-label"><span class="cc-us-map-label-dot"></span> USA Portfolio Map</div>
+      <svg class="cc-us-map-svg" viewBox="0 0 1000 620" role="img" aria-label="United States portfolio map">
+        <path class="cc-us-map-land" d="M128 196 L184 166 L260 147 L341 138 L421 125 L512 132 L604 128 L690 148 L778 177 L856 220 L902 280 L878 338 L820 383 L746 419 L654 453 L553 476 L448 480 L348 455 L260 413 L190 354 L143 286 Z" />
+        <path class="cc-us-map-land" d="M642 448 L705 480 L763 518 L731 552 L664 538 L614 492 Z" />
+        <path class="cc-us-map-land" d="M176 492 L218 468 L254 486 L236 526 L190 535 Z" />
+        <path class="cc-us-map-state-lines" d="M235 177 L245 405 M325 145 L330 450 M420 128 L415 475 M520 134 L508 476 M610 132 L585 465 M700 150 L660 438 M785 180 L730 414" />
+        <path class="cc-us-map-state-lines" d="M170 280 L890 280 M205 350 L830 350 M270 420 L735 420 M210 220 L850 220" />
+      </svg>
+      <div class="cc-us-map-footer">
+        <strong>Map foundation installed</strong>
+        Step 1 is visible USA map only. Next build adds green/yellow/red location pins, then attached work orders.
+      </div>
+    </div>`;
+  function install(){
+    if (document.getElementById("portfolio-us-map")) return;
+    const candidates = [
+      document.getElementById("portfolio-heat-map"),
+      document.getElementById("portfolioHeatMap"),
+      document.getElementById("heat-map"),
+      document.querySelector("[data-section='portfolio-heat-map']"),
+      document.querySelector(".portfolio-heat-map"),
+      document.querySelector(".heat-map"),
+      [...document.querySelectorAll("section, .card, .dashboard-card")].find(el => /portfolio heat map|heat map/i.test(el.textContent || ""))
+    ].filter(Boolean);
+    const target = candidates[0];
+    if (target) {
+      target.innerHTML = mapMarkup;
+    } else {
+      const container = document.querySelector("main") || document.querySelector("#app") || document.body;
+      const wrapper = document.createElement("section");
+      wrapper.className = "dashboard-card commandcenter-map-foundation";
+      wrapper.innerHTML = "<h2>Portfolio Heat Map</h2><p>Visible USA map foundation. Pins and work orders come next.</p>" + mapMarkup;
+      container.appendChild(wrapper);
+    }
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", install);
+  } else {
+    install();
+  }
+  setTimeout(install, 500);
+  setTimeout(install, 1500);
+})();
