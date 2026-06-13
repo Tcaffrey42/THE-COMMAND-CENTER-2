@@ -2,6 +2,7 @@
   "name": "commandcenter-v2-7-clean-master",
   "version": "2.7.1",
   "private": true,
+  "description": "CommandCenter Enterprise V2.7 — single self-contained index.html build deployed to Vercel.",
   "scripts": {
     "build": "mkdir -p dist && cp index.html dist/index.html",
     "start": "npx serve .",
