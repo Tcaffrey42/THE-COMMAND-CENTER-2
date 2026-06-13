@@ -258,22 +258,53 @@ function applyRoleUI(){
     el.classList.toggle("hiddenByRole",!ok);
   });
 }
+
+function enableDemoAccess(){
+  currentSession={user:{id:"demo-admin",email:"tim.caffrey@bossfacilityservices.com",user_metadata:{full_name:"Tim Caffrey"}}};
+  currentProfile={id:"demo-admin",email:"tim.caffrey@bossfacilityservices.com",full_name:"Tim Caffrey",role:"admin",company:"BOSS Facility Services"};
+  cloudReady=false;
+  localStorage.setItem("commandCenterRole","admin");
+  localStorage.setItem("commandCenterLoggedEmail",currentProfile.email);
+  document.body.classList.add("authReady","demoMode");
+  setAuthMessage("");
+  return true;
+}
+async function enterDemoCommandCenter(){
+  enableDemoAccess();
+  await init();
+  toast("Demo mode active — CommandCenter unlocked");
+}
+window.enterDemoCommandCenter=enterDemoCommandCenter;
+
 async function initAuthGate(){
-  if(!ensureSupabaseClient()) return false;
+  // Demo-first behavior: if Supabase is not configured, unlock local demo mode instead of trapping users on login.
+  if(!hasSupabaseConfig()){
+    enableDemoAccess();
+    return true;
+  }
+  if(!supabaseClient) supabaseClient=window.supabase.createClient(SUPABASE_CONFIG.url,SUPABASE_CONFIG.anonKey);
   const {data,error}=await supabaseClient.auth.getSession();
-  if(error){setAuthMessage(error.message);return false;}
+  if(error){console.warn("Auth session check failed; opening demo mode", error); enableDemoAccess(); return true;}
   currentSession=data.session;
   cloudReady=Boolean(currentSession);
-  if(!currentSession){document.body.classList.remove("authReady");return false;}
+  if(!currentSession){
+    // Keep login available, but do not block the product demo.
+    enableDemoAccess();
+    return true;
+  }
   await loadCurrentProfile();
   applyRoleUI();
   return true;
 }
 async function appSignIn(){
+  if(!hasSupabaseConfig()){
+    await enterDemoCommandCenter();
+    return;
+  }
   if(!ensureSupabaseClient()) return;
   const email=(document.getElementById("authEmail")||{}).value;
   const password=(document.getElementById("authPassword")||{}).value;
-  if(!email||!password){setAuthMessage("Enter email and password.");return;}
+  if(!email||!password){setAuthMessage("Enter email and password, or use Demo Access.");return;}
   setAuthMessage("Signing in...");
   const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
   if(error){setAuthMessage(error.message);return;}
