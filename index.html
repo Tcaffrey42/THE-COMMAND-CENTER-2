@@ -3,28 +3,82 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>CommandCenter Enterprise V2.13 Staging Prep</title>
+<title>CommandCenter Enterprise V2.7</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2309090b'/%3E%3Ccircle cx='32' cy='32' r='19' fill='none' stroke='white' stroke-width='6'/%3E%3Cpath d='M32 13v10M32 41v10M13 32h10M41 32h10' stroke='white' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#f4f4f5;--card:#fff;--ink:#09090b;--muted:#71717a;--line:#e4e4e7;--dark:#111827;--red:#dc2626;--amber:#d97706;--green:#16a34a;--blue:#2563eb}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+.side{background:#fff;border-right:1px solid var(--line);padding:22px;position:sticky;top:0;height:100vh}
+.brand{background:#09090b;color:white;border-radius:24px;padding:22px;box-shadow:0 18px 50px rgba(0,0,0,.18)}
+.brandMark{display:flex;align-items:center;gap:12px;margin-bottom:14px}.brandLogo{width:43px;height:43px;border-radius:14px;border:2px solid rgba(255,255,255,.92);display:grid;place-items:center;font-weight:1000;font-size:24px;letter-spacing:-2px}.brandWord{font-size:12px;color:#a1a1aa;text-transform:uppercase;font-weight:950;letter-spacing:2px}.brand h1{margin:0 0 6px;font-size:29px;letter-spacing:-1px}.brand p{margin:0;color:#d4d4d8;line-height:1.35}.brandTag{display:inline-flex;margin-top:14px;border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:7px 10px;color:#fff;font-size:12px;font-weight:950;background:rgba(255,255,255,.06)}
+.nav{margin-top:18px;display:grid;gap:7px}.nav button{border:0;background:transparent;color:#52525b;text-align:left;padding:13px 14px;border-radius:17px;font-weight:900;cursor:pointer}
+.nav button.active,.nav button:hover{background:#09090b;color:#fff}
+.main{padding:22px}.top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:18px}
+.kicker{font-size:12px;font-weight:950;text-transform:uppercase;letter-spacing:2px;color:#71717a}.title h2{font-size:34px;margin:4px 0}.title p{margin:0;color:#71717a}
+.controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}select,input,textarea{border:1px solid var(--line);border-radius:15px;padding:12px 13px;background:white;font-weight:750}
+.btn{border:0;border-radius:15px;padding:12px 14px;font-weight:950;cursor:pointer;background:#fff;border:1px solid var(--line)}.btn.dark{background:#09090b;color:white}.btn.red{background:#dc2626;color:white}.btn.green{background:#16a34a;color:white}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}.card{background:white;border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.045)}
+.metric .label{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:#71717a;font-weight:950}.metric .value{font-size:30px;font-weight:1000;margin-top:5px}.metric .sub{font-size:13px;color:#71717a}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.page{display:none}.page.active{display:block}
+h3{margin:0 0 14px;font-size:19px}.aihero{background:#09090b;color:white;border-radius:28px;padding:25px}.aihero h1{font-size:34px;margin:8px 0}.aihero p{color:#d4d4d8;line-height:1.45}
+table{width:100%;border-collapse:collapse;font-size:14px}th{text-align:left;color:#71717a;text-transform:uppercase;font-size:11px;letter-spacing:1px;padding:11px;border-bottom:1px solid var(--line)}td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top}.scroll{overflow:auto;border:1px solid var(--line);border-radius:20px}
+.pill{display:inline-flex;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:950;border:1px solid}.red{background:#fef2f2;color:#b91c1c;border-color:#fecaca}.amber{background:#fffbeb;color:#b45309;border-color:#fde68a}.green{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}.blue{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:center;background:#fafafa;border:1px solid var(--line);border-radius:18px;padding:13px;margin-bottom:10px}.muted{color:#71717a}.big{font-size:42px;font-weight:1000}.bar{height:12px;background:#e5e7eb;border-radius:999px;overflow:hidden}.bar span{display:block;height:100%;background:#09090b;border-radius:999px}.toast{position:fixed;right:18px;bottom:18px;background:#09090b;color:white;padding:14px 16px;border-radius:18px;font-weight:950;display:none}
+@media(max-width:1000px){.app{grid-template-columns:1fr}.side{position:relative;height:auto}.metrics,.grid2,.grid3{grid-template-columns:1fr}.top{display:block}.controls{justify-content:flex-start;margin-top:12px}}
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQfQhd8lG/9dOfH7WwkxqUH7m3BzLfk=" crossorigin=""/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<link rel="stylesheet" href="src/styles.css">
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:22px;z-index:10}
+.modal .box{background:#fff;border-radius:26px;padding:22px;max-width:920px;width:100%;max-height:86vh;overflow:auto;box-shadow:0 30px 90px rgba(0,0,0,.35)}
+.close{float:right;border:0;background:#09090b;color:white;border-radius:12px;padding:8px 11px;font-weight:950;cursor:pointer}
+.tile{border:1px solid var(--line);background:#fafafa;border-radius:20px;padding:16px;margin:10px 0}
+.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.lane{background:#fafafa;border:1px solid var(--line);border-radius:20px;padding:12px;min-height:210px}.lane h4{margin:0 0 10px}.woCard{background:white;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px;box-shadow:0 8px 20px rgba(0,0,0,.035)}
+.chat{display:grid;gap:10px}.bubble{padding:13px 14px;border-radius:18px;background:#f4f4f5}.bubble.ai{background:#09090b;color:white}.bubble.ai .muted{color:#d4d4d8}
+.badge{display:inline-block;border-radius:10px;background:#f4f4f5;padding:4px 8px;margin:2px;font-weight:900;font-size:12px}
+@media(max-width:1100px){.kanban{grid-template-columns:1fr}}
 
-<script>
-(function(){
-  window.COMMANDCENTER_NO_LOGIN = true;
-  document.documentElement.classList.add('no-login-mode');
-  function unlock(){
-    document.body.classList.add('authReady','demoMode','noLoginMode');
-    ['loginGate','authGate','loginScreen','authScreen'].forEach(function(id){var el=document.getElementById(id); if(el){el.style.display='none'; el.remove();}});
-    document.querySelectorAll('.loginGate,.authGate,.login-screen,.auth-screen,[data-auth-gate]').forEach(function(el){el.style.display='none';});
-    var shell=document.getElementById('appShell')||document.querySelector('.app'); if(shell){shell.style.display='grid'; shell.style.visibility='visible'; shell.hidden=false;}
-  }
-  unlock();
-  document.addEventListener('DOMContentLoaded', unlock);
-  setTimeout(unlock,50); setTimeout(unlock,500);
-})();
-</script>
+
+.chartbox{height:220px;border:1px solid var(--line);border-radius:20px;padding:16px;background:#fafafa;display:flex;align-items:flex-end;gap:12px}
+.barcol{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:8px;height:100%}
+.barfill{width:100%;border-radius:12px 12px 4px 4px;background:#09090b;min-height:8px}
+.barlabel{font-size:11px;color:#71717a;font-weight:900;text-align:center}
+.photoGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.photoThumb{border:1px solid var(--line);border-radius:14px;background:#fafafa;padding:10px;font-size:12px;font-weight:800}
+.dispatchStep{border:1px solid var(--line);border-radius:16px;padding:12px;margin:8px 0;background:#fff}
+.timeline{border-left:3px solid #09090b;margin-left:10px;padding-left:14px}
+.timeline .event{margin-bottom:12px}
+
+
+.mapGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.mapSite{border:1px solid var(--line);border-radius:18px;padding:14px;background:#fafafa;cursor:pointer}
+.mapSite:hover{background:#fff;box-shadow:0 10px 25px rgba(0,0,0,.06)}
+.portfolioMapShell{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;align-items:stretch}
+.regionRiskMap{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,122px);gap:12px;min-height:390px}
+.regionCell{border:1px solid var(--line);border-radius:24px;padding:16px;background:#fafafa;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 10px 25px rgba(0,0,0,.035)}
+.regionCell:hover{background:#fff;transform:translateY(-1px);box-shadow:0 14px 34px rgba(0,0,0,.07)}
+.regionCell .regionName{font-weight:1000;font-size:18px}.regionCell .regionMeta{font-size:12px;color:#71717a;font-weight:850;margin-top:5px}
+.regionCell .regionScore{position:absolute;right:14px;bottom:12px;font-size:32px;font-weight:1000;color:#09090b;opacity:.9}
+.regionCell .regionBadge{position:absolute;left:14px;bottom:14px}
+.regionCell.critical{box-shadow:inset 0 0 0 2px #fecaca;background:#fff7f7}
+.regionCell.high{box-shadow:inset 0 0 0 2px #fed7aa;background:#fffbf4}
+.regionCell.medium{box-shadow:inset 0 0 0 2px #fde68a;background:#fffdf0}
+.regionCell.low{box-shadow:inset 0 0 0 2px #bbf7d0;background:#f7fff9}
+.regionEast{grid-column:4;grid-row:1 / span 2}.regionSoutheast{grid-column:3;grid-row:2}.regionTexas{grid-column:2;grid-row:3}.regionWest{grid-column:1;grid-row:2}.regionMidwest{grid-column:2 / span 2;grid-row:1}.regionOther{grid-column:1;grid-row:1}
+.mapLegend{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.mapLegend span{border:1px solid var(--line);border-radius:999px;padding:6px 9px;background:#fafafa;font-size:12px;font-weight:950}
+.regionList{display:grid;gap:10px}.siteRiskCard{border:1px solid var(--line);border-radius:18px;padding:13px;background:#fafafa;cursor:pointer}.siteRiskCard:hover{background:#fff;box-shadow:0 10px 25px rgba(0,0,0,.06)}
+.mapToolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.mapStatGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}.mapStat{border:1px solid var(--line);border-radius:18px;background:#fafafa;padding:12px}.mapStat b{font-size:22px}
+.mapFilters{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px;margin:14px 0}.mapFilters select{width:100%}.activeFilterBar{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.filterChip{border:1px solid var(--line);border-radius:999px;padding:6px 9px;background:#fff;font-size:12px;font-weight:950}.drawerOverlay{position:fixed;inset:0;background:rgba(0,0,0,.32);display:none;justify-content:flex-end;z-index:20}.drawerPanel{background:#fff;width:min(560px,96vw);height:100vh;overflow:auto;padding:22px;box-shadow:-20px 0 60px rgba(0,0,0,.28)}.drawerHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}.drawerClose{border:0;background:#09090b;color:white;border-radius:12px;padding:9px 12px;font-weight:950;cursor:pointer}.drawerSection{border:1px solid var(--line);border-radius:20px;padding:14px;background:#fafafa;margin:12px 0}.miniGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.miniStat{border:1px solid var(--line);border-radius:16px;background:#fff;padding:12px}.miniStat b{font-size:20px}.siteActionBar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}@media(max-width:1100px){.mapFilters,.miniGrid{grid-template-columns:1fr 1fr}.drawerPanel{width:100vw}}
+@media(max-width:1100px){.portfolioMapShell{grid-template-columns:1fr}.regionRiskMap{grid-template-columns:1fr;grid-template-rows:auto}.regionEast,.regionSoutheast,.regionTexas,.regionWest,.regionMidwest,.regionOther{grid-column:auto;grid-row:auto}}
+.reportPage{background:white;border:1px solid var(--line);border-radius:20px;padding:22px}
+.approvalTrail{border-left:3px solid #09090b;margin-left:10px;padding-left:14px}
+.lifecycleGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.lifecycleCard{border:1px solid var(--line);border-radius:18px;padding:14px;background:#fafafa}
+@media(max-width:1100px){.mapGrid,.lifecycleGrid{grid-template-columns:1fr}}
+
+.cloudStatus{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:950;border:1px solid var(--line);background:#fafafa}
+.cloudDot{width:9px;height:9px;border-radius:999px;background:#d97706}.cloudDot.live{background:#16a34a}.cloudDot.off{background:#71717a}
+.codebox{white-space:pre-wrap;background:#09090b;color:#fff;border-radius:18px;padding:14px;max-height:320px;overflow:auto;font-size:12px;line-height:1.45}
+
+</style>
 </head>
 <body>
 <div class="app">
@@ -34,18 +88,17 @@
 </aside>
 <main class="main">
   <div class="top">
-    <div class="title"><div class="kicker">CommandCenter Enterprise V2.13</div><h2 id="pageTitle">Mission Control</h2><p id="pageSub">Visibility, accountability, and control across every location, asset, vendor, and dollar.</p></div>
+    <div class="title"><div class="kicker">CommandCenter Enterprise V2.7</div><h2 id="pageTitle">AI War Room</h2><p id="pageSub">Visibility, accountability, and control across every location, asset, vendor, and dollar.</p></div>
     <div class="controls">
       <select id="clientSelect" onchange="setClient(this.value)"></select><select id="loginUserSelect" onchange="setLoginUser(this.value)"></select>
       <input id="search" placeholder="Global search..." oninput="render()"/>
       <button class="btn dark" onclick="openWOForm()">+ Work Order</button>
       <button class="btn" onclick="openProposalForm()">+ Proposal</button>
-      <button class="btn" onclick="exportData()">Export JSON</button><span class="deployBadge">Vercel staging-ready</span>
+      <button class="btn" onclick="exportData()">Export JSON</button>
     </div>
   </div>
   <section class="metrics" id="metrics"></section>
   <section id="warroom" class="page active"></section>
-  <section id="amdashboard" class="page"></section>
   <section id="dashboard" class="page"></section>
   <section id="workorders" class="page"></section>
   <section id="locations" class="page"></section>
@@ -57,7 +110,6 @@
   <section id="users" class="page"></section>
 
   <section id="dispatch" class="page"></section>
-  <section id="escalations" class="page"></section>
   <section id="sla" class="page"></section>
   <section id="heatmap" class="page"></section>
   <section id="approvals" class="page"></section>
@@ -70,7 +122,951 @@
 </main>
 </div>
 <div class="toast" id="toast"></div><div class="modal" id="modal"><div class="box"><button class="close" onclick="closeModal()">Close</button><div id="modalBody"></div></div></div><div class="drawerOverlay" id="siteDrawer"><div class="drawerPanel"><div id="siteDrawerBody"></div></div></div>
-<script src="src/env.js"></script>
-<script src="src/app.js"></script>
+<script>
+const seed={activeClient:0,clients:[
+{name:"Security Finance",vertical:"Financial Branch Network",locations:754,budget:4200000,owner:"April Parker"},
+{name:"Fogo de Chão Refresh Program",vertical:"Restaurant Refresh / Reimage",locations:73,budget:6800000,owner:"Michael Murillo"},
+{name:"Prime Communications",vertical:"Telecom Retail",locations:2000,budget:18000000,owner:"Facilities Team"}
+],
+locations:[
+{id:"L101",client:0,site:"Charlotte Branch 014",region:"Southeast",market:"Charlotte",district:"SE-01",address:"201 S Tryon St, Charlotte, NC 28202",latitude:35.2269,longitude:-80.8433,fm:"April Parker",risk:"High",risk_score:85,trade:"HVAC",spend:48200,open:7,repeat:4,capex:true},
+{id:"L205",client:0,site:"Dallas Branch 088",region:"Texas",market:"Dallas-Fort Worth",district:"TX-02",address:"1717 Main St, Dallas, TX 75201",latitude:32.7813,longitude:-96.7970,fm:"April Parker",risk:"Medium",risk_score:52,trade:"Electrical",spend:37100,open:5,repeat:2,capex:false},
+{id:"L319",client:0,site:"Phoenix Branch 122",region:"West",market:"Phoenix",district:"W-04",address:"2 N Central Ave, Phoenix, AZ 85004",latitude:33.4484,longitude:-112.0740,fm:"Sarah Mitchell",risk:"High",risk_score:92,trade:"Plumbing",spend:61200,open:9,repeat:5,capex:true},
+{id:"L522",client:0,site:"Cleveland Branch 207",region:"Midwest",market:"Cleveland",district:"MW-03",address:"200 Public Square, Cleveland, OH 44114",latitude:41.4993,longitude:-81.6944,fm:"Marcus Reed",risk:"Critical",risk_score:100,trade:"HVAC",spend:87500,open:11,repeat:7,capex:true},
+{id:"FG-PDX",client:1,site:"Portland OR Refresh",region:"West",market:"Portland",district:"W-07",address:"700 SW 5th Ave, Portland, OR 97204",latitude:45.5194,longitude:-122.6762,fm:"Michael Murillo",risk:"High",risk_score:100,trade:"Refresh",spend:420000,open:18,repeat:0,capex:true},
+{id:"PC-118",client:2,site:"Atlanta Retail 118",region:"Southeast",market:"Atlanta",district:"SE-05",address:"191 Peachtree St NE, Atlanta, GA 30303",latitude:33.7587,longitude:-84.3877,fm:"Facilities Team",risk:"Medium",risk_score:75,trade:"Doors/Locks",spend:55200,open:8,repeat:3,capex:false}
+],
+workOrders:[
+{id:"WO-78421",client:0,asset:"A-RTU-1",location:"L522",trade:"HVAC",priority:"Emergency",status:"Vendor Dispatched",owner:"Tony Russo",vendor:"Metro Mechanical",age:3,cost:12400,sla:"At Risk",notes:"Emergency RTU issue. Confirm parts ETA."},
+{id:"WO-78433",client:0,asset:"A-PL-2",location:"L319",trade:"Plumbing",priority:"Urgent",status:"Proposal Needed",owner:"Nina Patel",vendor:"Desert Pipe",age:8,cost:8600,sla:"Breached",notes:"Repeat drain issue. Proposal requested."},
+{id:"WO-78451",client:0,asset:"A-LIGHT-1",location:"L101",trade:"Lighting",priority:"Normal",status:"In Progress",owner:"Evan Brooks",vendor:"BrightWay",age:2,cost:1800,sla:"On Track",notes:"Lobby fixture outage."},
+{id:"WO-90111",client:1,asset:"A-BAR-1",location:"FG-PDX",trade:"Millwork",priority:"High",status:"Scoping",owner:"Marcus Reed",vendor:"Portland GC",age:1,cost:126000,sla:"On Track",notes:"Bar rebuild, host stand, restroom refresh, seating reconfiguration."},
+{id:"WO-61201",client:2,asset:"A-DOOR-9",location:"PC-118",trade:"Doors/Locks",priority:"Urgent",status:"Scheduled",owner:"Sarah Mitchell",vendor:"AccessPro",age:4,cost:4200,sla:"At Risk",notes:"Back door security issue."}
+],
+proposals:[
+{id:"P-4408",client:0,location:"L522",wo:"WO-78421",trade:"HVAC",amount:55400,status:"Pending",age:6,scope:"Replace failing RTU after repeated compressor failures."},
+{id:"P-4411",client:0,location:"L319",wo:"WO-78433",trade:"Plumbing",amount:22600,status:"Review",age:4,scope:"Camera, jetting, partial line replacement."},
+{id:"P-5100",client:1,location:"FG-PDX",wo:"WO-90111",trade:"Refresh",amount:885000,status:"Draft",age:1,scope:"Full restaurant refresh and reimage package."}
+],
+assets:[
+{id:"A-RTU-1",client:0,location:"L522",asset:"RTU-1",trade:"HVAC",age:14,repairs:7,spend12:38500,replacement:56000},
+{id:"A-PL-2",client:0,location:"L319",asset:"Main Drain Line",trade:"Plumbing",age:22,repairs:5,spend12:18800,replacement:26000},
+{id:"A-DOOR-9",client:2,location:"PC-118",asset:"Rear Security Door",trade:"Doors",age:9,repairs:4,spend12:9200,replacement:14000},
+{id:"A-LIGHT-1",client:0,location:"L101",asset:"Lobby Lighting Package",trade:"Lighting",age:8,repairs:3,spend12:4200,replacement:12000},
+{id:"A-BAR-1",client:1,location:"FG-PDX",asset:"Bar Millwork / Host Stand",trade:"Millwork",age:18,repairs:1,spend12:126000,replacement:185000}
+],
+vendors:[
+{name:"Metro Mechanical",trades:"HVAC",regions:"Midwest / Southeast",score:72,response:5.4,sla:82,insurance:"Verified",status:"Watch"},
+{name:"Desert Pipe",trades:"Plumbing",regions:"West",score:64,response:9.1,sla:68,insurance:"Verified",status:"Pressure"},
+{name:"BrightWay Electrical",trades:"Electrical / Lighting",regions:"National",score:88,response:3.2,sla:93,insurance:"Verified",status:"Strong"},
+{name:"Portland GC",trades:"Refresh / GC",regions:"Pacific Northwest",score:81,response:4.1,sla:89,insurance:"Pending COI",status:"Onboarding"}
+],
+users:[
+{name:"Tim Caffrey",role:"Account Executive",access:"Admin",client:"All",status:"Active"},
+{name:"Sarah Mitchell",role:"Account Manager",access:"Operator",client:"Security Finance",status:"Active"},
+{name:"Tony Russo",role:"HVAC Lead",access:"Trade Lead",client:"Security Finance",status:"Active"},
+{name:"Vendor Portal User",role:"Vendor",access:"Vendor",client:"Multi-client",status:"Limited"}
+],
+documents:[
+{id:"DOC-1001",client:0,type:"COI",name:"Metro Mechanical COI",status:"Verified",expires:"2026-11-30",owner:"Vendor Compliance"},
+{id:"DOC-1002",client:0,type:"Proposal",name:"L522 RTU Replacement Proposal",status:"Pending Approval",expires:"N/A",owner:"April Parker"},
+{id:"DOC-2001",client:1,type:"Drawing",name:"Portland Refresh Drawings",status:"Active",expires:"N/A",owner:"Michael Murillo"},
+{id:"DOC-3001",client:2,type:"Contract",name:"Prime Communications MSA Draft",status:"Draft",expires:"N/A",owner:"Facilities Team"}
+],
+approvals:[
+{id:"APR-901",client:0,item:"P-4408 RTU Replacement",amount:55400,status:"Needs Executive Approval",risk:"High",owner:"April Parker"},
+{id:"APR-902",client:0,item:"P-4411 Plumbing Line Repair",amount:22600,status:"Needs Review",risk:"Medium",owner:"April Parker"},
+{id:"APR-903",client:1,item:"Portland Refresh Package",amount:885000,status:"Draft",risk:"High",owner:"Michael Murillo"}
+],
+audit:[
+{id:"LOG-1",event:"Work order WO-78421 dispatched to Metro Mechanical",time:"Today 8:14 AM"},
+{id:"LOG-2",event:"Proposal P-4408 flagged for capital review",time:"Today 9:03 AM"},
+{id:"LOG-3",event:"Asset A-RTU-1 crossed replace-review threshold",time:"Today 9:21 AM"}
+],
+tenants:[
+{name:"Security Finance",plan:"Enterprise",users:14,roles:"Admin / Operator / Trade Lead / Vendor",storage:"2.4 GB",status:"Active"},
+{name:"Fogo de Chão Refresh Program",plan:"Projects",users:7,roles:"Admin / Project Manager / GC",storage:"1.1 GB",status:"Pilot"},
+{name:"Prime Communications",plan:"Enterprise",users:22,roles:"Admin / FM / Vendor / Finance",storage:"3.8 GB",status:"Demo"}
+]
+};
+let db=JSON.parse(localStorage.getItem("commandCenterV27StableData")||JSON.stringify(seed));
+
+// ============================
+// SPRINT 1 CLOUD FOUNDATION
+// ============================
+// Fill these in from Supabase Project Settings > API before going live.
+const SUPABASE_CONFIG={
+ url:"",
+ anonKey:""
+};
+const CLOUD_TABLES={
+ clients:"clients",
+ locations:"locations",
+ workOrders:"work_orders",
+ proposals:"proposals",
+ assets:"assets",
+ vendors:"vendors",
+ approvals:"approvals",
+ users:"app_users",
+ documents:"documents",
+ tenants:"tenants",
+ audit:"audit_logs"
+};
+const STORAGE_BUCKETS=["workorder-photos","cois","contracts","proposals","invoices","project-documents"];
+let supabaseClient=null;
+let cloudReady=false;
+function hasSupabaseConfig(){return Boolean(SUPABASE_CONFIG.url&&SUPABASE_CONFIG.anonKey&&window.supabase)}
+function cloudModeLabel(){return cloudReady?"Cloud Connected":"Local Demo Mode"}
+function cloudDotClass(){return cloudReady?"live":"off"}
+async function initCloudLayer(){
+ // Stable V2.7 baseline: cloud/auth is intentionally disabled so local demo always opens.
+ cloudReady=false;
+ supabaseClient=null;
+ return false;
+}
+async function cloudSignIn(){
+ if(!hasSupabaseConfig()){toast("Stable demo mode: Supabase disabled");return;}
+ const email=(document.getElementById("cloudEmail")||{}).value;
+ const password=(document.getElementById("cloudPassword")||{}).value;
+ if(!email||!password){toast("Email and password required");return;}
+ const {error}=await supabaseClient.auth.signInWithPassword({email,password});
+ if(error){toast(error.message);return;}
+ cloudReady=true;toast("Signed in");render();
+}
+async function cloudSignOut(){if(supabaseClient){await supabaseClient.auth.signOut();}cloudReady=false;toast("Signed out");render();}
+function mapRows(rows,mapper){return (rows||[]).map(mapper)}
+function demoToCloudPayload(){
+ return {
+  clients:mapRows(db.clients,(x,i)=>({demo_id:String(i),name:x.name,vertical:x.vertical,locations:x.locations,budget:x.budget,owner:x.owner,raw:x})),
+  locations:mapRows(db.locations,x=>({demo_id:x.id,client_demo_id:String(x.client),site:x.site,region:x.region,address:x.address,market:x.market,district:x.district,latitude:x.latitude,longitude:x.longitude,fm:x.fm,risk:x.risk,risk_score:riskScore(x),trade:x.trade,spend:x.spend,open_count:x.open,repeat_count:x.repeat,capex:x.capex,raw:x})),
+  workOrders:mapRows(db.workOrders,x=>({demo_id:x.id,client_demo_id:String(x.client),asset_demo_id:x.asset,location_demo_id:x.location,trade:x.trade,priority:x.priority,status:x.status,owner:x.owner,vendor_name:x.vendor,age_days:x.age,cost:x.cost,sla:x.sla,notes:x.notes,raw:x})),
+  proposals:mapRows(db.proposals,x=>({demo_id:x.id,client_demo_id:String(x.client),location_demo_id:x.location,work_order_demo_id:x.wo,trade:x.trade,amount:x.amount,status:x.status,age_days:x.age,scope:x.scope,raw:x})),
+  assets:mapRows(db.assets,x=>({demo_id:x.id,client_demo_id:String(x.client),location_demo_id:x.location,asset:x.asset,trade:x.trade,age:x.age,repairs:x.repairs,spend12:x.spend12,replacement:x.replacement,manufacturer:x.manufacturer,model:x.model,install_date:x.installDate,raw:x})),
+  vendors:mapRows(db.vendors,x=>({name:x.name,trades:x.trades,regions:x.regions,score:x.score,response_hours:x.response,sla:x.sla,insurance:x.insurance,status:x.status,raw:x})),
+  approvals:mapRows(db.approvals,x=>({demo_id:x.id,client_demo_id:String(x.client),item:x.item,amount:x.amount,status:x.status,risk:x.risk,owner:x.owner,assigned_to:x.assignedTo,raw:x})),
+  users:mapRows(db.users,x=>({name:x.name,role:x.role,access:x.access,client:x.client,status:x.status,raw:x})),
+  documents:mapRows(db.documents,x=>({demo_id:x.id,client_demo_id:String(x.client),type:x.type,name:x.name,status:x.status,expires:x.expires,owner:x.owner,raw:x})),
+  tenants:mapRows(db.tenants,x=>({name:x.name,plan:x.plan,users:x.users,roles:x.roles,storage:x.storage,status:x.status,raw:x})),
+  audit:mapRows(db.audit,x=>({demo_id:x.id,event:x.event,event_time:x.time,raw:x}))
+ }
+}
+async function syncDemoToSupabase(){
+ if(!cloudReady||!supabaseClient){toast("Connect Supabase first");return;}
+ const p=demoToCloudPayload();
+ const jobs=[
+  [CLOUD_TABLES.clients,p.clients,"demo_id"],[CLOUD_TABLES.locations,p.locations,"demo_id"],[CLOUD_TABLES.workOrders,p.workOrders,"demo_id"],
+  [CLOUD_TABLES.proposals,p.proposals,"demo_id"],[CLOUD_TABLES.assets,p.assets,"demo_id"],[CLOUD_TABLES.vendors,p.vendors,"name"],
+  [CLOUD_TABLES.approvals,p.approvals,"demo_id"],[CLOUD_TABLES.users,p.users,"name"],[CLOUD_TABLES.documents,p.documents,"demo_id"],
+  [CLOUD_TABLES.tenants,p.tenants,"name"],[CLOUD_TABLES.audit,p.audit,"demo_id"]
+ ];
+ for(const [table,rows,key] of jobs){
+  if(!rows.length) continue;
+  const {error}=await supabaseClient.from(table).upsert(rows,{onConflict:key});
+  if(error){console.error(error);toast("Sync failed at "+table);return;}
+ }
+ toast("Demo data synced to Supabase");
+}
+
+// ============================
+// V2.6 LIVE SUPABASE READ/WRITE LAYER
+// ============================
+let cloudLastLoad=null;
+function cloudCanWrite(){return Boolean(supabaseClient&&cloudReady)}
+function clientDemoId(v){return String(v??db.activeClient??0)}
+function cloudToastError(prefix,error){console.error(prefix,error);toast(prefix+": "+(error?.message||"check console"))}
+function cloudPayload(kind,x){
+ const maps={
+  clients:x=>({demo_id:String(db.clients.indexOf(x)>=0?db.clients.indexOf(x):x.demo_id||0),name:x.name,vertical:x.vertical,locations:x.locations,budget:x.budget,owner:x.owner,raw:x}),
+  locations:x=>({demo_id:x.id,client_demo_id:clientDemoId(x.client),site:x.site,region:x.region,address:x.address,market:x.market,district:x.district,latitude:x.latitude,longitude:x.longitude,fm:x.fm,risk:x.risk,risk_score:riskScore(x),trade:x.trade,spend:x.spend,open_count:x.open,repeat_count:x.repeat,capex:x.capex,raw:x}),
+  workOrders:x=>({demo_id:x.id,client_demo_id:clientDemoId(x.client),asset_demo_id:x.asset,location_demo_id:x.location,trade:x.trade,priority:x.priority,status:x.status,owner:x.owner,vendor_name:x.vendor,age_days:x.age,cost:x.cost,sla:x.sla,notes:x.notes,raw:x}),
+  proposals:x=>({demo_id:x.id,client_demo_id:clientDemoId(x.client),location_demo_id:x.location,work_order_demo_id:x.wo,trade:x.trade,amount:x.amount,status:x.status,age_days:x.age,scope:x.scope,raw:x}),
+  assets:x=>({demo_id:x.id,client_demo_id:clientDemoId(x.client),location_demo_id:x.location,asset:x.asset,trade:x.trade,age:x.age,repairs:x.repairs,spend12:x.spend12,replacement:x.replacement,manufacturer:x.manufacturer,model:x.model,install_date:x.installDate,raw:x}),
+  vendors:x=>({name:x.name,trades:x.trades,regions:x.regions,score:x.score,response_hours:x.response,sla:x.sla,insurance:x.insurance,status:x.status,raw:x}),
+  approvals:x=>({demo_id:x.id,client_demo_id:clientDemoId(x.client),item:x.item,amount:x.amount,status:x.status,risk:x.risk,owner:x.owner,assigned_to:x.assignedTo,raw:x}),
+  users:x=>({name:x.name,role:x.role,access:x.access,client:x.client,status:x.status,raw:x}),
+  documents:x=>({demo_id:x.id,client_demo_id:clientDemoId(x.client),type:x.type,name:x.name,status:x.status,expires:x.expires,owner:x.owner,file_path:x.filePath,raw:x}),
+  tenants:x=>({name:x.name,plan:x.plan,users:x.users,roles:x.roles,storage:x.storage,status:x.status,raw:x}),
+  audit:x=>({demo_id:x.id,event:x.event,event_time:x.time,raw:x})
+ };
+ return maps[kind](x);
+}
+async function cloudUpsert(kind,item){
+ if(!cloudCanWrite()) return false;
+ const table=CLOUD_TABLES[kind]; if(!table) return false;
+ const key=(kind==="vendors"||kind==="users"||kind==="tenants")?"name":"demo_id";
+ const {error}=await supabaseClient.from(table).upsert([cloudPayload(kind,item)],{onConflict:key});
+ if(error){cloudToastError("Cloud save failed at "+table,error);return false;}
+ return true;
+}
+async function cloudInsertAudit(event){
+ const item={id:"LOG-"+Date.now(),event,time:"Just now"};
+ db.audit.unshift(item); save();
+ await cloudUpsert("audit",item);
+ return item;
+}
+function cloudRowRaw(row){return row?.raw&&Object.keys(row.raw).length?row.raw:null}
+function rowsToDemo(kind,rows){
+ return (rows||[]).map((r,i)=>cloudRowRaw(r)||({
+  clients:{name:r.name,vertical:r.vertical,locations:r.locations,budget:r.budget,owner:r.owner},
+  locations:{id:r.demo_id,client:Number(r.client_demo_id||0),site:r.site,region:r.region,address:r.address,market:r.market,district:r.district,latitude:r.latitude,longitude:r.longitude,fm:r.fm,risk:r.risk,risk_score:r.risk_score,trade:r.trade,spend:r.spend,open:r.open_count,repeat:r.repeat_count,capex:r.capex},
+  workOrders:{id:r.demo_id,client:Number(r.client_demo_id||0),asset:r.asset_demo_id,location:r.location_demo_id,trade:r.trade,priority:r.priority,status:r.status,owner:r.owner,vendor:r.vendor_name,age:r.age_days,cost:r.cost,sla:r.sla,notes:r.notes},
+  proposals:{id:r.demo_id,client:Number(r.client_demo_id||0),location:r.location_demo_id,wo:r.work_order_demo_id,trade:r.trade,amount:r.amount,status:r.status,age:r.age_days,scope:r.scope},
+  assets:{id:r.demo_id,client:Number(r.client_demo_id||0),location:r.location_demo_id,asset:r.asset,trade:r.trade,age:r.age,repairs:r.repairs,spend12:r.spend12,replacement:r.replacement,manufacturer:r.manufacturer,model:r.model,installDate:r.install_date},
+  vendors:{name:r.name,trades:r.trades,regions:r.regions,score:r.score,response:r.response_hours,sla:r.sla,insurance:r.insurance,status:r.status},
+  approvals:{id:r.demo_id,client:Number(r.client_demo_id||0),item:r.item,amount:r.amount,status:r.status,risk:r.risk,owner:r.owner,assignedTo:r.assigned_to},
+  users:{name:r.name,role:r.role,access:r.access,client:r.client,status:r.status},
+  documents:{id:r.demo_id,client:Number(r.client_demo_id||0),type:r.type,name:r.name,status:r.status,expires:r.expires,owner:r.owner,filePath:r.file_path},
+  tenants:{name:r.name,plan:r.plan,users:r.users,roles:r.roles,storage:r.storage,status:r.status},
+  audit:{id:r.demo_id,event:r.event,time:r.event_time}
+ }[kind]));
+}
+async function loadFromSupabase(){
+ if(!cloudCanWrite()) return false;
+ const pulls=[
+  ["clients",CLOUD_TABLES.clients],["locations",CLOUD_TABLES.locations],["workOrders",CLOUD_TABLES.workOrders],["proposals",CLOUD_TABLES.proposals],
+  ["assets",CLOUD_TABLES.assets],["vendors",CLOUD_TABLES.vendors],["approvals",CLOUD_TABLES.approvals],["users",CLOUD_TABLES.users],
+  ["documents",CLOUD_TABLES.documents],["tenants",CLOUD_TABLES.tenants],["audit",CLOUD_TABLES.audit]
+ ];
+ const next={...db};
+ for(const [kind,table] of pulls){
+  const {data,error}=await supabaseClient.from(table).select("*").limit(1000);
+  if(error){cloudToastError("Cloud load failed at "+table,error);return false;}
+  if(data&&data.length) next[kind]=rowsToDemo(kind,data);
+ }
+ next.activeClient=db.activeClient||0;
+ db=next; cloudLastLoad=new Date(); save(); normalizeV24Complete(); normalizeV24(); return true;
+}
+async function refreshFromCloud(){
+ const ok=await loadFromSupabase();
+ if(ok){hydrateSelectors();render();toast("Cloud data loaded");}
+}
+function hydrateSelectors(){
+ if(window.clientSelect){clientSelect.innerHTML=db.clients.map((x,i)=>`<option value="${i}">${x.name}</option>`).join("");clientSelect.value=db.activeClient;}
+ if(window.loginUserSelect){loginUserSelect.innerHTML=db.users.map(u=>`<option value="${u.name}">${u.name}</option>`).join("");loginUserSelect.value=(localStorage.getItem("commandCenterLoggedUser")||db.users[0]?.name||"Tim Caffrey");}
+}
+async function uploadWOAttachmentToSupabase(id,file){
+ if(!cloudCanWrite()||!file) return null;
+ const path=`${id}/${Date.now()}-${file.name}`;
+ const {error}=await supabaseClient.storage.from("workorder-photos").upload(path,file,{upsert:true});
+ if(error){cloudToastError("Cloud upload failed",error);return null;}
+ return path;
+}
+
+function downloadSchema(){
+ const schema=document.getElementById("schemaText")?.textContent || SUPABASE_SCHEMA_SQL;
+ let blob=new Blob([schema],{type:"text/sql"});let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="commandcenter_supabase_schema.sql";a.click();
+}
+const SUPABASE_SCHEMA_SQL=`-- CommandCenter FM Sprint 1 Supabase Schema
+create extension if not exists pgcrypto;
+
+create table if not exists clients (
+ id uuid primary key default gen_random_uuid(), demo_id text unique, name text not null, vertical text, locations integer default 0, budget numeric default 0, owner text, raw jsonb default '{}'::jsonb, created_at timestamptz default now()
+);
+create table if not exists locations (
+ id uuid primary key default gen_random_uuid(), demo_id text unique, client_demo_id text, site text not null, region text, address text, market text, district text, latitude double precision, longitude double precision, fm text, risk text, risk_score integer default 0, trade text, spend numeric default 0, open_count integer default 0, repeat_count integer default 0, capex boolean default false, raw jsonb default '{}'::jsonb, created_at timestamptz default now()
+);
+create table if not exists work_orders (
+ id uuid primary key default gen_random_uuid(), demo_id text unique, client_demo_id text, location_demo_id text, asset_demo_id text, trade text, priority text, status text, owner text, vendor_name text, age_days integer default 0, cost numeric default 0, sla text, notes text, raw jsonb default '{}'::jsonb, created_at timestamptz default now(), updated_at timestamptz default now()
+);
+create table if not exists proposals (
+ id uuid primary key default gen_random_uuid(), demo_id text unique, client_demo_id text, location_demo_id text, work_order_demo_id text, trade text, amount numeric default 0, status text, age_days integer default 0, scope text, raw jsonb default '{}'::jsonb, created_at timestamptz default now()
+);
+create table if not exists assets (
+ id uuid primary key default gen_random_uuid(), demo_id text unique, client_demo_id text, location_demo_id text, asset text, trade text, age integer, repairs integer, spend12 numeric, replacement numeric, manufacturer text, model text, install_date text, raw jsonb default '{}'::jsonb, created_at timestamptz default now()
+);
+create table if not exists vendors (
+ id uuid primary key default gen_random_uuid(), name text unique not null, trades text, regions text, score integer, response_hours numeric, sla integer, insurance text, status text, raw jsonb default '{}'::jsonb, created_at timestamptz default now()
+);
+create table if not exists approvals (
+ id uuid primary key default gen_random_uuid(), demo_id text unique, client_demo_id text, item text, amount numeric, status text, risk text, owner text, assigned_to text, raw jsonb default '{}'::jsonb, created_at timestamptz default now()
+);
+create table if not exists app_users (
+ id uuid primary key default gen_random_uuid(), name text unique not null, role text, access text, client text, status text, raw jsonb default '{}'::jsonb, created_at timestamptz default now()
+);
+create table if not exists documents (
+ id uuid primary key default gen_random_uuid(), demo_id text unique, client_demo_id text, type text, name text, status text, expires text, owner text, file_path text, raw jsonb default '{}'::jsonb, created_at timestamptz default now()
+);
+create table if not exists tenants (
+ id uuid primary key default gen_random_uuid(), name text unique not null, plan text, users integer, roles text, storage text, status text, raw jsonb default '{}'::jsonb, created_at timestamptz default now()
+);
+create table if not exists audit_logs (
+ id uuid primary key default gen_random_uuid(), demo_id text unique, event text, event_time text, raw jsonb default '{}'::jsonb, created_at timestamptz default now()
+);
+
+alter table clients enable row level security;
+alter table locations enable row level security;
+alter table work_orders enable row level security;
+alter table proposals enable row level security;
+alter table assets enable row level security;
+alter table vendors enable row level security;
+alter table approvals enable row level security;
+alter table app_users enable row level security;
+alter table documents enable row level security;
+alter table tenants enable row level security;
+alter table audit_logs enable row level security;
+
+-- Prototype policy: authenticated users can read/write. Tighten by tenant/client before selling enterprise.
+do $$ begin
+ perform 1;
+end $$;
+create policy if not exists "authenticated read clients" on clients for select to authenticated using (true);
+create policy if not exists "authenticated write clients" on clients for all to authenticated using (true) with check (true);
+create policy if not exists "authenticated read locations" on locations for select to authenticated using (true);
+create policy if not exists "authenticated write locations" on locations for all to authenticated using (true) with check (true);
+create policy if not exists "authenticated read work_orders" on work_orders for select to authenticated using (true);
+create policy if not exists "authenticated write work_orders" on work_orders for all to authenticated using (true) with check (true);
+create policy if not exists "authenticated read proposals" on proposals for select to authenticated using (true);
+create policy if not exists "authenticated write proposals" on proposals for all to authenticated using (true) with check (true);
+create policy if not exists "authenticated read assets" on assets for select to authenticated using (true);
+create policy if not exists "authenticated write assets" on assets for all to authenticated using (true) with check (true);
+create policy if not exists "authenticated read vendors" on vendors for select to authenticated using (true);
+create policy if not exists "authenticated write vendors" on vendors for all to authenticated using (true) with check (true);
+create policy if not exists "authenticated read approvals" on approvals for select to authenticated using (true);
+create policy if not exists "authenticated write approvals" on approvals for all to authenticated using (true) with check (true);
+create policy if not exists "authenticated read app_users" on app_users for select to authenticated using (true);
+create policy if not exists "authenticated write app_users" on app_users for all to authenticated using (true) with check (true);
+create policy if not exists "authenticated read documents" on documents for select to authenticated using (true);
+create policy if not exists "authenticated write documents" on documents for all to authenticated using (true) with check (true);
+create policy if not exists "authenticated read tenants" on tenants for select to authenticated using (true);
+create policy if not exists "authenticated write tenants" on tenants for all to authenticated using (true) with check (true);
+create policy if not exists "authenticated read audit_logs" on audit_logs for select to authenticated using (true);
+create policy if not exists "authenticated write audit_logs" on audit_logs for all to authenticated using (true) with check (true);
+
+insert into storage.buckets (id, name, public) values
+ ('workorder-photos','workorder-photos',false),('cois','cois',false),('contracts','contracts',false),('proposals','proposals',false),('invoices','invoices',false),('project-documents','project-documents',false)
+on conflict (id) do nothing;
+`;
+
+const pages=[
+["warroom","🧠 AI War Room","Command layer for portfolio risk, spend leakage, and next actions."],
+["dashboard","📊 Dashboard","Executive KPIs and portfolio visibility."],
+["workorders","📋 Work Orders","Dispatch board, SLA pressure, and status control."],
+["dispatch","🚨 Dispatch Center","Auto-routing, vendor assignment, and live dispatch command."],
+["sla","📈 SLA Monitor","SLA performance, breach pressure, and escalation visibility."],
+["locations","📍 Locations","Site-level risk, spend, and repair history."],
+["heatmap","🗺️ Portfolio Heat Map","Visual risk ranking across locations."],
+["proposals","📄 Proposals","Approval queue and proposal aging."],
+["approvals","✅ Approvals","Customer approval workflow for proposals and capital decisions."],
+["assets","🛠️ Assets","Replace-vs-repair intelligence and asset history."],
+["vendors","🚚 Vendors","Vendor scorecards and coverage pressure."],
+["copilot","🤖 AI Copilot","Portfolio intelligence and executive answers."],
+["executive","🎯 Executive Action Center","Top risks, actions, and savings opportunities."],
+["cfo","💰 CFO Dashboard","Forecasting, budgeting, and capital planning."],
+["projects","🏗️ Projects","Refresh, rollout, remodel, and capex tracker."],
+["reports","📑 Board Reports","Auto-generated executive and board reporting."],
+["tenant","🏢 Tenant Admin","Multi-client SaaS architecture, roles, storage, and audit trail."],
+["documents","🗂️ Documents/COIs","Document repository, COI tracking, and customer files."],
+["users","👥 Users/Roles","Role and access model."],
+["settings","⚙️ SaaS Setup","Production roadmap and database structure."]
+];
+const money=n=>Number(n||0).toLocaleString("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
+const c=()=>db.clients[db.activeClient], scope=a=>a.filter(x=>x.client===db.activeClient), loc=id=>db.locations.find(l=>l.id===id)||{site:"Unknown"};
+function save(){localStorage.setItem("commandCenterV27StableData",JSON.stringify(db))}
+function toast(m){let t=document.getElementById("toast");t.textContent=m;t.style.display="block";setTimeout(()=>t.style.display="none",1600)}
+function pill(v){let cls=["Critical","Emergency","Breached","Pressure","At Risk","High"].includes(v)?"red":["Medium","Urgent","Pending","Review","Draft","Watch","Onboarding"].includes(v)?"amber":["Approved","Closed","Strong","Verified","On Track","Active","Stable"].includes(v)?"green":"blue";return `<span class="pill ${cls}">${v}</span>`}
+function ai(){let wo=scope(db.workOrders), ps=scope(db.proposals), ls=scope(db.locations), as=scope(db.assets);let at=wo.filter(w=>["At Risk","Breached"].includes(w.sla));let pending=ps.filter(p=>["Pending","Review","Draft"].includes(p.status)).reduce((s,p)=>s+p.amount,0);let repl=as.filter(a=>a.repairs>=5||a.spend12/Math.max(a.replacement,1)>.55);let spend=ls.reduce((s,l)=>s+l.spend,0)+wo.reduce((s,w)=>s+w.cost,0);let health=Math.max(1,100-at.length*9-repl.length*7);let risk=[...ls].sort((a,b)=>(b.open*7+b.repeat*12+b.spend/2500)-(a.open*7+a.repeat*12+a.spend/2500));return{wo,ps,ls,as,at,pending,repl,spend,health,risk}}
+
+
+function normalizeV24Complete(){
+ if(!db.approvals) db.approvals=[];
+ db.approvals=db.approvals.map(a=>({
+   approvalHistory:a.approvalHistory||[{time:"System",event:"Approval created",by:a.owner||"System"}],
+   assignedTo:a.assignedTo||a.owner||c().owner,
+   ...a
+ }));
+ db.locations=db.locations.map(l=>({
+   address:l.address||"Address pending",
+   market:l.market||mapRegionName(l.region),
+   district:l.district||"Unassigned",
+   latitude:Number.isFinite(Number(l.latitude))?Number(l.latitude):null,
+   longitude:Number.isFinite(Number(l.longitude))?Number(l.longitude):null,
+   risk_score:Number.isFinite(Number(l.risk_score))?Number(l.risk_score):Math.min(100,Math.round(((l.open||0)*6)+((l.repeat||0)*14)+((l.spend||0)/2000)+(l.capex?15:0))),
+   ...l
+ }));
+ db.assets=db.assets.map(a=>({
+   installDate:a.installDate||String(new Date().getFullYear()-Number(a.age||0))+"-01-01",
+   manufacturer:a.manufacturer||(["Carrier","Trane","Lennox","York","Rheem"][Math.floor(Math.random()*5)]),
+   model:a.model||("M-"+Math.floor(1000+Math.random()*9000)),
+   lifecycleEvents:a.lifecycleEvents||[
+    {date:"2024-03-12",event:"Preventive maintenance completed",cost:850},
+    {date:"2025-06-20",event:"Repair event logged",cost:Math.round((a.spend12||2000)/3)},
+    {date:"2026-02-11",event:"Asset condition reviewed",cost:0}
+   ],
+   ...a
+ }));
+ save();
+}
+async function approveRoute(id,status){
+ let updated=null;
+ db.approvals=db.approvals.map(a=>{if(a.id!==id)return a; updated={...a,status,approvalHistory:[...(a.approvalHistory||[]),{time:new Date().toLocaleString(),event:status,by:loggedUser().name}]}; return updated;});
+ await cloudUpsert("approvals",updated);
+ await cloudInsertAudit("Approval "+id+" marked "+status);
+ save();render();toast(status+(cloudReady?" + synced":""));
+}
+async function requestRevision(id){
+ let updated=null;
+ db.approvals=db.approvals.map(a=>{if(a.id!==id)return a; updated={...a,status:"Revision Requested",approvalHistory:[...(a.approvalHistory||[]),{time:new Date().toLocaleString(),event:"Revision requested",by:loggedUser().name}]}; return updated;});
+ await cloudUpsert("approvals",updated);
+ await cloudInsertAudit("Revision requested for approval "+id);
+ save();render();approvalModal(id);toast("Revision requested"+(cloudReady?" + synced":""));
+}
+function approvalModal(id){
+ let a=db.approvals.find(x=>x.id===id); if(!a)return;
+ openModal(`<h2>${a.id}</h2><p class="muted">${a.item}</p>
+ <div class="grid2"><div class="tile"><b>Amount</b><div class="big">${money(a.amount)}</div></div><div class="tile"><b>Risk</b><div>${pill(a.risk)}</div><p class="muted">Assigned to: ${a.assignedTo||a.owner}</p></div></div>
+ <div class="tile"><b>Status</b><p>${pill(a.status)}</p></div>
+ <div class="tile"><b>Approval Actions</b><br>
+ <button class="btn green" onclick="approveRoute('${a.id}','Approved');closeModal()">Approve</button>
+ <button class="btn red" onclick="approveRoute('${a.id}','Rejected');closeModal()">Reject</button>
+ <button class="btn" onclick="requestRevision('${a.id}')">Request Revision</button>
+ </div>
+ <div class="tile"><b>Approval History</b><div class="approvalTrail">${(a.approvalHistory||[]).map(h=>`<div class="event"><b>${h.event}</b><div class="muted">${h.by||"System"} · ${h.time}</div></div>`).join("")}</div></div>`);
+}
+function downloadExecutiveReport(){
+ let x=ai(),f=forecast(x);
+ let report=`COMMANDCENTER EXECUTIVE REPORT\n\nClient: ${c().name}\nPortfolio Health: ${x.health}/100\nLocations: ${c().locations}\nOpen Work Orders: ${x.wo.length}\nSLA Risk: ${x.at.length}\nPending Proposal Dollars: ${money(x.pending)}\nReplace Review Assets: ${x.repl.length}\nReplacement Exposure: ${money(f.capex)}\nPotential Savings: ${money(f.savings)}\n\nRecommended Actions:\n1. Review SLA-sensitive work orders.\n2. Approve or reject aging proposals.\n3. Move repeat-failure assets into CAPEX review.\n4. Pressure underperforming vendors.\n`;
+ let blob=new Blob([report],{type:"text/plain"});
+ let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="CommandCenter_Executive_Report.txt";a.click();
+ toast("Executive report downloaded");
+}
+function locationModal(id){
+ let l=db.locations.find(x=>x.id===id); if(!l)return;
+ let wos=db.workOrders.filter(w=>w.location===id);
+ let assets=db.assets.filter(a=>a.location===id);
+ openModal(`<h2>${l.site}</h2><p class="muted">${l.region} · ${l.fm}</p>
+ <div class="grid3"><div class="tile"><b>Risk</b><div>${pill(l.risk)} <span class="badge">${riskScore(l)}</span></div></div><div class="tile"><b>Open WO</b><div class="big">${l.open}</div></div><div class="tile"><b>Spend</b><div class="big">${money(l.spend)}</div></div></div><div class="tile"><b>Map Data</b><p class="muted">${l.address||"Address pending"}<br>Market: ${l.market||"Unassigned"} · District: ${l.district||"Unassigned"}<br>Coordinates: ${formatCoord(l.latitude)}, ${formatCoord(l.longitude)}</p></div>
+ <div class="tile"><b>Work Orders</b>${wos.length?wos.map(w=>`<div class="row" onclick="woModal('${w.id}')" style="cursor:pointer"><div><b>${w.id}</b><div class="muted">${w.trade} · ${w.status}</div></div>${pill(w.sla)}</div>`).join(""):"<p class='muted'>No work orders attached.</p>"}</div>
+ <div class="tile"><b>Assets</b>${assets.length?assets.map(a=>`<div class="row" onclick="assetLifecycleModal('${a.id}')" style="cursor:pointer"><div><b>${a.asset}</b><div class="muted">${a.trade} · ${a.age} years old</div></div>${pill(predictedFailure(a)>70?"High Risk":"Review")}</div>`).join(""):"<p class='muted'>No assets attached.</p>"}</div>`);
+}
+function assetLifecycleModal(id){
+ let a=db.assets.find(x=>x.id===id); if(!a)return;
+ let fail=predictedFailure(a);
+ let wos=db.workOrders.filter(w=>w.asset===a.id || (w.location===a.location && (w.trade||"").toLowerCase().includes((a.trade||"").toLowerCase().split("/")[0])));
+ let next=fail>70?"Replace within next CAPEX cycle":fail>45?"Quote replacement and monitor failures":"Continue repair/PM path";
+ openModal(`<h2>${a.asset}</h2><p class="muted">${loc(a.location).site} · ${a.manufacturer} ${a.model}</p>
+ <div class="lifecycleGrid">
+  <div class="lifecycleCard"><b>Install Date</b><div>${a.installDate}</div></div>
+  <div class="lifecycleCard"><b>Age</b><div class="big">${a.age}</div></div>
+  <div class="lifecycleCard"><b>Failure Risk</b><div class="big">${fail}%</div></div>
+  <div class="lifecycleCard"><b>Replacement</b><div>${money(a.replacement)}</div></div>
+ </div>
+ <div class="tile"><b>Lifecycle Recommendation</b><p>${next}</p></div>
+ <div class="tile"><b>Lifecycle Events</b><div class="timeline">${(a.lifecycleEvents||[]).map(e=>`<div class="event"><b>${e.event}</b><div class="muted">${e.date} · ${money(e.cost||0)}</div></div>`).join("")}</div></div>
+ <div class="tile"><b>Attached Work Orders</b>${wos.length?wos.map(w=>`<div class="row" onclick="woModal('${w.id}')" style="cursor:pointer"><div><b>${w.id}</b><div class="muted">${w.trade} · ${w.status} · ${w.vendor}</div></div>${pill(w.sla)}</div>`).join(""):"<p class='muted'>No work orders attached.</p>"}</div>`);
+}
+
+function normalizeV24(){
+ db.workOrders=db.workOrders.map(w=>({
+   photos:w.photos||[],
+   dispatchHistory:w.dispatchHistory||[],
+   vendorStatus:w.vendorStatus||"Not Dispatched",
+   ...w
+ }));
+ db.proposals=db.proposals.map(p=>({
+   approvalHistory:p.approvalHistory||[],
+   ...p
+ }));
+ save();
+}
+function chartBars(items,labelFn,valueFn,maxVal){
+ return `<div class="chartbox">`+items.map(i=>{
+  let v=valueFn(i); let h=Math.max(6,Math.round((v/Math.max(maxVal,1))*180));
+  return `<div class="barcol"><div class="barfill" style="height:${h}px"></div><div class="barlabel">${labelFn(i)}</div></div>`
+ }).join("")+`</div>`;
+}
+function tradeSpendData(x){
+ let map={}; x.wo.forEach(w=>map[w.trade]=(map[w.trade]||0)+(w.cost||0));
+ return Object.entries(map).map(([trade,spend])=>({trade,spend})).sort((a,b)=>b.spend-a.spend);
+}
+function statusData(x){
+ let map={}; x.wo.forEach(w=>map[w.status]=(map[w.status]||0)+1);
+ return Object.entries(map).map(([status,count])=>({status,count}));
+}
+async function addPhotoToWO(id){
+ let input=document.getElementById("photo_"+id);
+ if(!input||!input.files||!input.files[0]){toast("Choose a file first");return}
+ let f=input.files[0];
+ let cloudPath=await uploadWOAttachmentToSupabase(id,f);
+ let updated=null;
+ db.workOrders=db.workOrders.map(w=>{if(w.id!==id)return w; updated={...w,photos:[...(w.photos||[]),{name:f.name,size:f.size,type:f.type,added:new Date().toLocaleString(),cloudPath}]}; return updated;});
+ await cloudUpsert("workOrders",updated);
+ await cloudInsertAudit("Photo/document attached to "+id+": "+f.name);
+ save();render();woModal(id);toast(cloudPath?"Attachment saved to cloud":"Attachment saved locally");
+}
+function dispatchToSuggested(id){
+ let w=db.workOrders.find(x=>x.id===id); if(!w)return;
+ let v=bestVendor(w);
+ db.workOrders=db.workOrders.map(wo=>wo.id===id?{
+   ...wo,
+   vendor:v.name,
+   status:"Vendor Dispatched",
+   vendorStatus:"Awaiting Acceptance",
+   dispatchHistory:[...(wo.dispatchHistory||[]),{time:new Date().toLocaleString(),event:"Dispatched to "+v.name,score:v.routeScore}]
+ }:wo);
+ db.audit.unshift({id:"LOG-"+Date.now(),event:"Dispatched "+id+" to "+v.name,time:"Just now"});
+ save();render();toast("Dispatched");
+}
+function acceptDispatch(id){
+ db.workOrders=db.workOrders.map(w=>w.id===id?{
+   ...w,status:"In Progress",vendorStatus:"Accepted",
+   dispatchHistory:[...(w.dispatchHistory||[]),{time:new Date().toLocaleString(),event:"Vendor accepted dispatch"}]
+ }:w);
+ save();render();woModal(id);toast("Vendor accepted");
+}
+function declineDispatch(id){
+ let w=db.workOrders.find(x=>x.id===id); if(!w)return;
+ let ranked=db.vendors.map(v=>({...v,routeScore:vendorRouteScore(v,w)})).sort((a,b)=>b.routeScore-a.routeScore);
+ let currentIndex=ranked.findIndex(v=>v.name===w.vendor);
+ let next=ranked[currentIndex+1]||{name:"National Backstop",routeScore:75};
+ db.workOrders=db.workOrders.map(wo=>wo.id===id?{
+   ...wo,vendor:next.name,status:"Vendor Dispatched",vendorStatus:"Re-routed",
+   dispatchHistory:[...(wo.dispatchHistory||[]),{time:new Date().toLocaleString(),event:"Vendor declined. Re-routed to "+next.name,score:next.routeScore}]
+ }:wo);
+ save();render();woModal(id);toast("Re-routed");
+}
+function markArrived(id){
+ db.workOrders=db.workOrders.map(w=>w.id===id?{
+   ...w,status:"In Progress",vendorStatus:"On Site",
+   dispatchHistory:[...(w.dispatchHistory||[]),{time:new Date().toLocaleString(),event:"Vendor marked on site"}]
+ }:w);
+ save();render();woModal(id);toast("Marked on site");
+}
+function closeWO(id){
+ db.workOrders=db.workOrders.map(w=>w.id===id?{
+   ...w,status:"Closed",sla:"On Track",vendorStatus:"Completed",
+   dispatchHistory:[...(w.dispatchHistory||[]),{time:new Date().toLocaleString(),event:"Work order completed / closed"}]
+ }:w);
+ save();render();woModal(id);toast("Closed");
+}
+
+function setPage(id){pages.forEach(p=>document.getElementById(p[0]).classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.id===id));let p=pages.find(x=>x[0]===id);pageTitle.textContent=p[1];pageSub.textContent=p[2];render()}
+function setClient(v){db.activeClient=Number(v);save();render()}
+async function init(){await initCloudLayer();normalizeV24Complete();normalizeV24();nav.innerHTML=pages.map((p,i)=>`<button data-id="${p[0]}" onclick="setPage('${p[0]}')" class="${i==0?'active':''}">${p[1]}</button>`).join("");hydrateSelectors();if(cloudReady){await loadFromSupabase();hydrateSelectors();}render()}
+function metric(label,value,sub){return `<div class="card metric"><div class="label">${label}</div><div class="value">${value}</div><div class="sub">${sub}</div></div>`}
+function render(){let x=ai(), q=(search.value||"").toLowerCase();metrics.innerHTML=metric("Portfolio Health",x.health+"/100","AI operating score")+metric("Open Work Orders",x.wo.length,x.at.length+" at risk/breached")+metric("Pending Proposal $",money(x.pending),"Awaiting approval")+metric("Replace Reviews",x.repl.length,"Capex candidates");renderWarroom(x);renderDashboard(x);renderWO(x,q);renderDispatch(x);renderSLA(x);renderLocations(x,q);renderHeatMap(x);renderProposals(x);renderApprovals();renderAssetHistory(x);renderVendorCards();renderCopilot(x);renderExecutive(x);renderCFO(x);renderProjects(x);renderBoardReports(x);renderTenant();renderDocuments();renderUsers();renderSettings()}
+function renderWarroom(x){
+let user=loggedUser();
+let emergency=x.wo.filter(w=>w.priority==="Emergency"||w.sla==="Breached");
+let waiting=x.wo.filter(w=>["Proposal Needed","Scoping","Scheduled","New"].includes(w.status));
+let today=x.wo.filter(w=>["At Risk","Breached"].includes(w.sla)||["Emergency","Urgent"].includes(w.priority));
+let top=x.risk[0]||{};
+warroom.innerHTML=`<div class="grid2">
+<div class="card"><div class="aihero"><div class="kicker">Operator Briefing</div><h1>${greeting()}, ${user.name}</h1><p>Ready to run your portfolio? Here is what needs attention across ${c().locations.toLocaleString()} locations today.</p></div></div>
+<div class="card"><h3>My Day</h3>
+<div class="row"><b>Urgent / Emergency Work Orders</b><span>${today.length}</span></div>
+<div class="row"><b>SLA Breaches / At Risk</b><span>${x.at.length}</span></div>
+<div class="row"><b>Waiting on Vendor / Proposal / Schedule</b><span>${waiting.length}</span></div>
+<div class="row"><b>Pending Approval Dollars</b><span>${money(x.pending)}</span></div>
+<div class="row"><b>Assets Requiring Review</b><span>${x.repl.length}</span></div>
+</div></div>
+<div class="grid2" style="margin-top:16px">
+<div class="card"><h3>Recommended First Actions</h3>
+${today.slice(0,5).map((w,i)=>`<div class="row" onclick="woModal('${w.id}')" style="cursor:pointer"><div><b>${i+1}. ${w.id} · ${loc(w.location).site}</b><div class="muted">${w.trade} · ${w.status} · ${w.vendor}</div></div>${pill(w.sla)}</div>`).join("")||"<p class='muted'>No urgent action queue right now.</p>"}
+</div>
+<div class="card"><h3>Biggest Portfolio Risk</h3>
+${top.site?`<div class="row"><div><b>${top.site}</b><div class="muted">${top.market||top.region} · ${top.district||"Unassigned"} · ${top.trade}</div></div>${pill(top.risk)}</div>
+<div class="row"><b>Open Work Orders</b><span>${top.open}</span></div>
+<div class="row"><b>Repeat Repairs</b><span>${top.repeat}</span></div>
+<div class="row"><b>Visible Spend</b><span>${money(top.spend)}</span></div>`:"<p class='muted'>No location risk data available.</p>"}
+</div>
+</div>`}
+function renderDashboard(x){
+let spend=tradeSpendData(x);
+let statuses=statusData(x);
+let maxSpend=Math.max(...spend.map(i=>i.spend),1);
+let maxStatus=Math.max(...statuses.map(i=>i.count),1);
+let pct=Math.min(100,Math.round(x.spend/c().budget*100));
+dashboard.innerHTML=`<div class="grid2">
+<div class="card"><h3>Spend by Trade</h3>${chartBars(spend,i=>i.trade,i=>i.spend,maxSpend)}</div>
+<div class="card"><h3>Work Orders by Status</h3>${chartBars(statuses,i=>i.status,i=>i.count,maxStatus)}</div>
+</div>
+<div class="grid2" style="margin-top:16px">
+<div class="card"><h3>Budget Position</h3><div class="big">${money(x.spend)}</div><p class="muted">Visible spend against ${money(c().budget)} annual budget.</p><div class="bar"><span style="width:${pct}%"></span></div></div>
+<div class="card"><h3>Client Profile</h3><div class="row"><b>Vertical</b><span>${c().vertical}</span></div><div class="row"><b>Locations</b><span>${c().locations.toLocaleString()}</span></div><div class="row"><b>Executive Owner</b><span>${c().owner}</span></div></div>
+</div>`}
+
+function woModal(id){
+ let w=db.workOrders.find(x=>x.id===id);
+ if(!w){toast("Work order not found");return;}
+ let a=db.assets.find(x=>x.id===w.asset);
+ let p=db.proposals.filter(x=>x.wo===w.id);
+ let v=db.vendors.find(x=>x.name===w.vendor);
+ let suggested=typeof bestVendor==="function"?bestVendor(w):{name:w.vendor||"TBD",routeScore:"N/A"};
+ let photos=w.photos||[];
+ let history=w.dispatchHistory||[];
+ openModal(`<h2>${w.id}</h2>
+ <p class="muted">${loc(w.location).site} · ${w.trade} · ${w.priority}</p>
+ <div class="grid2">
+   <div class="tile"><b>Status</b><div>${pill(w.status)} ${pill(w.sla)}</div><p class="muted">Age: ${w.age} days · Owner: ${w.owner}</p></div>
+   <div class="tile"><b>Vendor</b><p>${w.vendor}</p><p class="muted">${v?`Score ${v.score} · SLA ${v.sla}% · Response ${v.response} hrs`:"Vendor scorecard not attached yet."}</p></div>
+ </div>
+ <div class="tile"><b>Scope / Notes</b><p>${w.notes||"No notes entered."}</p></div>
+ <div class="grid2">
+   <div class="tile"><b>Cost / NTE</b><div class="big">${money(w.cost)}</div></div>
+   <div class="tile"><b>Attached Asset</b><p>${a?`<button class="btn dark" onclick="assetLifecycleModal('${a.id}')">${a.asset}</button>`:"No asset attached"}</p></div>
+ </div>
+ <div class="tile"><b>Photo / Document Attachments</b>
+   <p class="muted">Prototype saves file metadata locally for review. Production will store images/docs in secure cloud storage.</p>
+   <input type="file" id="photo_${w.id}" />
+   <button class="btn" onclick="addPhotoToWO('${w.id}')">Attach</button>
+   <div class="photoGrid">${photos.length?photos.map(ph=>`<div class="photoThumb">📎 ${ph.name}<br><span class="muted">${Math.round((ph.size||0)/1024)} KB · ${ph.added}</span></div>`).join(""):"<p class='muted'>No attachments yet.</p>"}</div>
+ </div>
+ <div class="tile"><b>Vendor Dispatch Workflow</b>
+   <div class="dispatchStep"><b>Recommended Vendor:</b> ${suggested.name} <span class="badge">Route Score ${suggested.routeScore}</span></div>
+   <button class="btn dark" onclick="dispatchToSuggested('${w.id}');closeModal()">Dispatch Suggested Vendor</button>
+   <button class="btn green" onclick="acceptDispatch('${w.id}')">Accept</button>
+   <button class="btn" onclick="markArrived('${w.id}')">Mark On Site</button>
+   <button class="btn red" onclick="declineDispatch('${w.id}')">Decline / Re-route</button>
+   <button class="btn" onclick="closeWO('${w.id}')">Close WO</button>
+   <div class="timeline" style="margin-top:12px">${history.length?history.map(h=>`<div class="event"><b>${h.event}</b><div class="muted">${h.time}</div></div>`).join(""):"<p class='muted'>No dispatch activity yet.</p>"}</div>
+ </div>
+ <div class="tile"><b>Related Proposals</b>${p.length?p.map(pr=>`<div class="row"><div><b>${pr.id}</b><div class="muted">${pr.scope}</div></div><b>${money(pr.amount)}</b></div>`).join(""):"<p class='muted'>No related proposal.</p>"}</div>
+ <div class="tile"><b>Operator Actions</b><br>
+   <button class="btn dark" onclick="routeWO('${w.id}');closeModal()">Auto Route</button>
+   <button class="btn red" onclick="escalateWO('${w.id}');closeModal()">Escalate</button>
+ </div>`);
+}
+
+function renderWO(x,q){
+let rows=x.wo.filter(w=>(w.id+w.trade+w.status+w.vendor+w.owner+loc(w.location).site).toLowerCase().includes(q));
+workorders.innerHTML=table("Work Order Operating Queue",["WO","Location","Trade","Priority","Status","SLA","Vendor","Cost","View"],rows.map(w=>`<tr onclick="woModal('${w.id}')" style="cursor:pointer"><td><button class="btn dark" onclick="event.stopPropagation();woModal('${w.id}')">${w.id}</button></td><td>${loc(w.location).site}</td><td>${w.trade}</td><td>${pill(w.priority)}</td><td>${pill(w.status)}</td><td>${pill(w.sla)}</td><td>${w.vendor}</td><td><b>${money(w.cost)}</b></td><td><button class="btn" onclick="event.stopPropagation();woModal('${w.id}')">Open</button></td></tr>`).join(""))}
+function renderLocations(x,q){
+let rows=x.ls.filter(l=>(l.site+l.region+l.fm+l.trade+l.risk).toLowerCase().includes(q));
+locations.innerHTML=table("Location Intelligence",["Site","Region","Owner","Risk Trade","Risk","Open WO","Spend","CapEx","View"],rows.map(l=>`<tr onclick="locationModal('${l.id}')" style="cursor:pointer"><td><button class="btn dark" onclick="event.stopPropagation();locationModal('${l.id}')">${l.site}</button></td><td>${l.region}</td><td>${l.fm}</td><td>${l.trade}</td><td>${pill(l.risk)}</td><td>${l.open}</td><td><b>${money(l.spend)}</b></td><td>${l.capex?pill("Review"):pill("Stable")}</td><td><button class="btn" onclick="event.stopPropagation();locationModal('${l.id}')">Open</button></td></tr>`).join(""))}
+function renderProposals(x){proposals.innerHTML=table("Proposal Workflow",["Proposal","Location","Trade","Amount","Status","Age","Scope","Actions"],x.ps.map((p,i)=>`<tr><td><b>${p.id}</b></td><td>${loc(p.location).site}</td><td>${p.trade}</td><td><b>${money(p.amount)}</b></td><td>${pill(p.status)}</td><td>${p.age} days</td><td>${p.scope}</td><td><button class="btn green" onclick="setProp('${p.id}','Approved')">Approve</button> <button class="btn red" onclick="setProp('${p.id}','Rejected')">Reject</button></td></tr>`).join(""))}
+function renderAssets(x){assets.innerHTML=table("Replace-vs-Repair Engine",["Asset","Location","Trade","Age","Repairs","12 Mo Spend","Replacement","Recommendation"],x.as.map(a=>{let r=a.repairs>=5||a.spend12/Math.max(a.replacement,1)>.55;return`<tr><td><b>${a.asset}</b></td><td>${loc(a.location).site}</td><td>${a.trade}</td><td>${a.age}</td><td>${a.repairs}</td><td><b>${money(a.spend12)}</b></td><td>${money(a.replacement)}</td><td>${r?pill("Replace Review"):pill("Repair")}</td></tr>`}).join(""))}
+function renderVendors(){vendors.innerHTML=table("Vendor Command",["Vendor","Trades","Regions","Score","Avg Response","SLA","Insurance","Status"],db.vendors.map(v=>`<tr><td><b>${v.name}</b></td><td>${v.trades}</td><td>${v.regions}</td><td><b>${v.score}</b></td><td>${v.response} hrs</td><td>${v.sla}%</td><td>${pill(v.insurance)}</td><td>${pill(v.status)}</td></tr>`).join(""))}
+function renderProjects(x){projects.innerHTML=`<div class="grid2"><div class="card"><h3>Refresh / Rollout Tracker</h3><p>Tracks remodels, reimages, capex work, rollout programs, GC packages, owner-procured scopes, and contractor-procured scopes.</p><div class="row"><b>Annual volume question</b><span>Required discovery</span></div><div class="row"><b>Package control</b><span>GC vs trade vs owner-procured</span></div></div><div class="card"><h3>Project Proposals</h3>${x.ps.map(p=>`<div class="row"><div><b>${p.id} · ${loc(p.location).site}</b><div class="muted">${p.scope}</div></div><b>${money(p.amount)}</b></div>`).join("")}</div></div>`}
+function renderReports(x){reports.innerHTML=`<div class="card"><h3>Executive Report Generator</h3><div class="aihero"><div class="kicker">Report Draft</div><h1>${c().name}: Portfolio Control Summary</h1><p>Open work orders: ${x.wo.length}. Pending proposal dollars: ${money(x.pending)}. Replace-review assets: ${x.repl.length}. Health score: ${x.health}/100.</p></div><br><button class="btn dark" onclick="copyReport()">Copy Executive Summary</button></div>`}
+function renderUsers(){users.innerHTML=table("Users, Roles & Permissions",["User","Role","Access","Client","Status"],db.users.map(u=>`<tr><td><b>${u.name}</b></td><td>${u.role}</td><td>${pill(u.access)}</td><td>${u.client}</td><td>${pill(u.status)}</td></tr>`).join(""))}
+function renderSettings(){settings.innerHTML=`<div class="grid2">
+<div class="card"><h3>Sprint 1 Cloud Foundation</h3>
+<div class="cloudStatus"><span class="cloudDot ${cloudDotClass()}"></span>${cloudModeLabel()}</div>
+<br><br>
+<div class="row"><b>Database</b><span>Supabase / Postgres schema ready</span></div>
+<div class="row"><b>Authentication</b><span>Supabase Auth hooks installed</span></div>
+<div class="row"><b>Storage Buckets</b><span>${STORAGE_BUCKETS.join(", ")}</span></div>
+<div class="row"><b>Fallback</b><span>Local demo remains active</span></div>
+<hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+<label><b>Supabase Email</b></label><input id="cloudEmail" style="width:100%" placeholder="admin@company.com"/>
+<br><br><label><b>Password</b></label><input id="cloudPassword" type="password" style="width:100%" placeholder="••••••••"/>
+<br><br><button class="btn dark" onclick="cloudSignIn()">Sign In</button> <button class="btn" onclick="cloudSignOut()">Sign Out</button> <button class="btn green" onclick="syncDemoToSupabase()">Sync Demo Data</button> <button class="btn" onclick="refreshFromCloud()">Refresh From Cloud</button>
+<p class="muted">V2.6 upgrade: app can now load data from Supabase, create/update core records, sync approvals/dispatch/proposals, upload WO attachments to Storage, and still fall back to local demo mode if cloud tables are not available.</p>
+</div>
+<div class="card"><h3>Current Data Snapshot</h3><pre>${JSON.stringify({clients:db.clients.length,locations:db.locations.length,workOrders:db.workOrders.length,proposals:db.proposals.length,assets:db.assets.length,vendors:db.vendors.length,users:db.users.length},null,2)}</pre><button class="btn red" onclick="resetDemo()">Reset Demo Data</button></div>
+</div>
+<div class="card" style="margin-top:16px"><h3>Supabase SQL Schema</h3><p class="muted">Run this in Supabase SQL Editor to create Sprint 1 tables, policies, and private storage buckets.</p><button class="btn dark" onclick="downloadSchema()">Download SQL Schema</button><div id="schemaText" class="codebox" style="margin-top:12px">${SUPABASE_SCHEMA_SQL.replace(/</g,"&lt;")}</div></div>`}
+function table(title,heads,body){return`<div class="card"><h3>${title}</h3><div class="scroll"><table><thead><tr>${heads.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table></div></div>`}
+
+function optionList(arr,labelFn,valFn){
+ return arr.map(x=>`<option value="${valFn(x)}">${labelFn(x)}</option>`).join("");
+}
+
+function openWOForm(){
+ let ls=scope(db.locations), as=scope(db.assets);
+ openModal(`<h2>Create Work Order</h2>
+ <p class="muted">Operator intake form. This creates an actual ticket in the queue.</p>
+ <div class="grid2">
+  <div><label><b>Location</b></label><select id="woLocation" style="width:100%">${optionList(ls,x=>x.site,x=>x.id)}</select></div>
+  <div><label><b>Asset</b></label><select id="woAsset" style="width:100%"><option value="">No asset / General site issue</option>${optionList(as,x=>x.asset+" · "+loc(x.location).site,x=>x.id)}</select></div>
+  <div><label><b>Trade</b></label><select id="woTrade" style="width:100%"><option>HVAC</option><option>Plumbing</option><option>Electrical</option><option>Lighting</option><option>Doors/Locks</option><option>Roofing</option><option>Refresh</option><option>General Repairs</option></select></div>
+  <div><label><b>Priority</b></label><select id="woPriority" style="width:100%"><option>Normal</option><option>Urgent</option><option>Emergency</option></select></div>
+  <div><label><b>Requested By</b></label><input id="woOwner" style="width:100%" value="${loggedUser().name}"/></div>
+  <div><label><b>Estimated Cost / NTE</b></label><input id="woCost" type="number" style="width:100%" placeholder="0"/></div>
+ </div>
+ <br><label><b>Issue Description / Scope</b></label>
+ <textarea id="woNotes" style="width:100%;min-height:110px" placeholder="Describe the issue, access notes, symptoms, photos needed, store impact, and any vendor instructions."></textarea>
+ <br><br>
+ <button class="btn dark" onclick="submitWOForm()">Create Ticket</button>
+ <button class="btn" onclick="closeModal()">Cancel</button>`);
+}
+
+async function submitWOForm(){
+ let location=document.getElementById("woLocation").value;
+ let asset=document.getElementById("woAsset").value;
+ let assetObj=db.assets.find(a=>a.id===asset);
+ let trade=document.getElementById("woTrade").value;
+ let priority=document.getElementById("woPriority").value;
+ let owner=document.getElementById("woOwner").value||loggedUser().name;
+ let cost=Number(document.getElementById("woCost").value||0);
+ let notes=document.getElementById("woNotes").value||"New ticket created from operator intake form.";
+ let wo={id:"WO-"+Math.floor(90000+Math.random()*9999),client:db.activeClient,asset:asset,location:assetObj?assetObj.location:location,trade:assetObj?assetObj.trade:trade,priority,status:"New",owner,vendor:"TBD",age:0,cost,sla:"On Track",notes,photos:[],dispatchHistory:[],vendorStatus:"Not Dispatched"};
+ db.workOrders.unshift(wo);
+ await cloudUpsert("workOrders",wo);
+ await cloudInsertAudit("Created work order "+wo.id+" from intake form");
+ save();closeModal();render();toast(cloudReady?"Work order created + synced":"Work order created locally");
+}
+
+function openProposalForm(){
+ let ls=scope(db.locations), wos=scope(db.workOrders);
+ openModal(`<h2>Create Proposal</h2>
+ <p class="muted">Proposal intake form. This adds a proposal into the approval workflow.</p>
+ <div class="grid2">
+  <div><label><b>Location</b></label><select id="propLocation" style="width:100%">${optionList(ls,x=>x.site,x=>x.id)}</select></div>
+  <div><label><b>Related Work Order</b></label><select id="propWO" style="width:100%"><option value="">No related WO</option>${optionList(wos,x=>x.id+" · "+loc(x.location).site+" · "+x.trade,x=>x.id)}</select></div>
+  <div><label><b>Trade / Scope Type</b></label><select id="propTrade" style="width:100%"><option>HVAC</option><option>Plumbing</option><option>Electrical</option><option>Lighting</option><option>Refresh</option><option>Millwork</option><option>General Repairs</option><option>CapEx Replacement</option></select></div>
+  <div><label><b>Amount</b></label><input id="propAmount" type="number" style="width:100%" placeholder="0"/></div>
+  <div><label><b>Status</b></label><select id="propStatus" style="width:100%"><option>Draft</option><option>Review</option><option>Pending</option></select></div>
+  <div><label><b>Approval Owner</b></label><input id="propOwner" style="width:100%" value="${loggedUser().name}"/></div>
+ </div>
+ <br><label><b>Proposal Scope</b></label>
+ <textarea id="propScope" style="width:100%;min-height:110px" placeholder="Enter proposal scope, reason, vendor, exclusions, urgency, and business impact."></textarea>
+ <br><br>
+ <button class="btn dark" onclick="submitProposalForm()">Create Proposal</button>
+ <button class="btn" onclick="closeModal()">Cancel</button>`);
+}
+
+function submitProposalForm(){
+ let location=document.getElementById("propLocation").value;
+ let wo=document.getElementById("propWO").value;
+ let trade=document.getElementById("propTrade").value;
+ let amount=Number(document.getElementById("propAmount").value||0);
+ let status=document.getElementById("propStatus").value;
+ let owner=document.getElementById("propOwner").value||loggedUser().name;
+ let scopeText=document.getElementById("propScope").value||"New proposal created from operator intake form.";
+ let prop={id:"P-"+Math.floor(5000+Math.random()*999),client:db.activeClient,location,wo,trade,amount,status,age:0,scope:scopeText};
+ db.proposals.unshift(prop);
+ db.approvals.unshift({id:"APR-"+Math.floor(900+Math.random()*999),client:db.activeClient,item:prop.id+" "+trade,amount,status:"Needs Review",risk:amount>25000?"High":"Medium",owner});
+ db.audit.unshift({id:"LOG-"+Date.now(),event:"Created proposal "+prop.id+" from intake form",time:"Just now"});
+ save();closeModal();render();toast("Proposal created");
+}
+
+function addWO(){let l=scope(db.locations)[0]||db.locations[0];let a=scope(db.assets).find(x=>x.location===l.id)||scope(db.assets)[0];db.workOrders.unshift({id:"WO-"+Math.floor(90000+Math.random()*9999),client:db.activeClient,asset:a?a.id:"",location:l.id,trade:a?a.trade:"HVAC",priority:"Normal",status:"New",owner:"Unassigned",vendor:"TBD",age:0,cost:0,sla:"On Track",notes:"New ticket created."});save();render();toast("Work order created")}
+function addProposal(){let l=scope(db.locations)[0]||db.locations[0];db.proposals.unshift({id:"P-"+Math.floor(5000+Math.random()*999),client:db.activeClient,location:l.id,wo:"",trade:"HVAC",amount:0,status:"Draft",age:0,scope:"New proposal draft."});save();render();toast("Proposal created")}
+async function setProp(id,status){let updated=null;db.proposals=db.proposals.map(p=>{if(p.id!==id)return p;updated={...p,status};return updated;});await cloudUpsert("proposals",updated);await cloudInsertAudit("Proposal "+id+" marked "+status);save();render();toast("Proposal "+status+(cloudReady?" + synced":""))}
+function exportData(){let blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"});let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="commandcenter-enterprise-data.json";a.click()}
+function copyReport(){navigator.clipboard.writeText(`${c().name}: Portfolio Control Summary\nOpen work orders: ${ai().wo.length}\nPending proposal dollars: ${money(ai().pending)}\nReplace-review assets: ${ai().repl.length}\nHealth score: ${ai().health}/100`);toast("Executive summary copied")}
+function resetDemo(){localStorage.removeItem("commandCenterEnterpriseData");db=JSON.parse(JSON.stringify(seed));
+
+function loggedUser(){
+ let key=localStorage.getItem("commandCenterLoggedUser")||"April Parker";
+ return db.users.find(u=>u.name===key)||{name:key,role:"Portfolio Operator",client:c().name,status:"Active"};
+}
+function setLoginUser(v){localStorage.setItem("commandCenterLoggedUser",v);render()}
+function greeting(){
+ let h=new Date().getHours();
+ if(h<12)return "Good Morning";
+ if(h<17)return "Good Afternoon";
+ return "Good Evening";
+}
+
+function openModal(content){modalBody.innerHTML=content;modal.style.display="flex"}
+function closeModal(){modal.style.display="none"}
+function vendorRouteScore(v,wo){let tradeMatch=(v.trades||"").toLowerCase().includes((wo.trade||"").toLowerCase().split("/")[0])?15:0;return Math.round((v.score||0)*.40+(v.sla||0)*.25+(100-Math.min((v.response||0)*10,100))*.20+tradeMatch)}
+function bestVendor(wo){let ranked=db.vendors.map(v=>({...v,routeScore:vendorRouteScore(v,wo)})).sort((a,b)=>b.routeScore-a.routeScore);return ranked[0]||{name:"National Backstop",routeScore:75}}
+async function routeWO(id){let updated=null;db.workOrders=db.workOrders.map(w=>{if(w.id!==id)return w;let v=bestVendor(w);updated={...w,vendor:v.name,status:"Vendor Dispatched",notes:(w.notes||"")+" Auto-routed."};return updated;});await cloudUpsert("workOrders",updated);await cloudInsertAudit("Auto-routed "+id+" using routing engine");save();render();toast("Work order routed"+(cloudReady?" + synced":""))}
+async function escalateWO(id){let updated=null;db.workOrders=db.workOrders.map(w=>{if(w.id!==id)return w;updated={...w,status:"Escalated",sla:"Breached",owner:"Executive Alert"};return updated;});await cloudUpsert("workOrders",updated);await cloudInsertAudit("Escalated "+id+" to executive alert");save();render();toast("Escalation created"+(cloudReady?" + synced":""))}
+function forecast(x){let runRate=x.spend*4,variance=runRate-c().budget,capex=x.repl.reduce((s,a)=>s+a.replacement,0),savings=Math.round(x.repl.reduce((s,a)=>s+Math.max(0,a.spend12*.55),0)+x.at.length*1800);return{runRate,variance,capex,savings}}
+function riskScore(l){return Number.isFinite(Number(l.risk_score))?Number(l.risk_score):Math.min(100,Math.round(((l.open||0)*6)+((l.repeat||0)*14)+((l.spend||0)/2000)+(l.capex?15:0)))}
+function predictedFailure(a){return Math.min(99,Math.round(a.age*3+a.repairs*9+(a.spend12/Math.max(a.replacement,1))*45))}
+function renderDispatch(x){
+ let lanes=["New","Vendor Dispatched","In Progress","Escalated"];
+ let body=lanes.map(lane=>`<div class="lane"><h4>${lane}</h4>`+
+ x.wo.filter(w=> lane==="New"?["New","Proposal Needed","Scoping","Scheduled"].includes(w.status):w.status===lane).map(w=>{
+ let v=bestVendor(w);
+ return `<div class="woCard" onclick="woModal('${w.id}')" style="cursor:pointer"><b>${w.id}</b><div class="muted">${loc(w.location).site}</div><div>${pill(w.priority)} ${pill(w.sla)}</div><div class="muted">Vendor Status: ${w.vendorStatus||"Not Dispatched"}</div><b>${v.name}</b> <span class="badge">${v.routeScore}</span><br><button class="btn" onclick="event.stopPropagation();woModal('${w.id}')">View</button> <button class="btn dark" onclick="event.stopPropagation();dispatchToSuggested('${w.id}')">Dispatch</button> <button class="btn red" onclick="event.stopPropagation();escalateWO('${w.id}')">Escalate</button></div>`
+ }).join("")+`</div>`).join("");
+ dispatch.innerHTML=`<div class="card"><h3>Vendor Dispatch Workflow</h3><p class="muted">Route, dispatch, accept, re-route, mark on site, and close work orders.</p><div class="kanban">${body}</div></div>`;
+}
+function renderSLA(x){let breached=x.wo.filter(w=>w.sla==="Breached"), risk=x.wo.filter(w=>w.sla==="At Risk");let compliance=Math.max(0,100-(breached.length*12+risk.length*6));sla.innerHTML=`<div class="grid2"><div class="card"><h3>SLA Command</h3><div class="big">${compliance}%</div><div class="row"><b>At Risk</b><span>${risk.length}</span></div><div class="row"><b>Breached</b><span>${breached.length}</span></div><div class="row"><b>Escalation Rule</b><span>Emergency 30m / Urgent 60m / Normal 240m</span></div></div><div class="card"><h3>Escalation Queue</h3>${[...breached,...risk].map(w=>`<div class="row"><div><b>${w.id}</b><div class="muted">${loc(w.location).site} · ${w.trade} · ${w.vendor}</div></div><button class="btn red" onclick="escalateWO('${w.id}')">Escalate</button></div>`).join("")||"<p class='muted'>No SLA fires right now.</p>"}</div></div>`}
+function renderHeatMap(x){
+ const regions=["Northeast","Southeast","Texas","Midwest","West","Other"];
+ const classMap={Northeast:"regionEast",Southeast:"regionSoutheast",Texas:"regionTexas",Midwest:"regionMidwest",West:"regionWest",Other:"regionOther"};
+ const cleanRegion=r=>regions.includes(r)?r:(String(r||"").includes("East")?"Northeast":String(r||"").includes("South")?"Southeast":String(r||"").includes("Texas")?"Texas":String(r||"").includes("Mid")?"Midwest":String(r||"").includes("West")?"West":"Other");
+ const grouped=regions.map(region=>{let sites=x.ls.filter(l=>cleanRegion(l.region)===region);let open=sites.reduce((s,l)=>s+(l.open||0),0);let repeat=sites.reduce((s,l)=>s+(l.repeat||0),0);let spend=sites.reduce((s,l)=>s+(l.spend||0),0);let score=sites.length?Math.round(sites.reduce((s,l)=>s+riskScore(l),0)/sites.length):0;let tier=score>=90?"critical":score>=65?"high":score>=35?"medium":"low";return{region,sites,open,repeat,spend,score,tier};});
+ let sorted=[...x.ls].sort((a,b)=>riskScore(b)-riskScore(a));
+ let top=sorted[0]||{};
+ heatmap.innerHTML=`<div class="card"><div class="mapToolbar"><div><h3>Portfolio Map Visualization</h3><p class="muted">Clickable regional risk command layer. Each region and site opens the location drilldown; production can replace this schematic with Mapbox/Google Maps without changing the data model.</p></div><button class="btn dark" onclick="renderHeatMap(ai())">Refresh Map</button></div>
+ <div class="mapLegend"><span>🟥 Critical 90+</span><span>🟧 High 65-89</span><span>🟨 Medium 35-64</span><span>🟩 Low 0-34</span></div>
+ <div class="mapStatGrid"><div class="mapStat"><div class="muted">Portfolio sites</div><b>${x.ls.length}</b></div><div class="mapStat"><div class="muted">Open WOs</div><b>${x.ls.reduce((s,l)=>s+(l.open||0),0)}</b></div><div class="mapStat"><div class="muted">Regional spend</div><b>${money(x.ls.reduce((s,l)=>s+(l.spend||0),0))}</b></div></div>
+ <div class="portfolioMapShell"><div class="regionRiskMap">${grouped.map(g=>`<div class="regionCell ${classMap[g.region]} ${g.tier}" onclick="openRegionMap('${g.region}')"><div class="regionName">${g.region}</div><div class="regionMeta">${g.sites.length} sites · ${g.open} open · ${g.repeat} repeat</div><div class="regionMeta">${money(g.spend)} visible spend</div><div class="regionBadge">${pill(g.tier==='critical'?'Critical':g.tier==='high'?'High':g.tier==='medium'?'Medium':'Low')}</div><div class="regionScore">${g.score}</div></div>`).join("")}</div>
+ <div><div class="tile"><b>Highest Risk Site</b>${top.site?`<div class="siteRiskCard" onclick="locationModal('${top.id}')"><b>${top.site}</b><div class="muted">${top.market||top.region} · ${top.district||"Unassigned"} · ${top.trade}</div><br>${pill(top.risk)} <span class="badge">Risk ${riskScore(top)}</span><div class="muted">${top.open} open · ${top.repeat} repeat · ${money(top.spend)}</div></div>`:"<p class='muted'>No site risk data available.</p>"}</div>
+ <div class="tile"><b>Top Risk Locations</b><div class="regionList">${sorted.slice(0,6).map(l=>`<div class="siteRiskCard" onclick="locationModal('${l.id}')"><div style="display:flex;justify-content:space-between;gap:10px"><div><b>${l.site}</b><div class="muted">${l.market||l.region} · ${l.district||"Unassigned"} · ${l.trade}</div></div><span class="badge">${riskScore(l)}</span></div></div>`).join("")}</div></div></div></div></div>`;
+}
+function openRegionMap(region){
+ let x=ai();
+ const cleanRegion=r=>["Northeast","Southeast","Texas","Midwest","West","Other"].includes(r)?r:(String(r||"").includes("East")?"Northeast":String(r||"").includes("South")?"Southeast":String(r||"").includes("Texas")?"Texas":String(r||"").includes("Mid")?"Midwest":String(r||"").includes("West")?"West":"Other");
+ let sites=x.ls.filter(l=>cleanRegion(l.region)===region).sort((a,b)=>riskScore(b)-riskScore(a));
+ let open=sites.reduce((s,l)=>s+(l.open||0),0), repeat=sites.reduce((s,l)=>s+(l.repeat||0),0), spend=sites.reduce((s,l)=>s+(l.spend||0),0);
+ openModal(`<h2>${region} Region Risk Map</h2><p class="muted">${sites.length} sites · ${open} open work orders · ${repeat} repeat issues · ${money(spend)} visible spend</p><div class="grid3"><div class="tile"><b>Sites</b><div class="big">${sites.length}</div></div><div class="tile"><b>Open WOs</b><div class="big">${open}</div></div><div class="tile"><b>Spend</b><div class="big">${money(spend)}</div></div></div><div class="tile"><b>Sites Ranked by Risk</b>${sites.length?sites.map(l=>`<div class="row" onclick="locationModal('${l.id}')" style="cursor:pointer"><div><b>${l.site}</b><div class="muted">${l.trade} · ${l.open} open · ${l.repeat} repeat</div></div><div>${pill(l.risk)} <span class="badge">${riskScore(l)}</span></div></div>`).join(""):"<p class='muted'>No locations in this region yet.</p>"}</div>`);
+}
+function assetModal(id){
+ let a=db.assets.find(x=>x.id===id); if(!a)return;
+ let fail=predictedFailure(a); let rec=fail>70?"Replace / Capital Review":fail>45?"Monitor + quote replacement":"Repair acceptable";
+ let attached=db.workOrders.filter(w=>w.asset===a.id || (w.location===a.location && (w.trade||"").toLowerCase().includes((a.trade||"").toLowerCase().split("/")[0])));
+ openModal(`<h2>${a.asset}</h2><p class="muted">${loc(a.location).site} · ${a.trade}</p>
+ <div class="grid2"><div class="tile"><b>Age</b><div class="big">${a.age}</div></div><div class="tile"><b>Failure Risk</b><div class="big">${fail}%</div></div></div>
+ <div class="tile"><b>Service History</b><p>Repairs: ${a.repairs}<br>12-month spend: ${money(a.spend12)}<br>Replacement estimate: ${money(a.replacement)}</p></div>
+ <div class="tile"><b>Attached Work Orders</b>${attached.length?attached.map(w=>`<div class="row" onclick="woModal('${w.id}')" style="cursor:pointer"><div><b>${w.id}</b><div class="muted">${w.trade} · ${w.status} · ${w.vendor}</div></div><div>${pill(w.priority)} ${pill(w.sla)}</div></div>`).join(""):"<p class='muted'>No work orders attached to this asset yet.</p>"}</div>
+ <div class="aihero"><div class="kicker">AI Recommendation</div><h1>${rec}</h1><p>Operator view: decide whether to keep repairing, quote replacement, or move this asset into capital review.</p></div>`);
+}
+
+function renderAssetHistory(x){
+ assets.innerHTML=table("Asset Lifecycle History",["Asset","Location","Make / Model","Trade","Age","Failure Risk","12 Mo Spend","Lifecycle"],x.as.map(a=>{let fail=predictedFailure(a);let rec=fail>70?"Replace Cycle":fail>45?"Monitor":"Maintain";return`<tr onclick="assetLifecycleModal('${a.id}')" style="cursor:pointer"><td><b>${a.asset}</b></td><td>${loc(a.location).site}</td><td>${a.manufacturer||"Make"} ${a.model||"Model"}</td><td>${a.trade}</td><td>${a.age}</td><td>${pill(fail>70?"High":fail>45?"Medium":"Low")} ${fail}%</td><td><b>${money(a.spend12)}</b></td><td>${pill(rec)}</td></tr>`}).join(""));
+}
+function vendorModal(name){let v=db.vendors.find(x=>x.name===name);if(!v)return;openModal(`<h2>${v.name}</h2><p class="muted">${v.trades} · ${v.regions}</p><div class="grid3"><div class="tile"><b>Score</b><div class="big">${v.score}</div></div><div class="tile"><b>SLA</b><div class="big">${v.sla}%</div></div><div class="tile"><b>Response</b><div class="big">${v.response}h</div></div></div><div class="tile"><b>Recommendation</b><p>${v.score<70?"Pressure vendor, limit routing, and source backup coverage.":v.score<82?"Keep approved but monitor SLA/response trends.":"Preferred vendor candidate for expanded routing."}</p></div>`)}
+function renderVendorCards(){vendors.innerHTML=table("Vendor Scorecards",["Vendor","Trades","Regions","Score","Avg Response","SLA","Insurance","Status"],db.vendors.map(v=>`<tr onclick="vendorModal('${v.name}')" style="cursor:pointer"><td><b>${v.name}</b></td><td>${v.trades}</td><td>${v.regions}</td><td><b>${v.score}</b></td><td>${v.response} hrs</td><td>${v.sla}%</td><td>${pill(v.insurance)}</td><td>${pill(v.status)}</td></tr>`).join(""))}
+function askCopilot(){let q=(document.getElementById("copilotQ")||{}).value||"";let x=ai(),f=forecast(x),lower=q.toLowerCase();let ans="CommandCenter sees "+x.at.length+" SLA-sensitive work orders, "+x.repl.length+" replace-review assets, and "+money(x.pending)+" in proposal dollars requiring movement.";if(lower.includes("vendor"))ans="Weakest vendor is "+[...db.vendors].sort((a,b)=>a.score-b.score)[0].name+". Review response time, SLA %, and backup coverage.";if(lower.includes("capex")||lower.includes("replace"))ans="CAPEX candidates: "+(x.repl.map(a=>a.asset+" at "+loc(a.location).site).join(", ")||"none currently")+". Replacement exposure: "+money(f.capex)+".";if(lower.includes("budget")||lower.includes("spend"))ans="Visible spend is "+money(x.spend)+" against "+money(c().budget)+". Annualized run-rate projection is "+money(f.runRate)+".";document.getElementById("copilotAnswer").innerHTML=`<div class="bubble"><b>You:</b> ${q||"Portfolio summary"}</div><div class="bubble ai"><b>AI Copilot:</b><div class="muted">${ans}</div></div>`}
+function renderCopilot(x){copilot.innerHTML=`<div class="grid2"><div class="card"><h3>AI Facilities Copilot</h3><input id="copilotQ" style="width:100%" placeholder="Ask about spend, vendors, CAPEX, SLA, assets, or risk"/><br><br><button class="btn dark" onclick="askCopilot()">Ask Copilot</button><div id="copilotAnswer" class="chat" style="margin-top:14px"><div class="bubble ai"><b>AI Copilot:</b><div class="muted">Ready.</div></div></div></div><div class="card"><h3>Suggested Prompts</h3><div class="row" onclick="document.getElementById('copilotQ').value='Which vendors are hurting SLA performance?';askCopilot()" style="cursor:pointer">Which vendors are hurting SLA performance?</div><div class="row" onclick="document.getElementById('copilotQ').value='What should go to CAPEX review?';askCopilot()" style="cursor:pointer">What should go to CAPEX review?</div><div class="row" onclick="document.getElementById('copilotQ').value='Where is budget risk?';askCopilot()" style="cursor:pointer">Where is budget risk?</div></div></div>`}
+function renderExecutive(x){let f=forecast(x);executive.innerHTML=`<div class="grid2"><div class="card"><h3>Executive Action Center</h3><div class="aihero"><div class="kicker">Monday Morning Brief</div><h1>${x.health}/100 Portfolio Health</h1><p>${x.at.length} SLA fires, ${x.repl.length} asset replacement reviews, ${money(x.pending)} pending proposals, and estimated savings opportunity of ${money(f.savings)}.</p></div></div><div class="card"><h3>Top Actions</h3><div class="row"><b>Approve aging proposals</b><span>${money(x.pending)}</span></div><div class="row"><b>Escalate SLA risks</b><span>${x.at.length}</span></div><div class="row"><b>Launch CAPEX review</b><span>${x.repl.length} assets</span></div></div></div>`}
+function renderCFO(x){let f=forecast(x),pct=Math.round((x.spend/c().budget)*100);cfo.innerHTML=`<div class="grid2"><div class="card"><h3>CFO Dashboard</h3><div class="row"><b>Annual Budget</b><span>${money(c().budget)}</span></div><div class="row"><b>Visible Spend</b><span>${money(x.spend)}</span></div><div class="row"><b>Budget Used</b><span>${pct}%</span></div><div class="row"><b>Annualized Run Rate</b><span>${money(f.runRate)}</span></div><div class="row"><b>Forecast Variance</b><span>${money(f.variance)}</span></div></div><div class="card"><h3>Capital Planning</h3><div class="row"><b>Replacement Exposure</b><span>${money(f.capex)}</span></div><div class="row"><b>Potential Savings</b><span>${money(f.savings)}</span></div><div class="row"><b>Budget Signal</b><span>${pill(f.variance>0?"Overrun Risk":"Stable")}</span></div></div></div>`}
+function renderApprovals(){
+ approvals.innerHTML=table("Proposal Approval Routing",["ID","Item","Amount","Risk","Assigned To","Status","Actions"],scope(db.approvals).map(a=>`<tr onclick="approvalModal('${a.id}')" style="cursor:pointer"><td><b>${a.id}</b></td><td>${a.item}</td><td><b>${money(a.amount)}</b></td><td>${pill(a.risk)}</td><td>${a.assignedTo||a.owner}</td><td>${pill(a.status)}</td><td><button class="btn green" onclick="event.stopPropagation();approveRoute('${a.id}','Approved')">Approve</button> <button class="btn red" onclick="event.stopPropagation();approveRoute('${a.id}','Rejected')">Reject</button> <button class="btn" onclick="event.stopPropagation();requestRevision('${a.id}')">Revise</button></td></tr>`).join(""));
+}
+function approveItem(id){db.approvals=db.approvals.map(a=>a.id===id?{...a,status:"Approved"}:a);save();render();toast("Approved")}
+function renderTenant(){tenant.innerHTML=`<div class="grid2"><div class="card"><h3>Multi-Tenant SaaS Admin</h3>${db.tenants.map(t=>`<div class="row"><div><b>${t.name}</b><div class="muted">${t.plan} · ${t.roles} · ${t.storage}</div></div>${pill(t.status)}</div>`).join("")}</div><div class="card"><h3>Audit Trail</h3>${db.audit.slice(0,8).map(a=>`<div class="row"><div><b>${a.event}</b><div class="muted">${a.time}</div></div></div>`).join("")}</div></div>`}
+function renderDocuments(){documents.innerHTML=table("Documents / COIs Repository",["ID","Type","Name","Status","Expires","Owner"],scope(db.documents).map(d=>`<tr><td><b>${d.id}</b></td><td>${d.type}</td><td>${d.name}</td><td>${pill(d.status)}</td><td>${d.expires}</td><td>${d.owner}</td></tr>`).join(""))}
+function renderBoardReports(x){
+let f=forecast(x);
+reports.innerHTML=`<div class="reportPage"><h3>Executive PDF-Style Report Generator</h3><div class="aihero"><div class="kicker">Executive Report</div><h1>${c().name}: Facilities Portfolio Brief</h1><p>Portfolio health is ${x.health}/100. Open work orders: ${x.wo.length}. SLA-sensitive work orders: ${x.at.length}. Pending proposal dollars: ${money(x.pending)}. Replacement review exposure: ${money(f.capex)}. Potential savings identified: ${money(f.savings)}.</p></div>
+<br><div class="grid2">
+<div class="tile"><b>Operational Risk</b><p>${x.at.length} SLA-sensitive tickets and ${x.repl.length} replace-review assets require action.</p></div>
+<div class="tile"><b>Financial Signal</b><p>${money(x.pending)} in pending approvals. Annualized spend projection: ${money(f.runRate)}.</p></div>
+</div>
+<br><button class="btn dark" onclick="downloadExecutiveReport()">Download Report</button> <button class="btn" onclick="copyBoardReport()">Copy Board Report</button></div>`;
+}
+function copyBoardReport(){let x=ai(),f=forecast(x);navigator.clipboard.writeText(`${c().name} Board Report\nHealth: ${x.health}/100\nOpen WOs: ${x.wo.length}\nSLA Risk: ${x.at.length}\nPending Proposal Dollars: ${money(x.pending)}\nReplacement Exposure: ${money(f.capex)}\nPotential Savings: ${money(f.savings)}`);toast("Board report copied")}
+
+init();toast("Demo reset")}
+
+
+function loggedUser(){
+ let key=localStorage.getItem("commandCenterLoggedUser")||"April Parker";
+ return db.users.find(u=>u.name===key)||{name:key,role:"Portfolio Operator",client:c().name,status:"Active"};
+}
+function setLoginUser(v){localStorage.setItem("commandCenterLoggedUser",v);render()}
+function greeting(){
+ let h=new Date().getHours();
+ if(h<12)return "Good Morning";
+ if(h<17)return "Good Afternoon";
+ return "Good Evening";
+}
+
+function openModal(content){modalBody.innerHTML=content;modal.style.display="flex"}
+function closeModal(){modal.style.display="none"}
+function vendorRouteScore(v,wo){let tradeMatch=(v.trades||"").toLowerCase().includes((wo.trade||"").toLowerCase().split("/")[0])?15:0;return Math.round((v.score||0)*.40+(v.sla||0)*.25+(100-Math.min((v.response||0)*10,100))*.20+tradeMatch)}
+function bestVendor(wo){let ranked=db.vendors.map(v=>({...v,routeScore:vendorRouteScore(v,wo)})).sort((a,b)=>b.routeScore-a.routeScore);return ranked[0]||{name:"National Backstop",routeScore:75}}
+async function routeWO(id){let updated=null;db.workOrders=db.workOrders.map(w=>{if(w.id!==id)return w;let v=bestVendor(w);updated={...w,vendor:v.name,status:"Vendor Dispatched",notes:(w.notes||"")+" Auto-routed."};return updated;});await cloudUpsert("workOrders",updated);await cloudInsertAudit("Auto-routed "+id+" using routing engine");save();render();toast("Work order routed"+(cloudReady?" + synced":""))}
+async function escalateWO(id){let updated=null;db.workOrders=db.workOrders.map(w=>{if(w.id!==id)return w;updated={...w,status:"Escalated",sla:"Breached",owner:"Executive Alert"};return updated;});await cloudUpsert("workOrders",updated);await cloudInsertAudit("Escalated "+id+" to executive alert");save();render();toast("Escalation created"+(cloudReady?" + synced":""))}
+function forecast(x){let runRate=x.spend*4,variance=runRate-c().budget,capex=x.repl.reduce((s,a)=>s+a.replacement,0),savings=Math.round(x.repl.reduce((s,a)=>s+Math.max(0,a.spend12*.55),0)+x.at.length*1800);return{runRate,variance,capex,savings}}
+function riskScore(l){return Number.isFinite(Number(l.risk_score))?Number(l.risk_score):Math.min(100,Math.round(((l.open||0)*6)+((l.repeat||0)*14)+((l.spend||0)/2000)+(l.capex?15:0)))}
+function predictedFailure(a){return Math.min(99,Math.round(a.age*3+a.repairs*9+(a.spend12/Math.max(a.replacement,1))*45))}
+function renderDispatch(x){
+ let lanes=["New","Vendor Dispatched","In Progress","Escalated"];
+ let body=lanes.map(lane=>`<div class="lane"><h4>${lane}</h4>`+
+ x.wo.filter(w=> lane==="New"?["New","Proposal Needed","Scoping","Scheduled"].includes(w.status):w.status===lane).map(w=>{
+ let v=bestVendor(w);
+ return `<div class="woCard" onclick="woModal('${w.id}')" style="cursor:pointer"><b>${w.id}</b><div class="muted">${loc(w.location).site}</div><div>${pill(w.priority)} ${pill(w.sla)}</div><div class="muted">Vendor Status: ${w.vendorStatus||"Not Dispatched"}</div><b>${v.name}</b> <span class="badge">${v.routeScore}</span><br><button class="btn" onclick="event.stopPropagation();woModal('${w.id}')">View</button> <button class="btn dark" onclick="event.stopPropagation();dispatchToSuggested('${w.id}')">Dispatch</button> <button class="btn red" onclick="event.stopPropagation();escalateWO('${w.id}')">Escalate</button></div>`
+ }).join("")+`</div>`).join("");
+ dispatch.innerHTML=`<div class="card"><h3>Vendor Dispatch Workflow</h3><p class="muted">Route, dispatch, accept, re-route, mark on site, and close work orders.</p><div class="kanban">${body}</div></div>`;
+}
+function renderSLA(x){let breached=x.wo.filter(w=>w.sla==="Breached"), risk=x.wo.filter(w=>w.sla==="At Risk");let compliance=Math.max(0,100-(breached.length*12+risk.length*6));sla.innerHTML=`<div class="grid2"><div class="card"><h3>SLA Command</h3><div class="big">${compliance}%</div><div class="row"><b>At Risk</b><span>${risk.length}</span></div><div class="row"><b>Breached</b><span>${breached.length}</span></div><div class="row"><b>Escalation Rule</b><span>Emergency 30m / Urgent 60m / Normal 240m</span></div></div><div class="card"><h3>Escalation Queue</h3>${[...breached,...risk].map(w=>`<div class="row"><div><b>${w.id}</b><div class="muted">${loc(w.location).site} · ${w.trade} · ${w.vendor}</div></div><button class="btn red" onclick="escalateWO('${w.id}')">Escalate</button></div>`).join("")||"<p class='muted'>No SLA fires right now.</p>"}</div></div>`}
+let mapFilters={risk:"All",trade:"All",sla:"All",capex:"All"};
+function formatCoord(v){return Number.isFinite(Number(v))?Number(v).toFixed(4):"Pending"}
+function hasGeo(l){return Number.isFinite(Number(l.latitude))&&Number.isFinite(Number(l.longitude))}
+function geoReadyCount(sites){return sites.filter(hasGeo).length}
+function mapRegionName(r){const regions=["Northeast","Southeast","Texas","Midwest","West","Other"];return regions.includes(r)?r:(String(r||"").includes("East")?"Northeast":String(r||"").includes("South")?"Southeast":String(r||"").includes("Texas")?"Texas":String(r||"").includes("Mid")?"Midwest":String(r||"").includes("West")?"West":"Other")}
+function mapRiskTier(score){return score>=90?"critical":score>=65?"high":score>=35?"medium":"low"}
+function siteWOList(siteId){return db.workOrders.filter(w=>w.location===siteId)}
+function siteMatchesMapFilters(l){
+ let wos=siteWOList(l.id);
+ if(mapFilters.risk!=="All" && String(l.risk)!==mapFilters.risk)return false;
+ if(mapFilters.trade!=="All" && String(l.trade)!==mapFilters.trade)return false;
+ if(mapFilters.sla!=="All" && !wos.some(w=>w.sla===mapFilters.sla))return false;
+ if(mapFilters.capex!=="All" && String(Boolean(l.capex))!==mapFilters.capex)return false;
+ return true;
+}
+function setMapFilter(key,val){mapFilters[key]=val;renderHeatMap(ai())}
+function resetMapFilters(){mapFilters={risk:"All",trade:"All",sla:"All",capex:"All"};renderHeatMap(ai());toast("Map filters reset")}
+function renderHeatMap(x){
+ const regions=["Northeast","Southeast","Texas","Midwest","West","Other"];
+ const classMap={Northeast:"regionEast",Southeast:"regionSoutheast",Texas:"regionTexas",Midwest:"regionMidwest",West:"regionWest",Other:"regionOther"};
+ const allSites=x.ls;
+ const filteredSites=allSites.filter(siteMatchesMapFilters);
+ const trades=["All",...Array.from(new Set(allSites.map(l=>l.trade).filter(Boolean))).sort()];
+ const risks=["All","Critical","High","Medium","Low"];
+ const slas=["All","Breached","At Risk","On Track"];
+ const grouped=regions.map(region=>{let sites=filteredSites.filter(l=>mapRegionName(l.region)===region);let open=sites.reduce((s,l)=>s+(l.open||0),0);let repeat=sites.reduce((s,l)=>s+(l.repeat||0),0);let spend=sites.reduce((s,l)=>s+(l.spend||0),0);let score=sites.length?Math.round(sites.reduce((s,l)=>s+riskScore(l),0)/sites.length):0;let tier=mapRiskTier(score);return{region,sites,open,repeat,spend,score,tier};});
+ let sorted=[...filteredSites].sort((a,b)=>riskScore(b)-riskScore(a));
+ let top=sorted[0]||{};
+ let active=Object.entries(mapFilters).filter(([k,v])=>v!=="All").map(([k,v])=>`<span class="filterChip">${k.toUpperCase()}: ${v==="true"?"CapEx review":v==="false"?"No CapEx":v}</span>`).join("") || `<span class="filterChip">All sites visible</span>`;
+ heatmap.innerHTML=`<div class="card"><div class="mapToolbar"><div><h3>Portfolio Map Visualization</h3><p class="muted">Clickable regional risk grid with live filters and a right-side location detail drawer. Production map prep is complete: locations now carry latitude, longitude, address, market, district, and normalized risk_score for true pins.</p></div><div><button class="btn" onclick="resetMapFilters()">Reset Filters</button> <button class="btn dark" onclick="renderHeatMap(ai())">Refresh Map</button></div></div>
+ <div class="mapFilters">
+  <select onchange="setMapFilter('risk',this.value)">${risks.map(r=>`<option value="${r}" ${mapFilters.risk===r?'selected':''}>Risk: ${r}</option>`).join("")}</select>
+  <select onchange="setMapFilter('trade',this.value)">${trades.map(t=>`<option value="${t}" ${mapFilters.trade===t?'selected':''}>Trade: ${t}</option>`).join("")}</select>
+  <select onchange="setMapFilter('sla',this.value)">${slas.map(s=>`<option value="${s}" ${mapFilters.sla===s?'selected':''}>SLA: ${s}</option>`).join("")}</select>
+  <select onchange="setMapFilter('capex',this.value)"><option value="All" ${mapFilters.capex==='All'?'selected':''}>CapEx: All</option><option value="true" ${mapFilters.capex==='true'?'selected':''}>CapEx: Review</option><option value="false" ${mapFilters.capex==='false'?'selected':''}>CapEx: Stable</option></select>
+ </div>
+ <div class="activeFilterBar">${active}</div>
+ <div class="mapLegend"><span>🟥 Critical 90+</span><span>🟧 High 65-89</span><span>🟨 Medium 35-64</span><span>🟩 Low 0-34</span></div>
+ <div class="mapStatGrid"><div class="mapStat"><div class="muted">Visible sites</div><b>${filteredSites.length}/${allSites.length}</b></div><div class="mapStat"><div class="muted">Pin-ready sites</div><b>${geoReadyCount(filteredSites)}/${filteredSites.length}</b></div><div class="mapStat"><div class="muted">Visible spend</div><b>${money(filteredSites.reduce((s,l)=>s+(l.spend||0),0))}</b></div></div>
+ <div class="portfolioMapShell"><div class="regionRiskMap">${grouped.map(g=>`<div class="regionCell ${classMap[g.region]} ${g.tier}" onclick="openRegionMap('${g.region}')"><div class="regionName">${g.region}</div><div class="regionMeta">${g.sites.length} visible sites · ${g.open} open · ${g.repeat} repeat</div><div class="regionMeta">${money(g.spend)} visible spend</div><div class="regionBadge">${pill(g.tier==='critical'?'Critical':g.tier==='high'?'High':g.tier==='medium'?'Medium':'Low')}</div><div class="regionScore">${g.score}</div></div>`).join("")}</div>
+ <div><div class="tile"><b>Highest Risk Site</b>${top.site?`<div class="siteRiskCard" onclick="openSiteDrawer('${top.id}')"><b>${top.site}</b><div class="muted">${top.market||top.region} · ${top.district||"Unassigned"} · ${top.trade}</div><br>${pill(top.risk)} <span class="badge">Risk ${riskScore(top)}</span><div class="muted">${top.open} open · ${top.repeat} repeat · ${money(top.spend)}</div></div>`:"<p class='muted'>No site risk data matches current filters.</p>"}</div>
+ <div class="tile"><b>Top Risk Locations</b><div class="regionList">${sorted.slice(0,8).map(l=>`<div class="siteRiskCard" onclick="openSiteDrawer('${l.id}')"><div style="display:flex;justify-content:space-between;gap:10px"><div><b>${l.site}</b><div class="muted">${l.market||l.region} · ${l.district||"Unassigned"} · ${l.trade}</div></div><span class="badge">${riskScore(l)}</span></div></div>`).join("")||"<p class='muted'>No locations match current filters.</p>"}</div></div></div></div></div>`;
+}
+function openRegionMap(region){
+ let x=ai();
+ let sites=x.ls.filter(l=>mapRegionName(l.region)===region && siteMatchesMapFilters(l)).sort((a,b)=>riskScore(b)-riskScore(a));
+ let open=sites.reduce((s,l)=>s+(l.open||0),0), repeat=sites.reduce((s,l)=>s+(l.repeat||0),0), spend=sites.reduce((s,l)=>s+(l.spend||0),0);
+ openModal(`<h2>${region} Region Risk Map</h2><p class="muted">Filtered view: ${sites.length} sites · ${open} open work orders · ${repeat} repeat issues · ${money(spend)} visible spend</p><div class="grid3"><div class="tile"><b>Sites</b><div class="big">${sites.length}</div></div><div class="tile"><b>Open WOs</b><div class="big">${open}</div></div><div class="tile"><b>Spend</b><div class="big">${money(spend)}</div></div></div><div class="tile"><b>Sites Ranked by Risk</b>${sites.length?sites.map(l=>`<div class="row" onclick="openSiteDrawer('${l.id}');closeModal()" style="cursor:pointer"><div><b>${l.site}</b><div class="muted">${l.trade} · ${l.open} open · ${l.repeat} repeat</div></div><div>${pill(l.risk)} <span class="badge">${riskScore(l)}</span></div></div>`).join(""):"<p class='muted'>No locations in this region match current filters.</p>"}</div>`);
+}
+function closeSiteDrawer(){let d=document.getElementById("siteDrawer");if(d)d.style.display="none"}
+function openSiteDrawer(id){
+ let l=db.locations.find(x=>x.id===id); if(!l){toast("Location not found");return;}
+ let wos=siteWOList(id).sort((a,b)=>(b.priority==="Emergency")-(a.priority==="Emergency") || b.age-a.age);
+ let assets=db.assets.filter(a=>a.location===id).sort((a,b)=>predictedFailure(b)-predictedFailure(a));
+ let props=db.proposals.filter(p=>p.location===id);
+ let vendors=Array.from(new Set(wos.map(w=>w.vendor).filter(Boolean))).join(", ")||"No vendor assigned";
+ let breached=wos.filter(w=>w.sla==="Breached").length, atRisk=wos.filter(w=>w.sla==="At Risk").length;
+ let body=document.getElementById("siteDrawerBody");
+ body.innerHTML=`<div class="drawerHeader"><div><div class="kicker">Location detail drawer</div><h2>${l.site}</h2><p class="muted">${l.address||"Address pending"}<br>${l.market||l.region} · ${l.district||"Unassigned"} · ${l.fm} · ${l.trade}</p></div><button class="drawerClose" onclick="closeSiteDrawer()">Close</button></div>
+ <div>${pill(l.risk)} <span class="badge">Risk ${riskScore(l)}</span> <span class="badge">${hasGeo(l)?"Pin Ready":"Geo Pending"}</span> ${l.capex?pill("CapEx Review"):pill("Stable")}</div>
+ <div class="miniGrid"><div class="miniStat"><div class="muted">Open WOs</div><b>${wos.length||l.open||0}</b></div><div class="miniStat"><div class="muted">SLA fires</div><b>${breached+atRisk}</b></div><div class="miniStat"><div class="muted">Spend</div><b>${money(l.spend)}</b></div></div>
+ <div class="drawerSection"><b>Operating Snapshot</b><p class="muted">Repeat issues: ${l.repeat||0}<br>Primary vendor coverage: ${vendors}<br>Facilities owner: ${l.fm}<br>Coordinates: ${formatCoord(l.latitude)}, ${formatCoord(l.longitude)}</p><div class="siteActionBar"><button class="btn dark" onclick="openWOForm()">+ Work Order</button><button class="btn" onclick="locationModal('${l.id}')">Full Modal</button><button class="btn red" onclick="closeSiteDrawer();setPage('sla')">View SLA</button></div></div>
+ <div class="drawerSection"><b>Open Work Orders</b>${wos.length?wos.map(w=>`<div class="row" onclick="woModal('${w.id}')" style="cursor:pointer"><div><b>${w.id}</b><div class="muted">${w.trade} · ${w.status} · ${w.vendor}</div></div><div>${pill(w.priority)} ${pill(w.sla)}</div></div>`).join(""):"<p class='muted'>No work orders attached.</p>"}</div>
+ <div class="drawerSection"><b>Assets</b>${assets.length?assets.map(a=>`<div class="row" onclick="assetLifecycleModal('${a.id}')" style="cursor:pointer"><div><b>${a.asset}</b><div class="muted">${a.trade} · ${a.age} yrs · ${money(a.spend12)} 12-mo spend</div></div><span class="badge">${predictedFailure(a)}%</span></div>`).join(""):"<p class='muted'>No assets attached.</p>"}</div>
+ <div class="drawerSection"><b>Related Proposals</b>${props.length?props.map(p=>`<div class="row"><div><b>${p.id}</b><div class="muted">${p.scope}</div></div><b>${money(p.amount)}</b></div>`).join(""):"<p class='muted'>No proposals attached.</p>"}</div>
+ <div class="drawerSection"><b>Production Map Prep Complete</b><p class="muted">This location now carries address, market, district, latitude, longitude, and normalized risk_score. The drawer can remain unchanged while the grid is swapped for true geographic pins.</p><div class="miniGrid"><div class="miniStat"><div class="muted">Latitude</div><b>${formatCoord(l.latitude)}</b></div><div class="miniStat"><div class="muted">Longitude</div><b>${formatCoord(l.longitude)}</b></div><div class="miniStat"><div class="muted">Risk score</div><b>${riskScore(l)}</b></div></div></div>`;
+ document.getElementById("siteDrawer").style.display="flex";
+}
+function assetModal(id){
+ let a=db.assets.find(x=>x.id===id); if(!a)return;
+ let fail=predictedFailure(a); let rec=fail>70?"Replace / Capital Review":fail>45?"Monitor + quote replacement":"Repair acceptable";
+ let attached=db.workOrders.filter(w=>w.asset===a.id || (w.location===a.location && (w.trade||"").toLowerCase().includes((a.trade||"").toLowerCase().split("/")[0])));
+ openModal(`<h2>${a.asset}</h2><p class="muted">${loc(a.location).site} · ${a.trade}</p>
+ <div class="grid2"><div class="tile"><b>Age</b><div class="big">${a.age}</div></div><div class="tile"><b>Failure Risk</b><div class="big">${fail}%</div></div></div>
+ <div class="tile"><b>Service History</b><p>Repairs: ${a.repairs}<br>12-month spend: ${money(a.spend12)}<br>Replacement estimate: ${money(a.replacement)}</p></div>
+ <div class="tile"><b>Attached Work Orders</b>${attached.length?attached.map(w=>`<div class="row" onclick="woModal('${w.id}')" style="cursor:pointer"><div><b>${w.id}</b><div class="muted">${w.trade} · ${w.status} · ${w.vendor}</div></div><div>${pill(w.priority)} ${pill(w.sla)}</div></div>`).join(""):"<p class='muted'>No work orders attached to this asset yet.</p>"}</div>
+ <div class="aihero"><div class="kicker">AI Recommendation</div><h1>${rec}</h1><p>Operator view: decide whether to keep repairing, quote replacement, or move this asset into capital review.</p></div>`);
+}
+
+function renderAssetHistory(x){
+ assets.innerHTML=table("Asset Lifecycle History",["Asset","Location","Make / Model","Trade","Age","Failure Risk","12 Mo Spend","Lifecycle"],x.as.map(a=>{let fail=predictedFailure(a);let rec=fail>70?"Replace Cycle":fail>45?"Monitor":"Maintain";return`<tr onclick="assetLifecycleModal('${a.id}')" style="cursor:pointer"><td><b>${a.asset}</b></td><td>${loc(a.location).site}</td><td>${a.manufacturer||"Make"} ${a.model||"Model"}</td><td>${a.trade}</td><td>${a.age}</td><td>${pill(fail>70?"High":fail>45?"Medium":"Low")} ${fail}%</td><td><b>${money(a.spend12)}</b></td><td>${pill(rec)}</td></tr>`}).join(""));
+}
+function vendorModal(name){let v=db.vendors.find(x=>x.name===name);if(!v)return;openModal(`<h2>${v.name}</h2><p class="muted">${v.trades} · ${v.regions}</p><div class="grid3"><div class="tile"><b>Score</b><div class="big">${v.score}</div></div><div class="tile"><b>SLA</b><div class="big">${v.sla}%</div></div><div class="tile"><b>Response</b><div class="big">${v.response}h</div></div></div><div class="tile"><b>Recommendation</b><p>${v.score<70?"Pressure vendor, limit routing, and source backup coverage.":v.score<82?"Keep approved but monitor SLA/response trends.":"Preferred vendor candidate for expanded routing."}</p></div>`)}
+function renderVendorCards(){vendors.innerHTML=table("Vendor Scorecards",["Vendor","Trades","Regions","Score","Avg Response","SLA","Insurance","Status"],db.vendors.map(v=>`<tr onclick="vendorModal('${v.name}')" style="cursor:pointer"><td><b>${v.name}</b></td><td>${v.trades}</td><td>${v.regions}</td><td><b>${v.score}</b></td><td>${v.response} hrs</td><td>${v.sla}%</td><td>${pill(v.insurance)}</td><td>${pill(v.status)}</td></tr>`).join(""))}
+function askCopilot(){let q=(document.getElementById("copilotQ")||{}).value||"";let x=ai(),f=forecast(x),lower=q.toLowerCase();let ans="CommandCenter sees "+x.at.length+" SLA-sensitive work orders, "+x.repl.length+" replace-review assets, and "+money(x.pending)+" in proposal dollars requiring movement.";if(lower.includes("vendor"))ans="Weakest vendor is "+[...db.vendors].sort((a,b)=>a.score-b.score)[0].name+". Review response time, SLA %, and backup coverage.";if(lower.includes("capex")||lower.includes("replace"))ans="CAPEX candidates: "+(x.repl.map(a=>a.asset+" at "+loc(a.location).site).join(", ")||"none currently")+". Replacement exposure: "+money(f.capex)+".";if(lower.includes("budget")||lower.includes("spend"))ans="Visible spend is "+money(x.spend)+" against "+money(c().budget)+". Annualized run-rate projection is "+money(f.runRate)+".";document.getElementById("copilotAnswer").innerHTML=`<div class="bubble"><b>You:</b> ${q||"Portfolio summary"}</div><div class="bubble ai"><b>AI Copilot:</b><div class="muted">${ans}</div></div>`}
+function renderCopilot(x){copilot.innerHTML=`<div class="grid2"><div class="card"><h3>AI Facilities Copilot</h3><input id="copilotQ" style="width:100%" placeholder="Ask about spend, vendors, CAPEX, SLA, assets, or risk"/><br><br><button class="btn dark" onclick="askCopilot()">Ask Copilot</button><div id="copilotAnswer" class="chat" style="margin-top:14px"><div class="bubble ai"><b>AI Copilot:</b><div class="muted">Ready.</div></div></div></div><div class="card"><h3>Suggested Prompts</h3><div class="row" onclick="document.getElementById('copilotQ').value='Which vendors are hurting SLA performance?';askCopilot()" style="cursor:pointer">Which vendors are hurting SLA performance?</div><div class="row" onclick="document.getElementById('copilotQ').value='What should go to CAPEX review?';askCopilot()" style="cursor:pointer">What should go to CAPEX review?</div><div class="row" onclick="document.getElementById('copilotQ').value='Where is budget risk?';askCopilot()" style="cursor:pointer">Where is budget risk?</div></div></div>`}
+function renderExecutive(x){let f=forecast(x);executive.innerHTML=`<div class="grid2"><div class="card"><h3>Executive Action Center</h3><div class="aihero"><div class="kicker">Monday Morning Brief</div><h1>${x.health}/100 Portfolio Health</h1><p>${x.at.length} SLA fires, ${x.repl.length} asset replacement reviews, ${money(x.pending)} pending proposals, and estimated savings opportunity of ${money(f.savings)}.</p></div></div><div class="card"><h3>Top Actions</h3><div class="row"><b>Approve aging proposals</b><span>${money(x.pending)}</span></div><div class="row"><b>Escalate SLA risks</b><span>${x.at.length}</span></div><div class="row"><b>Launch CAPEX review</b><span>${x.repl.length} assets</span></div></div></div>`}
+function renderCFO(x){let f=forecast(x),pct=Math.round((x.spend/c().budget)*100);cfo.innerHTML=`<div class="grid2"><div class="card"><h3>CFO Dashboard</h3><div class="row"><b>Annual Budget</b><span>${money(c().budget)}</span></div><div class="row"><b>Visible Spend</b><span>${money(x.spend)}</span></div><div class="row"><b>Budget Used</b><span>${pct}%</span></div><div class="row"><b>Annualized Run Rate</b><span>${money(f.runRate)}</span></div><div class="row"><b>Forecast Variance</b><span>${money(f.variance)}</span></div></div><div class="card"><h3>Capital Planning</h3><div class="row"><b>Replacement Exposure</b><span>${money(f.capex)}</span></div><div class="row"><b>Potential Savings</b><span>${money(f.savings)}</span></div><div class="row"><b>Budget Signal</b><span>${pill(f.variance>0?"Overrun Risk":"Stable")}</span></div></div></div>`}
+function renderApprovals(){
+ approvals.innerHTML=table("Proposal Approval Routing",["ID","Item","Amount","Risk","Assigned To","Status","Actions"],scope(db.approvals).map(a=>`<tr onclick="approvalModal('${a.id}')" style="cursor:pointer"><td><b>${a.id}</b></td><td>${a.item}</td><td><b>${money(a.amount)}</b></td><td>${pill(a.risk)}</td><td>${a.assignedTo||a.owner}</td><td>${pill(a.status)}</td><td><button class="btn green" onclick="event.stopPropagation();approveRoute('${a.id}','Approved')">Approve</button> <button class="btn red" onclick="event.stopPropagation();approveRoute('${a.id}','Rejected')">Reject</button> <button class="btn" onclick="event.stopPropagation();requestRevision('${a.id}')">Revise</button></td></tr>`).join(""));
+}
+function approveItem(id){db.approvals=db.approvals.map(a=>a.id===id?{...a,status:"Approved"}:a);save();render();toast("Approved")}
+function renderTenant(){tenant.innerHTML=`<div class="grid2"><div class="card"><h3>Multi-Tenant SaaS Admin</h3>${db.tenants.map(t=>`<div class="row"><div><b>${t.name}</b><div class="muted">${t.plan} · ${t.roles} · ${t.storage}</div></div>${pill(t.status)}</div>`).join("")}</div><div class="card"><h3>Audit Trail</h3>${db.audit.slice(0,8).map(a=>`<div class="row"><div><b>${a.event}</b><div class="muted">${a.time}</div></div></div>`).join("")}</div></div>`}
+function renderDocuments(){documents.innerHTML=table("Documents / COIs Repository",["ID","Type","Name","Status","Expires","Owner"],scope(db.documents).map(d=>`<tr><td><b>${d.id}</b></td><td>${d.type}</td><td>${d.name}</td><td>${pill(d.status)}</td><td>${d.expires}</td><td>${d.owner}</td></tr>`).join(""))}
+function renderBoardReports(x){
+let f=forecast(x);
+reports.innerHTML=`<div class="reportPage"><h3>Executive PDF-Style Report Generator</h3><div class="aihero"><div class="kicker">Executive Report</div><h1>${c().name}: Facilities Portfolio Brief</h1><p>Portfolio health is ${x.health}/100. Open work orders: ${x.wo.length}. SLA-sensitive work orders: ${x.at.length}. Pending proposal dollars: ${money(x.pending)}. Replacement review exposure: ${money(f.capex)}. Potential savings identified: ${money(f.savings)}.</p></div>
+<br><div class="grid2">
+<div class="tile"><b>Operational Risk</b><p>${x.at.length} SLA-sensitive tickets and ${x.repl.length} replace-review assets require action.</p></div>
+<div class="tile"><b>Financial Signal</b><p>${money(x.pending)} in pending approvals. Annualized spend projection: ${money(f.runRate)}.</p></div>
+</div>
+<br><button class="btn dark" onclick="downloadExecutiveReport()">Download Report</button> <button class="btn" onclick="copyBoardReport()">Copy Board Report</button></div>`;
+}
+function copyBoardReport(){let x=ai(),f=forecast(x);navigator.clipboard.writeText(`${c().name} Board Report\nHealth: ${x.health}/100\nOpen WOs: ${x.wo.length}\nSLA Risk: ${x.at.length}\nPending Proposal Dollars: ${money(x.pending)}\nReplacement Exposure: ${money(f.capex)}\nPotential Savings: ${money(f.savings)}`);toast("Board report copied")}
+
+init();
+</script>
 </body>
 </html>

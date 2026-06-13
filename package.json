@@ -1,10 +1,10 @@
 {
-  "name": "commandcenter-v2-13-5-vercel-no-scripts-folder",
-  "version": "2.13.5",
+  "name": "commandcenter-v2-7-clean-master",
+  "version": "2.7.1",
   "private": true,
   "scripts": {
-    "build": "mkdir -p dist && cp -R index.html src dist/",
-    "start": "npx serve dist",
+    "build": "mkdir -p dist && cp index.html dist/index.html",
+    "start": "npx serve .",
     "preview": "npx serve dist"
   },
   "engines": {
