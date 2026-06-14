@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Command Center LLC</title>
+  <style>
+:root{--bg:#f4f4f5;--card:#fff;--ink:#09090b;--muted:#71717a;--line:#e4e4e7;--black:#09090b;--red:#dc2626;--amber:#d97706;--green:#16a34a;--blue:#2563eb}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Arial,sans-serif}.app-shell{display:grid;grid-template-columns:290px 1fr;min-height:100vh}.sidebar{background:#fff;border-right:1px solid var(--line);padding:22px;position:sticky;top:0;height:100vh;overflow:auto}.brand-card{background:var(--black);color:#fff;border-radius:26px;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,.18)}.brand-row{display:flex;gap:12px;align-items:center}.logo{width:48px;height:48px;border:2px solid #fff;border-radius:16px;display:grid;place-items:center;font-weight:1000}.eyebrow{font-size:12px;font-weight:950;text-transform:uppercase;letter-spacing:2px;color:var(--muted)}.brand-card .eyebrow{color:#a1a1aa}.brand-card h1{margin:2px 0 0;font-size:28px}.brand-card p{color:#d4d4d8;line-height:1.4}.status-pill,.pill{display:inline-flex;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:950;border:1px solid}.status-pill{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff}.nav{display:grid;gap:8px;margin-top:18px}.nav button{border:0;background:transparent;text-align:left;padding:13px 14px;border-radius:16px;font-weight:950;color:#52525b;cursor:pointer}.nav button.active,.nav button:hover{background:#09090b;color:white}.main{padding:24px}.topbar{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}.topbar h2{font-size:36px;margin:4px 0}.topbar p{margin:0;color:var(--muted)}.actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}select,input,textarea{border:1px solid var(--line);background:#fff;border-radius:15px;padding:12px 13px;font-weight:750}.btn{border:1px solid var(--line);background:#fff;border-radius:15px;padding:12px 14px;font-weight:950;cursor:pointer}.btn.primary{background:#09090b;color:#fff}.btn.red{background:var(--red);color:#fff}.btn.green{background:var(--green);color:#fff}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}.card{background:#fff;border:1px solid var(--line);border-radius:24px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.045)}.metric-label{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:950}.metric-value{font-size:30px;font-weight:1000;margin-top:5px}.metric-sub{font-size:13px;color:var(--muted)}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.row{display:flex;justify-content:space-between;gap:12px;align-items:center;background:#fafafa;border:1px solid var(--line);border-radius:18px;padding:13px;margin-bottom:10px}.muted{color:var(--muted)}.big{font-size:42px;font-weight:1000}.scroll{overflow:auto;border:1px solid var(--line);border-radius:20px}table{width:100%;border-collapse:collapse;font-size:14px}th{text-align:left;color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:1px;padding:11px;border-bottom:1px solid var(--line)}td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top}.red{background:#fef2f2;color:#b91c1c;border-color:#fecaca}.amber{background:#fffbeb;color:#b45309;border-color:#fde68a}.green{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}.blue{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.lane{background:#fafafa;border:1px solid var(--line);border-radius:20px;padding:12px;min-height:260px}.wo-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px;box-shadow:0 8px 20px rgba(0,0,0,.035);cursor:pointer}.usa-map{position:relative;min-height:460px;background:linear-gradient(135deg,#dbeafe 0%,#eff6ff 45%,#f8fafc 100%);border:1px solid var(--line);border-radius:26px;overflow:hidden}.usa-svg{position:absolute;left:10px;right:10px;top:14px;width:calc(100% - 20px);height:390px;z-index:1}.state-shape{fill:#ffffff;stroke:#18181b;stroke-width:2.2;vector-effect:non-scaling-stroke}.state-shape:nth-child(3n){fill:#f8fafc}.state-shape:nth-child(4n){fill:#f1f5f9}.map-title{position:absolute;left:18px;top:14px;z-index:4;background:rgba(9,9,11,.92);color:#fff;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:1000;letter-spacing:1px}.usa-watermark{position:absolute;left:18px;bottom:14px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:12px;font-weight:950;color:#52525b;z-index:4}.pin{position:absolute;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:50%;border:4px solid #fff;box-shadow:0 8px 18px rgba(0,0,0,.35);cursor:pointer;z-index:6}.pin:hover{transform:translate(-50%,-50%) scale(1.18)}.pin.critical{background:var(--red)}.pin.high{background:#f97316}.pin.medium{background:#eab308}.pin.low{background:var(--green)}.map-list{display:grid;gap:10px}.site-card{border:1px solid var(--line);border-radius:18px;padding:13px;background:#fafafa;cursor:pointer}.site-card:hover{background:#fff}.modal{position:fixed;inset:0;background:rgba(0,0,0,.48);display:grid;place-items:center;padding:20px;z-index:50}.hidden{display:none!important}.modal-card{background:#fff;border-radius:26px;max-width:940px;width:100%;max-height:88vh;overflow:auto;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.35);position:relative}.close{position:absolute;right:18px;top:18px;border:0;background:#09090b;color:#fff;border-radius:12px;width:36px;height:36px;font-size:22px;cursor:pointer}.toast{position:fixed;right:18px;bottom:18px;background:#09090b;color:#fff;padding:14px 16px;border-radius:18px;font-weight:950;z-index:80}.bar{height:12px;background:#e5e7eb;border-radius:999px;overflow:hidden}.bar span{display:block;height:100%;background:#09090b}.copilot-box{display:grid;grid-template-columns:1fr auto;gap:10px}.chat{display:grid;gap:10px;max-height:420px;overflow:auto}.bubble{padding:13px 14px;border-radius:18px;background:#f4f4f5}.bubble.ai{background:#09090b;color:#fff}@media(max-width:1050px){.app-shell{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.topbar{display:block}.actions{justify-content:flex-start;margin-top:12px}.metrics,.grid2,.grid3,.kanban{grid-template-columns:1fr}}
+
+</style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-card">
+        <div class="brand-row">
+          <div class="logo">CC</div>
+          <div>
+            <div class="eyebrow">Command Center LLC</div>
+            <h1>Command Center</h1>
+          </div>
+        </div>
+        <p>Facilities operating system for work orders, locations, vendors, assets, risk, and executive control.</p>
+        <span class="status-pill">NO LOGIN • DEMO MODE</span>
+      </div>
+      <nav id="nav" class="nav"></nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div id="pageKicker" class="eyebrow">Mission Control</div>
+          <h2 id="pageTitle">Mission Control</h2>
+          <p id="pageSub">Run the portfolio from one command layer.</p>
+        </div>
+        <div class="actions">
+          <select id="clientSelect"></select>
+          <input id="globalSearch" placeholder="Search work orders, locations, vendors..." />
+          <button class="btn primary" id="newWorkOrderBtn">+ Work Order</button>
+          <button class="btn" id="resetBtn">Reset Demo</button>
+        </div>
+      </header>
+
+      <section id="metrics" class="metrics"></section>
+      <section id="view" class="view"></section>
+    </main>
+  </div>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <button id="closeModal" class="close">×</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script>
+const seed = {
+  activeClient: 0,
+  clients: [
+    { name: 'Security Finance', vertical: 'Financial Branch Network', locations: 754, budget: 4200000, owner: 'April Parker' },
+    { name: 'Prime Communications', vertical: 'Telecom Retail', locations: 2000, budget: 18000000, owner: 'Facilities Team' },
+    { name: 'Fogo de Chão Refresh Program', vertical: 'Restaurant Refresh', locations: 73, budget: 6800000, owner: 'Michael Murillo' }
+  ],
+  locations: [
+    { id:'L101', client:0, site:'Charlotte Branch 014', region:'Southeast', city:'Charlotte, NC', x:73, y:55, risk:'High', trade:'HVAC', spend:48200, open:7, repeat:4, capex:true },
+    { id:'L205', client:0, site:'Dallas Branch 088', region:'Texas', city:'Dallas, TX', x:51, y:67, risk:'Medium', trade:'Electrical', spend:37100, open:5, repeat:2, capex:false },
+    { id:'L319', client:0, site:'Phoenix Branch 122', region:'West', city:'Phoenix, AZ', x:25, y:62, risk:'High', trade:'Plumbing', spend:61200, open:9, repeat:5, capex:true },
+    { id:'L522', client:0, site:'Cleveland Branch 207', region:'Midwest', city:'Cleveland, OH', x:68, y:39, risk:'Critical', trade:'HVAC', spend:87500, open:11, repeat:7, capex:true },
+    { id:'PC-118', client:1, site:'Atlanta Retail 118', region:'Southeast', city:'Atlanta, GA', x:69, y:61, risk:'Medium', trade:'Doors/Locks', spend:55200, open:8, repeat:3, capex:false },
+    { id:'FG-PDX', client:2, site:'Portland OR Refresh', region:'West', city:'Portland, OR', x:16, y:22, risk:'High', trade:'Refresh', spend:420000, open:18, repeat:0, capex:true }
+  ],
+  workOrders: [
+    { id:'WO-78421', client:0, asset:'A-RTU-1', location:'L522', trade:'HVAC', priority:'Emergency', status:'Vendor Dispatched', owner:'Tony Russo', vendor:'Metro Mechanical', age:3, cost:12400, sla:'At Risk', notes:'Emergency RTU issue. Confirm parts ETA.' },
+    { id:'WO-78433', client:0, asset:'A-PL-2', location:'L319', trade:'Plumbing', priority:'Urgent', status:'Proposal Needed', owner:'Nina Patel', vendor:'Desert Pipe', age:8, cost:8600, sla:'Breached', notes:'Repeat drain issue. Proposal requested.' },
+    { id:'WO-78451', client:0, asset:'A-LIGHT-1', location:'L101', trade:'Lighting', priority:'Normal', status:'In Progress', owner:'Evan Brooks', vendor:'BrightWay', age:2, cost:1800, sla:'On Track', notes:'Lobby fixture outage.' },
+    { id:'WO-61201', client:1, asset:'A-DOOR-9', location:'PC-118', trade:'Doors/Locks', priority:'Urgent', status:'Scheduled', owner:'Sarah Mitchell', vendor:'AccessPro', age:4, cost:4200, sla:'At Risk', notes:'Back door security issue.' },
+    { id:'WO-90111', client:2, asset:'A-BAR-1', location:'FG-PDX', trade:'Millwork', priority:'High', status:'Scoping', owner:'Marcus Reed', vendor:'Portland GC', age:1, cost:126000, sla:'On Track', notes:'Bar rebuild and dining refresh.' }
+  ],
+  proposals: [
+    { id:'P-4408', client:0, location:'L522', wo:'WO-78421', trade:'HVAC', amount:55400, status:'Pending', age:6, scope:'Replace failing RTU after repeated compressor failures.' },
+    { id:'P-4411', client:0, location:'L319', wo:'WO-78433', trade:'Plumbing', amount:22600, status:'Review', age:4, scope:'Camera, jetting, partial line replacement.' },
+    { id:'P-5100', client:2, location:'FG-PDX', wo:'WO-90111', trade:'Refresh', amount:885000, status:'Draft', age:1, scope:'Full restaurant refresh and reimage package.' }
+  ],
+  assets: [
+    { id:'A-RTU-1', client:0, location:'L522', asset:'RTU-1', trade:'HVAC', age:14, repairs:7, spend12:38500, replacement:56000 },
+    { id:'A-PL-2', client:0, location:'L319', asset:'Main Drain Line', trade:'Plumbing', age:22, repairs:5, spend12:18800, replacement:26000 },
+    { id:'A-DOOR-9', client:1, location:'PC-118', asset:'Rear Security Door', trade:'Doors', age:9, repairs:4, spend12:9200, replacement:14000 },
+    { id:'A-BAR-1', client:2, location:'FG-PDX', asset:'Bar Millwork / Host Stand', trade:'Millwork', age:18, repairs:1, spend12:126000, replacement:185000 }
+  ],
+  vendors: [
+    { name:'Metro Mechanical', trades:'HVAC', regions:'Midwest / Southeast', score:72, response:5.4, sla:82, insurance:'Verified', status:'Watch' },
+    { name:'Desert Pipe', trades:'Plumbing', regions:'West', score:64, response:9.1, sla:68, insurance:'Verified', status:'Pressure' },
+    { name:'BrightWay Electrical', trades:'Electrical / Lighting', regions:'National', score:88, response:3.2, sla:93, insurance:'Verified', status:'Strong' },
+    { name:'Portland GC', trades:'Refresh / GC', regions:'Pacific Northwest', score:81, response:4.1, sla:89, insurance:'Pending COI', status:'Onboarding' }
+  ]
+};
+
+let db = JSON.parse(localStorage.getItem('commandCenterLLC') || JSON.stringify(seed));
+let page = 'mission';
+const pages = [
+  ['mission','🚨 Mission Control','Run urgent work, SLA risk, approvals, and spend from one place.'],
+  ['dashboard','📊 Dashboard','Portfolio KPIs and executive view.'],
+  ['workorders','📋 Work Orders','Create, route, escalate, and close tickets.'],
+  ['dispatch','🚚 Dispatch','Vendor assignment and operating lanes.'],
+  ['map','🗺️ USA Portfolio Map','Risk-colored sites linked to work orders.'],
+  ['locations','📍 Locations','Site-level risk and spend.'],
+  ['assets','🛠️ Assets','Repair-vs-replace intelligence.'],
+  ['vendors','🏆 Vendors','Scorecards, SLA, response, and coverage.'],
+  ['proposals','📄 Proposals','Approval queue and proposal aging.'],
+  ['copilot','🤖 Copilot','Demo AI-style portfolio answers.'],
+  ['executive','🎯 Executive Center','Risks, decisions, and savings actions.']
+];
+const $ = id => document.getElementById(id);
+const money = n => Number(n||0).toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
+const client = () => db.clients[db.activeClient];
+const scoped = arr => arr.filter(x => x.client === db.activeClient);
+const locationById = id => db.locations.find(l => l.id === id) || { site:'Unknown', risk:'Medium' };
+function save(){ localStorage.setItem('commandCenterLLC', JSON.stringify(db)); }
+function toast(msg){ $('toast').textContent=msg; $('toast').classList.remove('hidden'); setTimeout(()=>$('toast').classList.add('hidden'),1600); }
+function pill(v){ const cls = ['Critical','Emergency','Breached','At Risk','High','Pressure'].includes(v)?'red':['Medium','Urgent','Pending','Review','Draft','Watch','Scheduled'].includes(v)?'amber':['Approved','Closed','Strong','Verified','On Track','Active'].includes(v)?'green':'blue'; return `<span class="pill ${cls}">${v}</span>`; }
+function riskScore(l){ return Math.min(100, Math.round((l.open||0)*6 + (l.repeat||0)*14 + (l.spend||0)/2500 + (l.capex?15:0))); }
+function health(){ const atRisk = scoped(db.workOrders).filter(w => ['At Risk','Breached'].includes(w.sla)).length; const capex = scoped(db.assets).filter(a => a.repairs >= 5).length; return Math.max(1, 100 - atRisk*9 - capex*7); }
+function setPage(next){ page=next; render(); }
+function setClient(value){ db.activeClient=Number(value); save(); render(); }
+function searchText(){ return ($('globalSearch').value||'').toLowerCase(); }
+function table(title, heads, rows){ return `<div class="card"><h3>${title}</h3><div class="scroll"><table><thead><tr>${heads.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></div>`; }
+function openModal(html){ $('modalContent').innerHTML=html; $('modal').classList.remove('hidden'); }
+function closeModal(){ $('modal').classList.add('hidden'); }
+
+function metrics(){
+  const wo = scoped(db.workOrders), props=scoped(db.proposals), assets=scoped(db.assets), locs=scoped(db.locations);
+  const pending = props.filter(p=>['Pending','Review','Draft'].includes(p.status)).reduce((s,p)=>s+p.amount,0);
+  return [
+    ['Portfolio Health', health()+'/100', 'Operating score'],
+    ['Open Work Orders', wo.length, wo.filter(w=>['At Risk','Breached'].includes(w.sla)).length+' SLA risk'],
+    ['Pending Proposal $', money(pending), 'Approval exposure'],
+    ['Sites Tracked', locs.length, client().locations.toLocaleString()+' total portfolio']
+  ].map(m=>`<div class="card"><div class="metric-label">${m[0]}</div><div class="metric-value">${m[1]}</div><div class="metric-sub">${m[2]}</div></div>`).join('');
+}
+function renderMission(){
+  const wo = scoped(db.workOrders), locs = scoped(db.locations).sort((a,b)=>riskScore(b)-riskScore(a));
+  const fires = wo.filter(w=>w.priority==='Emergency'||w.sla==='Breached'||w.sla==='At Risk');
+  return `<div class="grid2"><div class="card"><div class="eyebrow">Operator Briefing</div><h3>Good ${new Date().getHours()<12?'Morning':new Date().getHours()<17?'Afternoon':'Evening'}, Tim</h3><p class="muted">${client().name} has ${fires.length} items needing attention right now.</p>${fires.map(w=>`<div class="row" onclick="showWO('${w.id}')" style="cursor:pointer"><div><b>${w.id}</b><div class="muted">${locationById(w.location).site} · ${w.trade}</div></div>${pill(w.sla)}</div>`).join('')||'<p class="muted">No fires right now.</p>'}</div><div class="card"><h3>Highest Risk Sites</h3>${locs.slice(0,4).map(l=>`<div class="row" onclick="showLocation('${l.id}')" style="cursor:pointer"><div><b>${l.site}</b><div class="muted">${l.city} · ${l.trade}</div></div><b>${riskScore(l)}</b></div>`).join('')}</div></div>`;
+}
+function renderDashboard(){
+  const spend = scoped(db.locations).reduce((s,l)=>s+l.spend,0)+scoped(db.workOrders).reduce((s,w)=>s+w.cost,0);
+  const pct = Math.min(100, Math.round(spend/client().budget*100));
+  return `<div class="grid2"><div class="card"><h3>Budget Position</h3><div class="big">${money(spend)}</div><p class="muted">Visible spend against ${money(client().budget)} annual budget.</p><div class="bar"><span style="width:${pct}%"></span></div></div><div class="card"><h3>Client Profile</h3><div class="row"><b>Vertical</b><span>${client().vertical}</span></div><div class="row"><b>Locations</b><span>${client().locations.toLocaleString()}</span></div><div class="row"><b>Owner</b><span>${client().owner}</span></div></div></div>`;
+}
+function renderWO(){
+  const q=searchText();
+  const rows=scoped(db.workOrders).filter(w=>(w.id+w.trade+w.status+w.vendor+w.owner+locationById(w.location).site).toLowerCase().includes(q)).map(w=>`<tr onclick="showWO('${w.id}')" style="cursor:pointer"><td><b>${w.id}</b></td><td>${locationById(w.location).site}</td><td>${w.trade}</td><td>${pill(w.priority)}</td><td>${pill(w.status)}</td><td>${pill(w.sla)}</td><td>${w.vendor}</td><td><b>${money(w.cost)}</b></td></tr>`).join('');
+  return table('Work Order Operating Queue',['WO','Location','Trade','Priority','Status','SLA','Vendor','Cost'],rows);
+}
+function renderDispatch(){
+  const lanes=['Scheduled','Vendor Dispatched','In Progress','Proposal Needed'];
+  return `<div class="card"><h3>Dispatch Board</h3><div class="kanban">${lanes.map(lane=>`<div class="lane"><h3>${lane}</h3>${scoped(db.workOrders).filter(w=>w.status===lane).map(w=>`<div class="wo-card" onclick="showWO('${w.id}')"><b>${w.id}</b><div class="muted">${locationById(w.location).site}</div>${pill(w.priority)} ${pill(w.sla)}<div class="muted">${w.vendor}</div></div>`).join('')||'<p class="muted">No tickets.</p>'}</div>`).join('')}</div></div>`;
+}
+function usaMapSvg(){ return `<svg class="usa-svg" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="United States map">
+  <rect x="0" y="0" width="1000" height="560" fill="transparent"></rect>
+  <g transform="translate(20,30)">
+    <path class="state-shape" d="M75 190 L125 150 L185 132 L265 108 L350 120 L430 95 L520 110 L612 102 L695 122 L790 128 L880 174 L935 240 L910 285 L850 295 L820 330 L780 360 L742 350 L705 322 L655 334 L610 370 L545 362 L490 340 L430 350 L365 370 L285 350 L210 330 L145 300 L88 286 Z"></path>
+    <path class="state-shape" d="M780 346 L824 365 L860 418 L882 500 L855 520 L820 448 L785 392 Z"></path>
+    <path class="state-shape" d="M890 175 L948 138 L985 165 L960 210 L925 218 Z"></path>
+    <path class="state-shape" d="M68 440 L112 415 L170 430 L205 468 L155 488 L100 478 Z"></path>
+    <path class="state-shape" d="M255 468 L285 456 L310 474 L340 465 L365 485 L325 505 L278 498 Z"></path>
+    <path d="M145 300 L185 132 M285 350 L305 110 M430 350 L430 95 M545 362 L535 110 M655 334 L612 102 M742 350 L695 122 M210 330 L250 210 L265 108 M365 370 L370 225 L350 120 M490 340 L500 220 L520 110 M610 370 L610 230 L612 102 M780 360 L790 245 L790 128" fill="none" stroke="#d4d4d8" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+    <path d="M115 238 L920 240 M160 184 L880 188 M230 305 L835 300" fill="none" stroke="#e4e4e7" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+    <text x="450" y="45" text-anchor="middle" font-size="34" font-weight="1000" fill="#a1a1aa" letter-spacing="4">UNITED STATES</text>
+    <text x="118" y="525" font-size="24" font-weight="1000" fill="#71717a">AK</text>
+    <text x="300" y="535" font-size="24" font-weight="1000" fill="#71717a">HI</text>
+  </g>
+</svg>`; }
+function renderMap(){
+  const locs=scoped(db.locations).sort((a,b)=>riskScore(b)-riskScore(a));
+  return `<div class="grid2"><div class="card"><h3>USA Portfolio Map</h3><div class="usa-map"><div class="map-title">REAL INLINE USA MAP — NO EXTERNAL ASSETS</div>${usaMapSvg()}${locs.map(l=>`<button class="pin ${String(l.risk).toLowerCase()}" title="${l.site}" onclick="showLocation('${l.id}')" style="left:${l.x}%;top:${l.y}%"></button>`).join('')}<div class="usa-watermark">Risk pins are clickable · Opens site intelligence</div></div></div><div class="card"><h3>Risk Stack Rank</h3><div class="map-list">${locs.map(l=>`<div class="site-card" onclick="showLocation('${l.id}')"><b>${l.site}</b><div class="muted">${l.city} · ${l.region}</div>${pill(l.risk)} <span class="pill blue">Risk ${riskScore(l)}</span><div class="muted">${l.open} open · ${l.repeat} repeat · ${money(l.spend)}</div></div>`).join('')}</div></div></div>`;
+}
+function renderLocations(){ return table('Location Intelligence',['Site','City','Region','Risk','Open','Spend','View'], scoped(db.locations).map(l=>`<tr onclick="showLocation('${l.id}')" style="cursor:pointer"><td><b>${l.site}</b></td><td>${l.city}</td><td>${l.region}</td><td>${pill(l.risk)} ${riskScore(l)}</td><td>${l.open}</td><td><b>${money(l.spend)}</b></td><td><button class="btn">Open</button></td></tr>`).join('')); }
+function renderAssets(){ return table('Asset Lifecycle',['Asset','Location','Trade','Age','Repairs','12 Mo Spend','Replacement','Rec'], scoped(db.assets).map(a=>`<tr><td><b>${a.asset}</b></td><td>${locationById(a.location).site}</td><td>${a.trade}</td><td>${a.age}</td><td>${a.repairs}</td><td><b>${money(a.spend12)}</b></td><td>${money(a.replacement)}</td><td>${pill(a.repairs>=5?'Replace Review':'Maintain')}</td></tr>`).join('')); }
+function renderVendors(){ return table('Vendor Scorecards',['Vendor','Trades','Regions','Score','Response','SLA','Insurance','Status'], db.vendors.map(v=>`<tr><td><b>${v.name}</b></td><td>${v.trades}</td><td>${v.regions}</td><td><b>${v.score}</b></td><td>${v.response} hrs</td><td>${v.sla}%</td><td>${pill(v.insurance)}</td><td>${pill(v.status)}</td></tr>`).join('')); }
+function renderProposals(){ return table('Proposal Workflow',['Proposal','Location','Trade','Amount','Status','Age','Scope'], scoped(db.proposals).map(p=>`<tr><td><b>${p.id}</b></td><td>${locationById(p.location).site}</td><td>${p.trade}</td><td><b>${money(p.amount)}</b></td><td>${pill(p.status)}</td><td>${p.age} days</td><td>${p.scope}</td></tr>`).join('')); }
+function renderCopilot(){ return `<div class="card"><h3>Command Copilot</h3><p class="muted">Demo assistant that reasons from the current portfolio data.</p><div class="chat" id="chat"><div class="bubble ai">Ask me: “What should I attack first?” or “Where is the spend risk?”</div></div><br><div class="copilot-box"><input id="copilotInput" placeholder="Ask about the portfolio..."/><button class="btn primary" onclick="askCopilot()">Ask</button></div></div>`; }
+function renderExecutive(){ return `<div class="grid2"><div class="card"><h3>Executive Action Center</h3>${scoped(db.locations).sort((a,b)=>riskScore(b)-riskScore(a)).slice(0,3).map(l=>`<div class="row"><div><b>${l.site}</b><div class="muted">${l.trade} risk · ${money(l.spend)}</div></div>${pill(l.risk)}</div>`).join('')}</div><div class="card"><h3>Board Summary</h3><p class="muted">Portfolio health is ${health()}/100. Immediate focus: SLA risk, repeat repairs, and proposal approval exposure.</p><button class="btn primary" onclick="copySummary()">Copy Summary</button></div></div>`; }
+function renderView(){ const map={mission:renderMission,dashboard:renderDashboard,workorders:renderWO,dispatch:renderDispatch,map:renderMap,locations:renderLocations,assets:renderAssets,vendors:renderVendors,proposals:renderProposals,copilot:renderCopilot,executive:renderExecutive}; return (map[page]||renderMission)(); }
+function render(){
+  $('clientSelect').innerHTML=db.clients.map((c,i)=>`<option value="${i}">${c.name}</option>`).join(''); $('clientSelect').value=db.activeClient;
+  $('nav').innerHTML=pages.map(p=>`<button class="${page===p[0]?'active':''}" onclick="setPage('${p[0]}')">${p[1]}</button>`).join('');
+  const cur=pages.find(p=>p[0]===page)||pages[0]; $('pageKicker').textContent=cur[1].replace(/^[^\w]+/,''); $('pageTitle').textContent=cur[1]; $('pageSub').textContent=cur[2];
+  $('metrics').innerHTML=metrics(); $('view').innerHTML=renderView();
+}
+function showWO(id){ const w=db.workOrders.find(x=>x.id===id); if(!w)return; openModal(`<h2>${w.id}</h2><p class="muted">${locationById(w.location).site} · ${w.trade}</p><div class="grid2"><div class="card"><h3>Status</h3>${pill(w.priority)} ${pill(w.status)} ${pill(w.sla)}<p>Owner: ${w.owner}<br>Vendor: ${w.vendor}<br>Age: ${w.age} days</p></div><div class="card"><h3>Cost</h3><div class="big">${money(w.cost)}</div></div></div><div class="card"><h3>Notes</h3><p>${w.notes}</p><button class="btn primary" onclick="advanceWO('${w.id}')">Advance Status</button> <button class="btn red" onclick="escalateWO('${w.id}')">Escalate</button></div>`); }
+function showLocation(id){ const l=db.locations.find(x=>x.id===id); if(!l)return; const wos=db.workOrders.filter(w=>w.location===id); openModal(`<h2>${l.site}</h2><p class="muted">${l.city} · ${l.region}</p><div class="grid3"><div class="card"><b>Risk</b><div>${pill(l.risk)} ${riskScore(l)}</div></div><div class="card"><b>Open WO</b><div class="big">${l.open}</div></div><div class="card"><b>Spend</b><div class="big">${money(l.spend)}</div></div></div><div class="card"><h3>Work Orders</h3>${wos.map(w=>`<div class="row" onclick="showWO('${w.id}')" style="cursor:pointer"><div><b>${w.id}</b><div class="muted">${w.trade} · ${w.status}</div></div>${pill(w.sla)}</div>`).join('')||'<p class="muted">None attached.</p>'}</div>`); }
+function advanceWO(id){ const order=['Scheduled','Vendor Dispatched','In Progress','Completed','Closed']; db.workOrders=db.workOrders.map(w=>{ if(w.id!==id)return w; const i=order.indexOf(w.status); return {...w,status:order[Math.min(i+1,order.length-1)]||'Vendor Dispatched', sla:w.status==='Completed'?'On Track':w.sla}; }); save(); closeModal(); render(); toast('Work order advanced'); }
+function escalateWO(id){ db.workOrders=db.workOrders.map(w=>w.id===id?{...w,status:'Escalated',sla:'Breached',owner:'Executive Alert'}:w); save(); closeModal(); render(); toast('Escalation created'); }
+function openWOForm(){ const locs=scoped(db.locations); openModal(`<h2>Create Work Order</h2><div class="grid2"><select id="woLoc">${locs.map(l=>`<option value="${l.id}">${l.site}</option>`).join('')}</select><select id="woTrade"><option>HVAC</option><option>Plumbing</option><option>Electrical</option><option>Lighting</option><option>Doors/Locks</option></select><select id="woPriority"><option>Normal</option><option>Urgent</option><option>Emergency</option></select><input id="woCost" type="number" placeholder="Estimated cost"/></div><br><textarea id="woNotes" style="width:100%;min-height:100px" placeholder="Issue notes..."></textarea><br><br><button class="btn primary" onclick="submitWO()">Create Ticket</button>`); }
+function submitWO(){ const loc=$('woLoc').value; const wo={id:'WO-'+Math.floor(90000+Math.random()*9999),client:db.activeClient,asset:'',location:loc,trade:$('woTrade').value,priority:$('woPriority').value,status:'Scheduled',owner:'Tim Caffrey',vendor:'TBD',age:0,cost:Number($('woCost').value||0),sla:'On Track',notes:$('woNotes').value||'New ticket created.'}; db.workOrders.unshift(wo); save(); closeModal(); render(); toast('Work order created'); }
+function askCopilot(){ const input=$('copilotInput'); const q=(input.value||'').trim(); if(!q)return; const chat=$('chat'); chat.innerHTML+=`<div class="bubble">${q}</div>`; const x=scoped(db.workOrders), fires=x.filter(w=>['At Risk','Breached'].includes(w.sla)); const answer=`Attack ${fires[0]?.id||'the highest-risk site'} first. Current portfolio health is ${health()}/100, with ${fires.length} SLA-risk tickets and ${money(scoped(db.proposals).reduce((s,p)=>s+p.amount,0))} in proposal exposure.`; chat.innerHTML+=`<div class="bubble ai">${answer}</div>`; input.value=''; chat.scrollTop=chat.scrollHeight; }
+function copySummary(){ navigator.clipboard?.writeText(`Command Center LLC: ${client().name} health ${health()}/100. Open WOs: ${scoped(db.workOrders).length}. Priority: SLA risk, repeat repairs, proposal approvals.`); toast('Summary copied'); }
+function resetDemo(){ localStorage.removeItem('commandCenterLLC'); db=JSON.parse(JSON.stringify(seed)); render(); toast('Demo reset'); }
+$('closeModal').onclick=closeModal; $('newWorkOrderBtn').onclick=openWOForm; $('resetBtn').onclick=resetDemo; $('clientSelect').onchange=e=>setClient(e.target.value); $('globalSearch').oninput=render;
+render();
+
+</script>
+</body>
+</html>
